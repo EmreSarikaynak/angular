@@ -14,6 +14,7 @@ import { numberFmt } from "@/lib/i18n";
 import { ACTIVITY_LABELS, label } from "@/lib/i18n/labels";
 import { setPendingPhoto } from "@/lib/image";
 import { BknToday } from "@/components/bkn-today";
+import { DietitianNoteCard } from "@/components/my-dietitian";
 import { MEALS } from "@/lib/types";
 
 export default function DashboardPage() {
@@ -126,6 +127,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      <DietitianNoteCard />
       <BknToday date={today} summary={s} data={data} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

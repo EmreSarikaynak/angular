@@ -540,6 +540,91 @@ await test("Ramazan modu: su hatırlatması yalnızca iftar–sahur arasında", 
   await service.from("profiles").update({ ...base, iftar_time: hh(now.hour - 1), sahur_time: hh(now.hour + 6) }).eq("id", C.id);
   assert.equal((await cron()).water, 1, "yeme penceresinde su bildirimi gitmedi");
 });
+
+console.log("BKN: diyetisyen paneli");
+const E = await makeUser(`e${stamp}@example.com`);
+await test("diyetisyen tabloları tarayıcıya kapalı; oturumsuz erişim 401", async () => {
+  for (const t of ["dietitians", "dietitian_clients", "dietitian_notes"]) {
+    const r = await C.db.from(t).select("*").limit(1);
+    assert.ok(r.error || r.data.length === 0, `${t} okunabildi`);
+  }
+  assert.ok((await C.db.from("dietitians").insert({ user_id: C.id, display_name: "Sahte", invite_code: "AAAA2222" })).error);
+  assert.equal((await call("/api/dietitian", null)).status, 401);
+  assert.equal((await call("/api/dietitian/client/00000000-0000-4000-8000-000000000000", null)).status, 401);
+});
+let dCode, linkId;
+await test("panel etkinleştirme, kodla bağlanma: rıza zorunlu, kendine bağlanılamaz", async () => {
+  const en = await call("/api/dietitian", D, { action: "enable", display_name: "Dyt. Deniz Kaya", title: "Diyetisyen" });
+  assert.equal(en.status, 200, JSON.stringify(en.json));
+  dCode = en.json.dietitian.invite_code;
+  assert.match(dCode, /^[A-Z2-9]{8}$/);
+  assert.equal((await call("/api/dietitian", D, { action: "enable", display_name: "Dyt. Deniz Kaya" })).json.dietitian.invite_code, dCode, "kod yeniden üretildi");
+  const sec = { include_meals: true, include_body: false, include_wellbeing: false };
+  assert.equal((await call("/api/dietitian", C, { action: "connect", code: dCode, ...sec })).status, 400, "rızasız bağlandı");
+  assert.equal((await call("/api/dietitian", C, { action: "connect", code: dCode, consent: false, ...sec })).status, 400);
+  assert.equal((await call("/api/dietitian", C, { action: "connect", code: "ZZZZ9999", consent: true, ...sec })).status, 404);
+  assert.equal((await call("/api/dietitian", D, { action: "connect", code: dCode, consent: true, ...sec })).json.error, "cannot_connect_self");
+  const ok = await call("/api/dietitian", C, { action: "connect", code: dCode, consent: true, ...sec });
+  assert.equal(ok.status, 200, JSON.stringify(ok.json));
+  assert.equal(ok.json.dietitians[0].name, "Dyt. Deniz Kaya");
+  linkId = ok.json.dietitians[0].link_id;
+  assert.equal((await call("/api/dietitian", C, { action: "connect", code: dCode, consent: true, ...sec })).json.error, "already_connected");
+});
+await test("diyetisyen yalnızca kendi danışanını ve izin verilen bölümleri görür", async () => {
+  const list = await call("/api/dietitian", D);
+  assert.equal(list.json.clients.length, 1);
+  assert.equal(list.json.clients[0].name, "Cem GizliSoyad");
+  assert.ok(list.json.clients[0].logged_days_7 >= 1);
+  assert.ok(!JSON.stringify(list.json).includes(C.email), "e-posta sızdı");
+  const detail = await call(`/api/dietitian/client/${linkId}?days=7`, D);
+  assert.equal(detail.status, 200, JSON.stringify(detail.json));
+  assert.ok(detail.json.report.meals.some((m) => m.name === "Paylaşılan çorba"));
+  assert.equal(detail.json.report.weights, null, "izin verilmeyen ölçümler geldi");
+  assert.equal(detail.json.report.days[0].sleep_hours, undefined);
+  const text = JSON.stringify(detail.json);
+  for (const secret of [C.email, "1990-01-01", "gizli günlük", "çok gizli not", "photo_path"]) assert.ok(!text.includes(secret), `${secret} sızdı`);
+  // Başka bir kullanıcı (E) ne listeyi ne ayrıntıyı görebilir; danışanın kendisi de diyetisyen ucunu kullanamaz.
+  assert.equal((await call(`/api/dietitian/client/${linkId}`, E)).status, 404);
+  assert.equal((await call(`/api/dietitian/client/${linkId}`, C)).status, 404);
+  assert.equal((await call("/api/dietitian", E)).json.clients.length, 0);
+});
+await test("danışan bölümleri değiştirir; diyetisyen danışanın kapsamını değiştiremez", async () => {
+  assert.equal((await call("/api/dietitian", D, { action: "sections", link_id: linkId, include_meals: true, include_body: true, include_wellbeing: true })).status, 404);
+  assert.equal((await call(`/api/dietitian/client/${linkId}`, D)).json.report.weights, null);
+  assert.equal((await call("/api/dietitian", C, { action: "sections", link_id: linkId, include_meals: false, include_body: true, include_wellbeing: true })).status, 200);
+  const detail = await call(`/api/dietitian/client/${linkId}`, D);
+  assert.equal(detail.json.report.meals, null);
+  assert.equal(detail.json.report.weights[0].weight_kg, 71.3);
+  assert.equal(detail.json.report.days.find((d) => d.sleep_hours != null).sleep_hours, 6.5);
+});
+await test("notlar: görünür not danışana ulaşır, özel not ulaşmaz; yalnızca yazan siler", async () => {
+  assert.equal((await call("/api/dietitian", E, { action: "note", link_id: linkId, content: "yetkisiz", visible_to_client: true })).status, 404);
+  assert.equal((await call("/api/dietitian", C, { action: "note", link_id: linkId, content: "danışan yazamaz", visible_to_client: true })).status, 404);
+  assert.equal((await call("/api/dietitian", D, { action: "note", link_id: linkId, content: "Akşamları proteini artıralım.", visible_to_client: true })).status, 200);
+  assert.equal((await call("/api/dietitian", D, { action: "note", link_id: linkId, content: "ÖZEL: kontrol 2 hafta sonra", visible_to_client: false })).status, 200);
+  const mine = await call("/api/dietitian", C);
+  assert.deepEqual(mine.json.dietitians[0].notes.map((n) => n.content), ["Akşamları proteini artıralım."]);
+  assert.ok(!JSON.stringify(mine.json).includes("ÖZEL"));
+  const detail = await call(`/api/dietitian/client/${linkId}`, D);
+  assert.equal(detail.json.notes.length, 2);
+  const priv = detail.json.notes.find((n) => !n.visible_to_client);
+  assert.equal((await call("/api/dietitian", C, { action: "note-delete", id: priv.id })).status, 404);
+  assert.equal((await call("/api/dietitian", D, { action: "note-delete", id: priv.id })).status, 200);
+});
+await test("danışan paylaşımı bitirince erişim kesilir ve notlar silinir; yeniden bağlanabilir", async () => {
+  assert.equal((await call("/api/dietitian", E, { action: "end", link_id: linkId })).status, 404);
+  assert.equal((await call("/api/dietitian", C, { action: "end", link_id: linkId })).status, 200);
+  assert.equal((await call(`/api/dietitian/client/${linkId}`, D)).status, 404, "bitirilen bağlantı hâlâ açık");
+  assert.equal((await call("/api/dietitian", D)).json.clients.length, 0);
+  assert.equal((await service.from("dietitian_notes").select("id").eq("link_id", linkId)).data.length, 0, "notlar silinmedi");
+  assert.equal((await call("/api/dietitian", D, { action: "note", link_id: linkId, content: "x", visible_to_client: true })).status, 404);
+  const again = await call("/api/dietitian", C, { action: "connect", code: dCode, consent: true, include_meals: true, include_body: true, include_wellbeing: false });
+  assert.equal(again.status, 200);
+  // Diyetisyen de bağlantıyı sonlandırabilir.
+  assert.equal((await call("/api/dietitian", D, { action: "end", link_id: again.json.dietitians[0].link_id })).status, 200);
+  assert.equal((await call("/api/dietitian", C)).json.dietitians.length, 0);
+});
+await service.auth.admin.deleteUser(E.id);
 await service.auth.admin.deleteUser(C.id);
 await service.auth.admin.deleteUser(D.id);
 await service.auth.admin.deleteUser(B.id);

@@ -43,6 +43,7 @@ Yapay zekâ destekli beslenme, su, takviye, spor ve sağlık takip uygulaması. 
 | Vitamin ve mineraller | Demir, kalsiyum, magnezyum, potasyum, C, B12, D; analizle birlikte tahmin edilir, İstatistikler'de referans değere göre gösterilir |
 | Ramazan modu | Sahur/İftar öğün adları, iftar–sahur geri sayımı, hatırlatmaların yalnızca yeme penceresinde gönderilmesi |
 | Dışarıda yemek | Menü fotoğrafından yemekler, tahmini değerler, kalan hedefe göre öneri ve alerjen uyarısı |
+| Diyetisyen paneli | Diyetisyen davet koduyla danışan toplar; danışan açık rızayla bağlanır ve paylaşılacak bölümleri seçer. Panelde danışan listesi, son 7 gün özeti, ilgi bekleyenler, ayrıntılı rapor ve notlar (danışana görünür ya da özel) |
 | Asistan | Kullanıcının kendi kayıtlarına dayalı sohbet; teşhis/tedavi önermez |
 | Yönetim paneli | Kullanıcılar, Gemini ayarları ve bağlantı testi, kullanım/maliyet, limitler, hata kayıtları, duyuru |
 | Gizlilik | RLS, özel fotoğraf deposu, veri indirme, fotoğraf ve hesap silme |
@@ -56,7 +57,7 @@ Yapay zekâ destekli beslenme, su, takviye, spor ve sağlık takip uygulaması. 
 1. [supabase.com](https://supabase.com) üzerinde bir proje oluşturun (KVKK/GDPR için AB bölgesi önerilir).
 2. Şemayı uygulayın — iki yoldan biri:
    - **CLI:** `npx supabase link --project-ref <ref>` ardından `npx supabase db push`
-   - **Elle:** `supabase/migrations/` klasöründeki dosyaları **tarih sırasıyla** SQL Editor'de çalıştırın (`20261122000000_init.sql`, `20261123000000_bkn_features.sql`, `20261124000000_bkn_extras.sql`, `20261125000000_bkn_more.sql`).
+   - **Elle:** `supabase/migrations/` klasöründeki dosyaları **tarih sırasıyla** SQL Editor'de çalıştırın (`20261122000000_init.sql`, `20261123000000_bkn_features.sql`, `20261124000000_bkn_extras.sql`, `20261125000000_bkn_more.sql`, `20261126000000_dietitian.sql`).
    Migration; tabloları, RLS politikalarını, yeni kullanıcı tetikleyicisini ve özel `meal-photos` depolama kovasını oluşturur.
 3. **Authentication › URL Configuration:** Site URL olarak yayın adresinizi girin; Redirect URLs listesine `https://alan-adiniz/reset` ekleyin.
 4. **Authentication › Providers › Email:** en az şifre uzunluğunu 8 yapın. E-posta doğrulamasını açık tutmanız önerilir (yönetici ataması doğrulanmış e-posta ister).
@@ -125,6 +126,7 @@ src/
       ai/meal-plan     haftalık öğün planı ve alışveriş listesi
       ai/weekly-letter haftalık mektup
       ai/menu          restoran menüsü rehberi
+      dietitian        diyetisyen paneli (etkinleştir, bağlan, bölümler, notlar, bitir); dietitian/client/[id] danışan raporu
       challenges       meydan okumalar (oluştur, kodla katıl, ayrıl; ilerleme sunucuda hesaplanır)
       share            paylaşım bağlantısı oluşturma; share/[token] salt okunur rapor verisi (oturumsuz)
       cron/reminders   tüm hatırlatmalar (Web Push)
@@ -154,6 +156,7 @@ public/sw.js           service worker
 - Asistana yalnızca ad, yaş, hedefler ve günlük özetler gönderilir; soyad, e-posta, doğum tarihi, fotoğraflar ve notlar gönderilmez.
 - Profil › Verilerim: JSON olarak indirme, fotoğrafları silme, hesabı kalıcı silme (`ON DELETE CASCADE`).
 - Paylaşım bağlantısındaki 256 bitlik belirtecin yalnızca SHA-256 özeti saklanır; bağlantı bir kez gösterilir, süresi dolunca ya da iptal edilince 404 döner. Soyad, e-posta, doğum tarihi, fotoğraflar, notlar ve sohbetler hiçbir zaman paylaşılmaz; öğün ayrıntıları, vücut ölçümleri ve uyku/ruh hali yalnızca kullanıcı seçerse eklenir.
+- Diyetisyen tablolarına tarayıcıdan erişim yoktur. Diyetisyen yalnızca etkin bağlantısı olan danışanın, danışanın izin verdiği bölümlerini görür; kapsamı yalnızca danışan değiştirebilir. Danışan paylaşımı bitirdiğinde erişim kesilir ve diyetisyenin o danışan hakkındaki notları silinir. BKN diyetisyenin unvanını doğrulamaz.
 - Meydan okuma tablolarına tarayıcıdan erişim yoktur; üyeler birbirinin yalnızca takma adını ve başardığı gün sayısını görür, ilerleme her üyenin kendi kayıtlarından sunucuda hesaplanır.
 - Döngü kayıtları yapay zekâya, paylaşım raporuna ve meydan okumalara gönderilmez. Sesle girişte ses tarayıcının kendi tanıma servisine gider; uygulama sunucusuna yalnızca metin ulaşır.
 - `/privacy` sayfası bir KVKK/GDPR aydınlatma metni **taslağıdır**; yayına almadan önce veri sorumlusu bilgilerinizi ekleyip hukuki incelemeden geçirin. Gemini API'nin veri işleme koşulları (ücretli katman, bölge) ve Supabase ile veri işleme sözleşmesi sizin sorumluluğunuzdadır.

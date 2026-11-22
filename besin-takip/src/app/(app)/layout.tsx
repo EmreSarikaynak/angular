@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Activity, BarChart3, BookOpen, CalendarDays, CalendarHeart, ChefHat, CircleDot, CloudOff, Droplets, GlassWater, Home, Lightbulb, Mail, MessageCircle, Moon, Pill, Plus, RefreshCw, Ruler, Shield, Timer, Trophy, User, Users, UtensilsCrossed } from "lucide-react";
+import { Activity, BarChart3, BookOpen, CalendarDays, CalendarHeart, ChefHat, CircleDot, CloudOff, Droplets, GlassWater, Home, Lightbulb, Mail, MessageCircle, Moon, Pill, Plus, RefreshCw, Ruler, Shield, Stethoscope, Timer, Trophy, User, Users, UtensilsCrossed } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { supabaseConfigured } from "@/lib/supabase/client";
 import { cx } from "@/components/ui";
@@ -72,6 +72,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { href: "/performance", icon: Trophy, label: t("Performans") },
     { href: "/letter", icon: Mail, label: t("Haftalık mektup") },
     { href: "/assistant", icon: MessageCircle, label: t("Asistan") },
+    { href: "/dietitian", icon: Stethoscope, label: t("Diyetisyen paneli") },
     { href: "/profile", icon: User, label: t("Profil") },
     ...(config?.is_admin ? [{ href: "/admin", icon: Shield, label: t("Yönetim") }] : []),
   ];

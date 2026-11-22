@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, Download, Link2, LogOut, Shield, Trash2 } from "lucide-react";
+import { Bell, Download, Link2, LogOut, Shield, Stethoscope, Trash2 } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { Bar, Button, Card, Chip, Field, Input, NumberInput, PageHeader, Segmented, Select, Sheet, Switch } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -458,6 +458,10 @@ export default function ProfilePage() {
       </Card>
 
       <div className="flex flex-wrap gap-2">
+        <Link href="/dietitian" className="inline-flex h-11 items-center gap-2 rounded-xl bg-surface-2 px-4 text-sm font-semibold">
+          <Stethoscope size={16} />
+          {t("Diyetisyen paneli")}
+        </Link>
         {config?.is_admin && (
           <Link href="/admin" className="inline-flex h-11 items-center gap-2 rounded-xl bg-surface-2 px-4 text-sm font-semibold">
             <Shield size={16} />

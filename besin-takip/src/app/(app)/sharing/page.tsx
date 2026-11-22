@@ -5,6 +5,7 @@ import { useApp } from "@/components/app-provider";
 import { Button, Card, Empty, Field, Input, PageHeader, Select, Switch } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
 import { supabase } from "@/lib/supabase/client";
+import { MyDietitian } from "@/components/my-dietitian";
 import type { ShareLink } from "@/lib/types";
 
 export default function SharingPage() {
@@ -77,7 +78,11 @@ export default function SharingPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <PageHeader title={t("Diyetisyen / koç paylaşımı")} subtitle={t("Süreli, salt okunur rapor bağlantısı")} />
+      <PageHeader title={t("Diyetisyen / koç paylaşımı")} subtitle={t("Diyetisyeninize bağlanın ya da süreli bir rapor bağlantısı oluşturun")} />
+
+      <MyDietitian />
+
+      <h2 className="pt-2 text-xs font-semibold uppercase tracking-wide text-muted">{t("Tek seferlik rapor bağlantısı")}</h2>
 
       {created && (
         <Card className="border-primary">
@@ -97,7 +102,7 @@ export default function SharingPage() {
       )}
 
       <Card className="space-y-4">
-        <h2 className="font-semibold">{t("Yeni bağlantı")}</h2>
+        <p className="font-semibold">{t("Yeni bağlantı")}</p>
         <Field label={t("Kiminle paylaşıyorsunuz? (isteğe bağlı)")}>
           <Input value={label} onChange={(e) => setLabel(e.target.value)} maxLength={80} placeholder={t("Örn. Dyt. Elif Hanım")} />
         </Field>

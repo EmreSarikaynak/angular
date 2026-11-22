@@ -4,10 +4,10 @@
  * - /api/* ve Supabase istekleri ASLA önbelleklenmez (kişisel veri service worker'da tutulmaz).
  * - Web Push bildirimleri.
  */
-const VERSION = "bkn-v4";
+const VERSION = "bkn-v5";
 const PAGES = `${VERSION}-pages`;
 const ASSETS = `${VERSION}-assets`;
-const SHELL = ["/", "/diary", "/add", "/water", "/drinks", "/activity", "/body", "/wellbeing", "/stats", "/profile", "/assistant", "/supplements", "/coach", "/rings", "/performance", "/fasting", "/plan", "/recipes", "/cycle", "/letter", "/challenges", "/eating-out", "/login"];
+const SHELL = ["/", "/diary", "/add", "/water", "/drinks", "/activity", "/body", "/wellbeing", "/stats", "/profile", "/assistant", "/supplements", "/coach", "/rings", "/performance", "/fasting", "/plan", "/recipes", "/cycle", "/letter", "/challenges", "/eating-out", "/dietitian", "/sharing", "/login"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

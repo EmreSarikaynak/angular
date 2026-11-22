@@ -373,8 +373,9 @@ const ok = (name) => console.log(`  ✓ ${String(++step).padStart(2, "0")} ${nam
   await page.goto(APP + "/sharing");
   assert.ok(await page.getByRole("button", { name: "Bağlantı oluştur" }).isDisabled(), "onaysız bağlantı oluşturulabiliyor");
   await page.getByLabel("Kiminle paylaşıyorsunuz? (isteğe bağlı)").fill("Dyt. Elif");
-  await page.getByRole("switch", { name: "Kilo ve vücut ölçümleri" }).click();
-  await page.getByRole("checkbox").check();
+  // Sayfada önce "Diyetisyenime bağlan" formu var; rapor bağlantısı formu ikinci sırada.
+  await page.getByRole("switch", { name: "Kilo ve vücut ölçümleri" }).last().click();
+  await page.getByRole("checkbox").last().check();
   await page.getByRole("button", { name: "Bağlantı oluştur" }).click();
   const shareUrl = await page.getByLabel("Paylaşım bağlantısı").inputValue();
   assert.match(shareUrl, /\/share\/[A-Za-z0-9_-]{40,}$/);

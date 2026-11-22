@@ -38,6 +38,7 @@ export default function PrivacyPage() {
         t("Yöneticiler kişisel sağlık kayıtlarınızı yönetim panelinden göremez; yalnızca hesap ve kullanım sayaçları görüntülenir."),
         t("Çevrimdışı kullanım için son görüntülenen veriler cihazınızda saklanır ve çıkış yaptığınızda silinir."),
         t("Diyetisyen/koç paylaşımı yalnızca sizin oluşturduğunuz süreli bağlantıyla ve seçtiğiniz bölümlerle yapılır; bağlantıyı dilediğiniz an iptal edebilirsiniz."),
+        t("Bir diyetisyene kodla bağlanırsanız, o diyetisyen izin verdiğiniz bölümleri siz paylaşımı bitirene kadar görebilir; bitirdiğinizde erişimi kesilir ve hakkınızdaki notları silinir."),
       ],
     ],
     [
