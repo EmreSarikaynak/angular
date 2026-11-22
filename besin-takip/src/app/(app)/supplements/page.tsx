@@ -3,14 +3,16 @@ import { Suspense, useState } from "react";
 import { Check, Pencil, Pill, Plus, Trash2, X } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { DateNav, useDateParam } from "@/components/date-nav";
-import { Bar, Button, Card, Empty, Field, Input, PageHeader, Sheet, Skeleton, Switch, cx } from "@/components/ui";
+import { Bar, Button, Card, Empty, Field, Input, NumberInput, PageHeader, Sheet, Skeleton, Switch, cx } from "@/components/ui";
 import { useSupplementLogs, useSupplements } from "@/lib/data/hooks";
 import { deleteRow, upsertRow, uuid } from "@/lib/data/store";
 import { supplementSlots } from "@/lib/bkn/score";
+import { LOW_STOCK_DAYS, stockDaysLeft } from "@/lib/bkn/fasting";
+import { takeSupplement, untakeSupplement } from "@/lib/data/actions";
 import { timeOf, toDateKey } from "@/lib/dates";
 import type { Supplement } from "@/lib/types";
 
-const blank = (): Supplement => ({ id: uuid(), name: "", dose: "", times: ["09:00"], active: true, note: "" });
+const blank = (): Supplement => ({ id: uuid(), name: "", dose: "", times: ["09:00"], active: true, note: "", stock_count: null, per_dose: 1 });
 
 function SupplementsInner() {
   const { t, toast, profile } = useApp();
@@ -28,9 +30,9 @@ function SupplementsInner() {
 
   async function toggle(slot: (typeof slots)[number]) {
     try {
-      if (slot.log) await deleteRow("supplement_logs", slot.log.id);
+      if (slot.log) await untakeSupplement(slot.supplement, slot.log);
       else {
-        await upsertRow("supplement_logs", { id: uuid(), supplement_id: slot.supplement.id, entry_date: date, time_slot: slot.time, taken_at: new Date().toISOString() });
+        await takeSupplement(slot.supplement, date, slot.time);
         toast(t("Harika! {name} tamamlandı.", { name: slot.supplement.name }));
       }
     } catch {
@@ -45,7 +47,7 @@ function SupplementsInner() {
     if (times.length === 0) return toast(t("En az bir saat ekleyin."), "error");
     setBusy(true);
     try {
-      const { queued } = await upsertRow("supplements", { id: editing.id, name: editing.name.trim().slice(0, 120), dose: editing.dose?.trim().slice(0, 80) || null, times, active: editing.active, note: editing.note?.trim().slice(0, 300) || null });
+      const { queued } = await upsertRow("supplements", { id: editing.id, name: editing.name.trim().slice(0, 120), dose: editing.dose?.trim().slice(0, 80) || null, times, active: editing.active, note: editing.note?.trim().slice(0, 300) || null, stock_count: editing.stock_count == null ? null : Math.max(0, Math.round(editing.stock_count)), per_dose: Math.max(1, Math.round(editing.per_dose ?? 1)) });
       toast(queued ? t("Cihaza kaydedildi; bağlantı gelince gönderilecek.") : t("Takviye kaydedildi."), queued ? "info" : "ok");
       setEditing(null);
     } catch {
@@ -148,6 +150,12 @@ function SupplementsInner() {
                     <p className="truncate text-xs text-muted">
                       {[s.dose, [...s.times].sort().join(", "), !s.active && t("duraklatıldı")].filter(Boolean).join(" · ")}
                     </p>
+                    {s.stock_count != null && (
+                      <p className={cx("text-xs", (stockDaysLeft(s) ?? 99) <= LOW_STOCK_DAYS ? "font-semibold text-warn" : "text-muted")}>
+                        {t("Stok: {n} adet · yaklaşık {d} gün", { n: s.stock_count, d: stockDaysLeft(s) ?? 0 })}
+                        {(stockDaysLeft(s) ?? 99) <= LOW_STOCK_DAYS ? ` · ${t("azalıyor")}` : ""}
+                      </p>
+                    )}
                   </div>
                   <button type="button" aria-label={t("Düzenle")} onClick={() => setEditing({ ...s, dose: s.dose ?? "", note: s.note ?? "" })} className="grid h-9 w-9 place-items-center rounded-full text-muted hover:bg-surface-2">
                     <Pencil size={16} />
@@ -190,6 +198,14 @@ function SupplementsInner() {
                 )}
               </div>
             </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label={t("Kutuda kalan adet")} hint={t("Boş bırakırsanız stok takip edilmez.")}>
+                <NumberInput value={editing.stock_count ?? null} onChange={(v) => setEditing({ ...editing, stock_count: v })} min={0} max={100000} />
+              </Field>
+              <Field label={t("Her alımda adet")}>
+                <NumberInput value={editing.per_dose ?? 1} onChange={(v) => setEditing({ ...editing, per_dose: v ?? 1 })} min={1} max={100} />
+              </Field>
+            </div>
             <Field label={t("Not")}>
               <Input value={editing.note ?? ""} onChange={(e) => setEditing({ ...editing, note: e.target.value })} maxLength={300} placeholder={t("Örn. tok karnına")} />
             </Field>

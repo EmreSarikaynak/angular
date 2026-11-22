@@ -36,6 +36,7 @@ export default function PrivacyPage() {
         t("Fotoğraflar herkese kapalı bir depolama alanında, yalnızca size ait klasörde tutulur."),
         t("Yöneticiler kişisel sağlık kayıtlarınızı yönetim panelinden göremez; yalnızca hesap ve kullanım sayaçları görüntülenir."),
         t("Çevrimdışı kullanım için son görüntülenen veriler cihazınızda saklanır ve çıkış yaptığınızda silinir."),
+        t("Diyetisyen/koç paylaşımı yalnızca sizin oluşturduğunuz süreli bağlantıyla ve seçtiğiniz bölümlerle yapılır; bağlantıyı dilediğiniz an iptal edebilirsiniz."),
       ],
     ],
     [

@@ -19,6 +19,7 @@ export async function runStructured<T>(
     /** Verilirse sonuç önbelleklenir. */
     cacheParts?: (string | undefined)[];
     temperature?: number;
+    maxOutputTokens?: number;
   },
 ): Promise<Response> {
   const guard = await guardAi(req, opts.kind);
@@ -34,7 +35,7 @@ export async function runStructured<T>(
         return json({ result: cached, cached: true, quota });
       }
     }
-    const out = await generate({ model, system: opts.system, temperature: opts.temperature ?? settings.gemini_temperature, responseSchema: opts.responseSchema, contents: [{ role: "user", parts: opts.parts }] });
+    const out = await generate({ model, system: opts.system, temperature: opts.temperature ?? settings.gemini_temperature, responseSchema: opts.responseSchema, maxOutputTokens: opts.maxOutputTokens, timeoutMs: opts.maxOutputTokens ? 55_000 : undefined, contents: [{ role: "user", parts: opts.parts }] });
     let parsed: ReturnType<typeof opts.validate.safeParse>;
     try {
       parsed = opts.validate.safeParse(parseJsonLoose(out.text));

@@ -27,6 +27,13 @@ Yapay zekâ destekli beslenme, su, takviye, spor ve sağlık takip uygulaması. 
 | Performans özeti | Haftalık, 3 haftalık, aylık, 3 aylık ve yıllık değerler tek tabloda; BKN skoru; PDF ve PNG indirme |
 | Bildirimler | Su, takviye, protein açığı, eğilim uyarısı, haftalık/aylık özet; tür bazında aç/kapat ve sıklık ayarı (Profil › Bildirimler) |
 | BKN skoru | "Bugün kendin için ne yaptın?" kartı: öğün, protein, su, hareket, takviye ve uyku üzerinden 0–100 |
+| Seri ve rozetler | Kesintisiz kayıt serisi, su serisi ve 12 rozet; ana sayfada seri göstergesi, Performans sayfasında rozetler |
+| Akşam kapanışı | Seçilen saatte "Bugün kendin için ne yaptın?" bildirimi ve günün kısa özeti |
+| Öğün planı | Hedef, alerji ve tercihlere göre Gemini ile 7 günlük plan; öğünü günlüğe ekleme; işaretlenebilir, paylaşılabilir alışveriş listesi |
+| Takviye stoku | Kutudaki adet ve doz başına adet; alındıkça düşer, yaklaşık 5 günlük kalınca uyarı ve bildirim |
+| Kafein | İçecek türüne göre mg hesabı, günlük 400 mg sınırı, 16:00 sonrası uyarısı |
+| Aralıklı oruç | Hedef süre (12–20 saat), geçmiş saatten başlatma, sayaç, geçmiş ve ortalama |
+| Diyetisyen paylaşımı | Açık rızayla oluşturulan süreli, salt okunur rapor bağlantısı; bölüm seçimi; görüntülenme sayısı; tek dokunuşla iptal |
 | Asistan | Kullanıcının kendi kayıtlarına dayalı sohbet; teşhis/tedavi önermez |
 | Yönetim paneli | Kullanıcılar, Gemini ayarları ve bağlantı testi, kullanım/maliyet, limitler, hata kayıtları, duyuru |
 | Gizlilik | RLS, özel fotoğraf deposu, veri indirme, fotoğraf ve hesap silme |
@@ -40,7 +47,7 @@ Yapay zekâ destekli beslenme, su, takviye, spor ve sağlık takip uygulaması. 
 1. [supabase.com](https://supabase.com) üzerinde bir proje oluşturun (KVKK/GDPR için AB bölgesi önerilir).
 2. Şemayı uygulayın — iki yoldan biri:
    - **CLI:** `npx supabase link --project-ref <ref>` ardından `npx supabase db push`
-   - **Elle:** `supabase/migrations/` klasöründeki dosyaları **tarih sırasıyla** SQL Editor'de çalıştırın (önce `20261122000000_init.sql`, sonra `20261123000000_bkn_features.sql`).
+   - **Elle:** `supabase/migrations/` klasöründeki dosyaları **tarih sırasıyla** SQL Editor'de çalıştırın (`20261122000000_init.sql`, `20261123000000_bkn_features.sql`, `20261124000000_bkn_extras.sql`).
    Migration; tabloları, RLS politikalarını, yeni kullanıcı tetikleyicisini ve özel `meal-photos` depolama kovasını oluşturur.
 3. **Authentication › URL Configuration:** Site URL olarak yayın adresinizi girin; Redirect URLs listesine `https://alan-adiniz/reset` ekleyin.
 4. **Authentication › Providers › Email:** en az şifre uzunluğunu 8 yapın. E-posta doğrulamasını açık tutmanız önerilir (yönetici ataması doğrulanmış e-posta ister).
@@ -106,6 +113,8 @@ src/
       admin/[action]   yönetim API'si
       ai/rings         sağlık halkası ekran görüntüsü okuma
       ai/recipes       kişisel tarif önerileri
+      ai/meal-plan     haftalık öğün planı ve alışveriş listesi
+      share            paylaşım bağlantısı oluşturma; share/[token] salt okunur rapor verisi (oturumsuz)
       cron/reminders   tüm hatırlatmalar (Web Push)
       config           kota, duyuru, YZ durumu
   lib/
@@ -132,6 +141,7 @@ public/sw.js           service worker
 - Fotoğraflar özel kovada `<kullanıcı_id>/…` yolunda tutulur; tarayıcıda küçültülür (EXIF/konum atılır) ve kullanıcı saklamayı kapatabilir.
 - Asistana yalnızca ad, yaş, hedefler ve günlük özetler gönderilir; soyad, e-posta, doğum tarihi, fotoğraflar ve notlar gönderilmez.
 - Profil › Verilerim: JSON olarak indirme, fotoğrafları silme, hesabı kalıcı silme (`ON DELETE CASCADE`).
+- Paylaşım bağlantısındaki 256 bitlik belirtecin yalnızca SHA-256 özeti saklanır; bağlantı bir kez gösterilir, süresi dolunca ya da iptal edilince 404 döner. Soyad, e-posta, doğum tarihi, fotoğraflar, notlar ve sohbetler hiçbir zaman paylaşılmaz; öğün ayrıntıları, vücut ölçümleri ve uyku/ruh hali yalnızca kullanıcı seçerse eklenir.
 - `/privacy` sayfası bir KVKK/GDPR aydınlatma metni **taslağıdır**; yayına almadan önce veri sorumlusu bilgilerinizi ekleyip hukuki incelemeden geçirin. Gemini API'nin veri işleme koşulları (ücretli katman, bölge) ve Supabase ile veri işleme sözleşmesi sizin sorumluluğunuzdadır.
 
 ## Testler

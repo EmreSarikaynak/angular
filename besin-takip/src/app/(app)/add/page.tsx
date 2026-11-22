@@ -2,7 +2,7 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Activity, ArrowLeft, Barcode, Camera, CircleDot, Droplets, GlassWater, Image as ImageIcon, Lightbulb, MessageCircle, Moon, PenLine, Pill, Ruler, ScanText, Star, Trash2, Trophy, Type } from "lucide-react";
+import { Activity, ArrowLeft, Barcode, CalendarDays, Camera, CircleDot, Droplets, GlassWater, Image as ImageIcon, Lightbulb, MessageCircle, Moon, PenLine, Pill, Ruler, ScanText, Star, Timer, Trash2, Trophy, Type } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { BarcodeScanner } from "@/components/barcode-scanner";
 import { Review } from "@/components/review";
@@ -393,7 +393,9 @@ function AddInner() {
         {link(`/wellbeing?date=${date}`, <Moon size={18} />, t("Uyku ve durum"))}
         {link(`/supplements?date=${date}`, <Pill size={18} />, t("Takviyeler"))}
         {link(`/rings?date=${date}`, <CircleDot size={18} />, t("Sağlık halkaları"))}
+        {link("/fasting", <Timer size={18} />, t("Aralıklı oruç"))}
         {link("/coach", <Lightbulb size={18} />, t("Öneriler"))}
+        {link("/plan", <CalendarDays size={18} />, t("Öğün planı"))}
         {link("/performance", <Trophy size={18} />, t("Performans"))}
         {link("/assistant", <MessageCircle size={18} />, t("Asistan"))}
       </div>

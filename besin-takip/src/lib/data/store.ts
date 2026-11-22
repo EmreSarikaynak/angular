@@ -10,7 +10,7 @@ import { supabase } from "../supabase/client";
  * - Okuma: önce ağ; başarısız olursa son başarılı sonuç yerel önbellekten okunur ve
  *   kuyruktaki bekleyen işlemler üzerine uygulanır.
  */
-export type Table = "food_entries" | "water_logs" | "activities" | "daily_logs" | "body_measurements" | "favorites" | "supplements" | "supplement_logs" | "health_rings";
+export type Table = "food_entries" | "water_logs" | "activities" | "daily_logs" | "body_measurements" | "favorites" | "supplements" | "supplement_logs" | "health_rings" | "fasting_sessions" | "meal_plans";
 
 interface Row {
   id: string;

@@ -121,3 +121,23 @@ export function summaryNotice(lang: Lang, kind: "week" | "month"): Notice {
   const [title, body] = lang === "en" ? en : tr;
   return { title, body, url: "/performance" };
 }
+
+/** Akşam kapanışı: günün kısa özeti. */
+export function eveningNotice(lang: Lang, d: { meals: number; waterMl: number; waterTarget: number; proteinG: number; proteinTarget: number; supplementsLeft: number }): Notice {
+  const title = lang === "en" ? "What have you done for yourself today? 🌙" : "Bugün kendin için ne yaptın? 🌙";
+  if (d.meals === 0 && d.waterMl === 0) {
+    return { title, body: lang === "en" ? "No entries yet today. A one-minute check-in is still a gift to yourself." : "Bugün henüz kayıt yok. Bir dakikalık kayıt bile kendine bir iyilik.", url: "/" };
+  }
+  const parts =
+    lang === "en"
+      ? [`${d.meals} meals logged`, `water ${d.waterMl}/${d.waterTarget} ml`, d.proteinTarget ? `protein ${d.proteinG}/${d.proteinTarget} g` : "", d.supplementsLeft > 0 ? `${d.supplementsLeft} supplement(s) left` : ""]
+      : [`${d.meals} öğün kaydı`, `su ${d.waterMl}/${d.waterTarget} ml`, d.proteinTarget ? `protein ${d.proteinG}/${d.proteinTarget} g` : "", d.supplementsLeft > 0 ? `${d.supplementsLeft} takviye bekliyor` : ""];
+  const tail = lang === "en" ? "Close the day in the app." : "Günü uygulamada tamamla.";
+  return { title, body: `${parts.filter(Boolean).join(" · ")}. ${tail}`, url: "/" };
+}
+
+export function stockNotice(lang: Lang, name: string, daysLeft: number): Notice {
+  return lang === "en"
+    ? { title: "Supplement running low 📦", body: `${name}: about ${daysLeft} day(s) left. Time to restock.`, url: "/supplements" }
+    : { title: "Takviyen azalıyor 📦", body: `${name}: yaklaşık ${daysLeft} günlük kaldı. Yenisini almayı unutma.`, url: "/supplements" };
+}

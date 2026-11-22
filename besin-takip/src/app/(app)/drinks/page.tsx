@@ -1,15 +1,15 @@
 "use client";
 import { Suspense, useMemo, useState } from "react";
-import { GlassWater, Trash2, Wine } from "lucide-react";
+import { Coffee, GlassWater, Trash2, Wine } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { DateNav, useDateParam } from "@/components/date-nav";
-import { Button, Card, Chip, Empty, Field, Input, NumberInput, PageHeader, Stat } from "@/components/ui";
+import { Bar, Button, Card, Chip, Empty, Field, Input, NumberInput, PageHeader, Stat } from "@/components/ui";
 import { useRange } from "@/lib/data/hooks";
 import { deleteRow, upsertRow, uuid } from "@/lib/data/store";
-import { addDays, timeOf, timestampFor } from "@/lib/dates";
+import { addDays, timeOf, timestampFor, toDateKey } from "@/lib/dates";
 import { numberFmt } from "@/lib/i18n";
 import { DRINK_LABELS, label } from "@/lib/i18n/labels";
-import { DRINK_TYPES, calcDrink, drinkType, standardDrinks } from "@/lib/nutrition/drinks";
+import { CAFFEINE_DAILY_LIMIT_MG, CAFFEINE_LATE_HOUR, DRINK_TYPES, caffeineMg, calcDrink, drinkType, standardDrinks } from "@/lib/nutrition/drinks";
 
 function DrinksInner() {
   const { t, lang, toast } = useApp();
@@ -27,8 +27,12 @@ function DrinksInner() {
   const nf = (n: number, d = 0) => numberFmt(lang, n, d);
   const calc = useMemo(() => calcDrink({ type, volume_ml: volume ?? 0, abv: dt.alcoholic || type === "other" ? abv : 0, added_sugar_g: sugar ?? 0 }), [type, volume, abv, sugar, dt.alcoholic]);
 
+  const caffeine = caffeineMg(type, volume ?? 0);
   const drinks = (range.data?.food ?? []).filter((f) => f.meal === "drink");
   const today = drinks.filter((f) => f.entry_date === date).sort((a, b) => b.consumed_at.localeCompare(a.consumed_at));
+  const caffeineToday = today.reduce((n, f) => n + (f.caffeine_mg ?? 0), 0);
+  const caffeineWeek = drinks.reduce((n, f) => n + (f.caffeine_mg ?? 0), 0);
+  const lateCaffeine = today.some((f) => (f.caffeine_mg ?? 0) > 0 && new Date(f.consumed_at).getHours() >= CAFFEINE_LATE_HOUR);
   const sum = (list: typeof drinks, k: "kcal" | "sugar_g" | "alcohol_g") => list.reduce((s, f) => s + f[k], 0);
 
   function choose(key: string) {
@@ -65,6 +69,7 @@ function DrinksInner() {
         drink_type: type,
         volume_ml: volume,
         abv: calc.alcohol_g > 0 ? (abv ?? dt.abv) : null,
+        caffeine_mg: caffeine,
         note: null,
       });
       toast(queued ? t("Cihaza kaydedildi; bağlantı gelince gönderilecek.") : t("İçecek eklendi."), queued ? "info" : "ok");
@@ -124,8 +129,9 @@ function DrinksInner() {
           <div className="grid grid-cols-3 gap-2 rounded-xl bg-surface-2 p-3 text-center">
             <Stat label={t("Kalori")} value={nf(calc.kcal)} unit="kcal" />
             <Stat label={t("Şeker")} value={nf(calc.sugar_g, 1)} unit="g" />
-            <Stat label={t("Saf alkol")} value={nf(calc.alcohol_g, 1)} unit="g" />
+            {caffeine > 0 ? <Stat label={t("Kafein")} value={nf(caffeine)} unit="mg" /> : <Stat label={t("Saf alkol")} value={nf(calc.alcohol_g, 1)} unit="g" />}
           </div>
+          {caffeine > 0 && date === toDateKey() && new Date().getHours() >= CAFFEINE_LATE_HOUR && <p className="rounded-xl bg-warn/10 px-3 py-2 text-xs text-warn">{t("Saat {h}:00'dan sonra alınan kafein uykunuzu etkileyebilir.", { h: CAFFEINE_LATE_HOUR })}</p>}
           <Button size="lg" className="w-full" loading={busy} onClick={save}>
             {t("İçeceği ekle")}
           </Button>
@@ -133,6 +139,22 @@ function DrinksInner() {
         </Card>
 
         <div className="space-y-4">
+          <Card>
+            <div className="mb-2 flex items-baseline justify-between">
+              <p className="flex items-center gap-2 text-sm font-semibold">
+                <Coffee size={16} className="text-muted" />
+                {t("Günün kafeini")}
+              </p>
+              <p className={`text-sm font-semibold ${caffeineToday > CAFFEINE_DAILY_LIMIT_MG ? "text-danger" : ""}`}>
+                {nf(caffeineToday)} / {CAFFEINE_DAILY_LIMIT_MG} mg
+              </p>
+            </div>
+            <Bar value={caffeineToday} max={CAFFEINE_DAILY_LIMIT_MG} color={caffeineToday > CAFFEINE_DAILY_LIMIT_MG ? "var(--danger)" : "var(--carbs)"} />
+            <p className="mt-2 text-xs text-muted">
+              {caffeineToday > CAFFEINE_DAILY_LIMIT_MG ? t("Yetişkinler için önerilen günlük üst sınırı (400 mg) aştınız.") : t("Yetişkinler için önerilen günlük üst sınır 400 mg'dır. Son 7 gün ortalaması: {n} mg", { n: nf(caffeineWeek / 7) })}
+              {lateCaffeine ? ` ${t("Bugün saat {h}:00'dan sonra kafein aldınız.", { h: CAFFEINE_LATE_HOUR })}` : ""}
+            </p>
+          </Card>
           <Card>
             <p className="mb-3 flex items-center gap-2 text-sm font-semibold">
               <Wine size={16} className="text-muted" />
@@ -164,6 +186,7 @@ function DrinksInner() {
                       <p className="truncate text-xs text-muted">
                         {timeOf(d.consumed_at)} · {nf(d.volume_ml ?? d.grams ?? 0)} ml · {nf(d.kcal)} kcal
                         {d.alcohol_g > 0 ? ` · ${t("alkol")} ${nf(d.alcohol_g, 1)} g` : ""}
+                        {(d.caffeine_mg ?? 0) > 0 ? ` · ${t("kafein")} ${nf(d.caffeine_mg ?? 0)} mg` : ""}
                       </p>
                     </div>
                     <button type="button" aria-label={t("Sil")} onClick={() => deleteRow("food_entries", d.id).catch(() => toast(t("Silinemedi."), "error"))} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-muted hover:text-danger">

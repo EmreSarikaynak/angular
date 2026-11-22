@@ -1,13 +1,16 @@
 "use client";
 import Link from "next/link";
-import { Check, ChevronRight, Lightbulb } from "lucide-react";
+import { Check, ChevronRight, Flame, Lightbulb } from "lucide-react";
 import { useApp } from "./app-provider";
 import { ActivityRings, RingLegend } from "./activity-rings";
 import { Card, Ring, cx } from "./ui";
 import { bknDay, supplementSlots, type BknItemKey } from "@/lib/bkn/score";
 import { proteinGap } from "@/lib/bkn/insights";
-import { useSupplementLogs, useSupplements, type RangeData } from "@/lib/data/hooks";
-import { upsertRow, uuid } from "@/lib/data/store";
+import { useRange, useSupplementLogs, useSupplements, type RangeData } from "@/lib/data/hooks";
+import { addDays } from "@/lib/dates";
+import { dayRows } from "@/lib/stats";
+import { computeStreaks } from "@/lib/bkn/streaks";
+import { takeSupplement } from "@/lib/data/actions";
 import type { DaySummary } from "@/lib/day";
 
 /** Ana sayfa: günün öz bakım özeti, bekleyen takviyeler, sağlık halkaları ve protein önerisi. */
@@ -23,6 +26,9 @@ export function BknToday({ date, summary, data }: { date: string; summary: DaySu
   const { items, score } = bknDay(summary, profile, { mealsLogged: meals, daily, slots, exerciseMin: Math.max(exerciseMin, ring?.exercise_min ?? 0) });
   const gap = proteinGap(summary.intake.protein_g, profile?.protein_target_g, new Date().getHours());
   const pending = slots.filter((s) => !s.log);
+  // Seri: son 60 günün kayıtlarından (60 günü aşan seriler "60+" olarak gösterilir).
+  const history = useRange(addDays(date, -59), date);
+  const streak = history.data ? computeStreaks(dayRows(addDays(date, -59), date, history.data, profile), profile, { activityCount: 0, supplementPerfectDays: 0, totalEntries: 0 }).current : 0;
 
   const names: Record<BknItemKey, [string, string]> = {
     meals: [t("Öğünler"), "/diary"],
@@ -35,7 +41,7 @@ export function BknToday({ date, summary, data }: { date: string; summary: DaySu
 
   async function take(slot: (typeof slots)[number]) {
     try {
-      await upsertRow("supplement_logs", { id: uuid(), supplement_id: slot.supplement.id, entry_date: date, time_slot: slot.time, taken_at: new Date().toISOString() });
+      await takeSupplement(slot.supplement, date, slot.time);
       toast(t("Harika! {name} tamamlandı.", { name: slot.supplement.name }));
     } catch {
       toast(t("Kaydedilemedi."), "error");
@@ -51,6 +57,12 @@ export function BknToday({ date, summary, data }: { date: string; summary: DaySu
           </Ring>
           <div className="min-w-0 flex-1">
             <p className="font-semibold">{t("Bugün kendin için ne yaptın?")}</p>
+            {streak >= 2 && (
+              <Link href="/performance" className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-burn/15 px-2 py-0.5 text-xs font-semibold text-burn">
+                <Flame size={13} />
+                {t("{n} günlük seri", { n: streak >= 60 ? "60+" : streak })}
+              </Link>
+            )}
             <p className="text-xs text-muted">{score >= 85 ? t("Harika bir gün. Böyle devam!") : score >= 50 ? t("İyi gidiyorsun; birkaç küçük adım kaldı.") : t("Küçük bir adımla başla: bir bardak su ya da bir öğün kaydı.")}</p>
           </div>
         </div>

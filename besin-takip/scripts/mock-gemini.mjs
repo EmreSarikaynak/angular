@@ -10,6 +10,15 @@ function analysis(text, hasImage) {
   if (/FAIL_SCHEMA/.test(text)) return "this is not json";
   if (/activity values from this screenshot/.test(text))
     return JSON.stringify({ is_rings: true, move_kcal: 420, move_goal: 500, exercise_min: 24, exercise_goal: 30, stand_hours: 9, stand_goal: 12, steps: 7350, distance_km: 5.2, date: null });
+  if (/Daily targets:/.test(text)) {
+    const meals = (d) => [
+      { slot: "breakfast", name: `Lorlu menemen, 1 dilim tam buğday ekmeği (gün ${d})`, kcal: 380, protein_g: 28, carbs_g: 24, fat_g: 19 },
+      { slot: "lunch", name: "150 g ızgara tavuk, bulgur pilavı, salata", kcal: 480, protein_g: 45, carbs_g: 42, fat_g: 13 },
+      { slot: "dinner", name: "Mercimek çorbası, yoğurt, zeytinyağlı fasulye", kcal: 360, protein_g: 20, carbs_g: 46, fat_g: 10 },
+      { slot: "snack", name: "Ayran ve bir avuç leblebi", kcal: 190, protein_g: 12, carbs_g: 20, fat_g: 6 },
+    ];
+    return JSON.stringify({ days: [1, 2, 3, 4, 5, 6, 7].map((d) => ({ day: d, meals: meals(d) })), shopping: [{ category: "Sebze ve meyve", items: ["Domates 1 kg", "Yeşil biber 500 g", "Marul 2 adet"] }, { category: "Et ve tavuk", items: ["Tavuk göğsü 1 kg"] }, { category: "Süt ürünleri ve yumurta", items: ["Yumurta 15 adet", "Lor peyniri 500 g", "Yoğurt 1,5 kg"] }] });
+  }
   if (/Goal: recipes that are/.test(text))
     return JSON.stringify({ recipes: [{ name: "Yoğurtlu tavuklu dürüm", kcal: 410, protein_g: 38, carbs_g: 36, fat_g: 11, minutes: 15, ingredients: ["120 g ızgara tavuk", "1 lavaş", "3 yemek kaşığı yoğurt", "Marul, domates"], steps: "Tavuğu dilimleyin, lavaşa yoğurt sürüp malzemeleri sarın.", why: "Kalan protein açığının büyük kısmını kapatır." }] });
   if (/nutrition facts label/i.test(text))

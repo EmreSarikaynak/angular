@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, Download, LogOut, Shield, Trash2 } from "lucide-react";
+import { Bell, Download, Link2, LogOut, Shield, Trash2 } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { Bar, Button, Card, Chip, Field, Input, NumberInput, PageHeader, Segmented, Select, Sheet, Switch } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -143,7 +143,7 @@ export default function ProfilePage() {
       }
       await saveProfile(patch);
       const next = { ...profile, ...patch } as Profile;
-      if (!next.reminder_enabled && !next.notify_supplements && !next.notify_protein && !next.notify_insights && !next.notify_summary) await disableNotifications();
+      if (!next.reminder_enabled && !next.notify_supplements && !next.notify_protein && !next.notify_insights && !next.notify_summary && !next.notify_evening) await disableNotifications();
     } catch {
       toast(t("Kaydedilemedi."), "error");
     }
@@ -357,6 +357,14 @@ export default function ProfilePage() {
           </Field>
         )}
         {toggleRow(t("Eğilim uyarıları"), t("Son 2–3 günde bir değer hedefin belirgin üstünde ya da altındaysa öneriyle; aynı konuda en çok 3 günde bir."), profile.notify_insights, (v) => notify({ notify_insights: v }, v))}
+        {toggleRow(t("Akşam kapanışı"), t("Her akşam “Bugün kendin için ne yaptın?” sorusuyla günün kısa özeti."), profile.notify_evening, (v) => notify({ notify_evening: v }, v))}
+        {profile.notify_evening && (
+          <Field label={t("Kapanış saati")}>
+            <Select value={profile.evening_hour} onChange={(e) => notify({ evening_hour: Number(e.target.value) })}>
+              {hours}
+            </Select>
+          </Field>
+        )}
         {toggleRow(t("Performans özeti"), t("Her pazartesi haftalık, her ayın ilk günü aylık özet hazır olduğunda."), profile.notify_summary, (v) => notify({ notify_summary: v }, v))}
         <Button
           variant="secondary"
@@ -415,6 +423,10 @@ export default function ProfilePage() {
           </Link>
         </p>
         <div className="flex flex-wrap gap-2">
+          <Link href="/sharing" className="inline-flex h-11 items-center gap-2 rounded-xl bg-surface-2 px-4 text-sm font-semibold">
+            <Link2 size={16} />
+            {t("Diyetisyenimle paylaş")}
+          </Link>
           <Button variant="secondary" loading={busy === "export"} disabled={!online} onClick={exportData}>
             <Download size={16} />
             {t("Verilerimi indir")}

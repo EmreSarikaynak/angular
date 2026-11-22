@@ -26,6 +26,11 @@ const ok = (name) => console.log(`  ✓ ${String(++step).padStart(2, "0")} ${nam
   const shot = (name) => page.screenshot({ path: path.join(SHOTS, `${name}.png`) });
   const toastGone = () => page.locator('[role="status"]').first().waitFor({ state: "detached", timeout: 8000 }).catch(() => {});
 
+  // Test bir dakikadan kısa sürede 6'dan fazla YZ çağrısı yapıyor; dakikalık hız limitini test süresince yükselt.
+  // (Limitin kendisi tests/integration içinde ayrıca doğrulanıyor.)
+  await service.from("app_settings").upsert({ key: "per_minute_limit", value: 100 });
+  await new Promise((r) => setTimeout(r, 31_000)); // sunucudaki ayar önbelleğinin (30 sn) yenilenmesini bekle
+
   // 1. Korumalı sayfa girişe yönlendirir
   await page.goto(APP + "/");
   await page.waitForURL("**/login");
@@ -288,6 +293,116 @@ const ok = (name) => console.log(`  ✓ ${String(++step).padStart(2, "0")} ${nam
   assert.deepEqual(np, { supplement_nag_min: 15, notify_insights: false, notify_supplements: true });
   ok("bildirim ayarları: tekrar sıklığı ve tür bazında aç/kapat kaydediliyor");
 
+
+  // EK-1. Takviye stoku
+  await page.goto(APP + "/supplements");
+  await page.getByRole("button", { name: "Düzenle" }).click();
+  await page.getByLabel("Kutuda kalan adet").fill("4");
+  await page.getByRole("button", { name: "Kaydet", exact: true }).click();
+  await page.getByText("Stok: 4 adet · yaklaşık 2 gün · azalıyor").waitFor();
+  await page.getByRole("checkbox", { name: "D vitamini 00:05" }).click();
+  await page.getByText("Stok: 5 adet").waitFor();
+  await page.getByRole("checkbox", { name: "D vitamini 00:05" }).click();
+  await page.getByText("Stok: 4 adet").waitFor();
+  ok("takviye stoku: alınca düşüyor, geri alınca iade ediliyor, azalınca uyarıyor");
+
+  // EK-2. Kafein
+  await toastGone();
+  await page.goto(APP + "/drinks");
+  await page.getByRole("button", { name: "Kahve (sade)", exact: true }).click();
+  await page.getByText("Kafein", { exact: true }).waitFor();
+  await page.getByRole("button", { name: "İçeceği ekle" }).click();
+  await page.getByText("İçecek eklendi.").waitFor();
+  await page.getByText("80 / 400 mg").waitFor();
+  await page.getByText(/kafein 80 mg/).waitFor();
+  await shot("25-kafein");
+  ok("kafein: içecekten hesaplanıyor, günlük sınırla gösteriliyor");
+
+  // EK-3. Aralıklı oruç
+  await toastGone();
+  await page.goto(APP + "/fasting");
+  await page.getByRole("button", { name: "14:10" }).click();
+  await page.getByLabel("Başlangıç zamanı").fill(await page.evaluate(() => { const d = new Date(Date.now() - 15 * 3600e3); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); }));
+  await page.getByRole("button", { name: "Orucu başlat" }).click();
+  await page.getByText("Oruç başladı. Kolay gelsin!").waitFor();
+  await page.getByText("15 sa 00 dk").or(page.getByText("15 sa 01 dk")).first().waitFor();
+  await page.getByText("Hedef tamamlandı").waitFor();
+  await shot("26-oruc");
+  await page.getByRole("button", { name: "Orucu bitir" }).click();
+  await page.getByText("Tebrikler, hedefini tamamladın!").waitFor();
+  await page.getByText("hedef tamam", { exact: false }).first().waitFor();
+  await page.getByText("1/1").waitFor();
+  ok("aralıklı oruç: geçmiş saatten başlatma, sayaç, hedef ve geçmiş");
+
+  // EK-4. Haftalık öğün planı ve alışveriş listesi
+  await toastGone();
+  await page.goto(APP + "/plan");
+  await page.getByText("Henüz planınız yok").waitFor();
+  await page.getByRole("button", { name: "Plan oluştur" }).click();
+  await page.getByText("Haftalık planınız hazır.").waitFor();
+  await page.getByText("Lorlu menemen, 1 dilim tam buğday ekmeği (gün 1)").waitFor();
+  await page.getByText("1410 kcal · protein 105 g").waitFor();
+  await page.getByRole("button", { name: /3\. gün/ }).click();
+  await page.getByText("(gün 3)").waitFor();
+  await page.getByRole("button", { name: /Ayran ve bir avuç leblebi: günlüğe ekle/ }).click();
+  await page.getByText("Günlüğe eklendi.").waitFor();
+  await shot("27-ogun-plani");
+  await page.getByRole("tab", { name: /Alışveriş listesi \(0\/7\)/ }).click();
+  await page.getByRole("checkbox", { name: "Tavuk göğsü 1 kg" }).click();
+  await page.getByRole("tab", { name: /Alışveriş listesi \(1\/7\)/ }).waitFor();
+  await page.reload();
+  await page.getByRole("tab", { name: /Alışveriş listesi \(1\/7\)/ }).waitFor();
+  ok("öğün planı: 7 gün, günlüğe ekleme, işaretlenebilir ve kalıcı alışveriş listesi");
+
+  // EK-5. Diyetisyen paylaşımı
+  await toastGone();
+  await page.goto(APP + "/sharing");
+  assert.ok(await page.getByRole("button", { name: "Bağlantı oluştur" }).isDisabled(), "onaysız bağlantı oluşturulabiliyor");
+  await page.getByLabel("Kiminle paylaşıyorsunuz? (isteğe bağlı)").fill("Dyt. Elif");
+  await page.getByRole("switch", { name: "Kilo ve vücut ölçümleri" }).click();
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button", { name: "Bağlantı oluştur" }).click();
+  const shareUrl = await page.getByLabel("Paylaşım bağlantısı").inputValue();
+  assert.match(shareUrl, /\/share\/[A-Za-z0-9_-]{40,}$/);
+  await page.getByText("Henüz görüntülenmedi").waitFor();
+  const guestCtx = await browser.newContext({ viewport: { width: 1100, height: 900 }, locale: "tr-TR" });
+  const guest = await guestCtx.newPage();
+  guest.on("pageerror", (e) => errors.push(`guest pageerror: ${e.message}`));
+  await guest.goto(shareUrl);
+  await guest.getByRole("heading", { name: "Ayşe · paylaşılan rapor" }).waitFor();
+  await guest.getByText("Salt okunur").waitFor();
+  await guest.getByRole("heading", { name: "Öğün ayrıntıları" }).waitFor();
+  await guest.getByText("Izgara tavuk göğsü").first().waitFor();
+  assert.equal(await guest.getByRole("heading", { name: "Kilo değişimi" }).count(), 0, "kapatılan kilo bölümü görünüyor");
+  const guestText = await guest.locator("body").innerText();
+  for (const secret of ["Yılmaz", email, "Dinç uyandım"]) assert.ok(!guestText.includes(secret), `${secret} paylaşılan raporda görünüyor`);
+  await guest.screenshot({ path: path.join(SHOTS, "28-paylasilan-rapor.png"), fullPage: true });
+  await guest.goto(APP + "/diary");
+  await guest.waitForURL("**/login");
+  await page.reload();
+  await page.getByText(/1 kez görüntülendi/).waitFor();
+  await page.getByRole("button", { name: "İptal et" }).click();
+  await page.getByText("Bağlantı iptal edildi.").waitFor();
+  await guest.goto(shareUrl);
+  await guest.getByText("Bağlantı geçersiz", { exact: false }).waitFor();
+  await guestCtx.close();
+  ok("paylaşım: rıza zorunlu, oturumsuz salt okunur rapor, kapatılan bölüm ve kimlik bilgisi yok, iptal anında geçersiz");
+
+  // EK-6. Seri ve rozetler, akşam kapanışı ayarı
+  await toastGone();
+  await page.goto(APP + "/performance");
+  await page.getByText("Güncel seri: 2 gün").waitFor();
+  await page.getByText(/Rozetler \(\d+\/12\)/).waitFor();
+  assert.equal(await page.locator('li[data-earned="true"]').filter({ hasText: "İlk adım" }).count(), 1);
+  assert.equal(await page.locator('li[data-earned="true"]').filter({ hasText: "30 günlük seri" }).count(), 0);
+  await shot("29-rozetler");
+  await page.goto(APP + "/profile");
+  await page.getByLabel("Kapanış saati").selectOption("22");
+  await page.waitForTimeout(600);
+  const { data: ev } = await service.from("profiles").select("evening_hour, notify_evening").eq("first_name", "Ayşe").order("created_at", { ascending: false }).limit(1).single();
+  assert.deepEqual(ev, { evening_hour: 22, notify_evening: true });
+  ok("seri ve rozetler hesaplanıyor; akşam kapanışı saati kaydediliyor");
+
   // 14. Ana panel toplamları (veritabanıyla karşılaştır)
   await toastGone();
   await page.goto(APP + "/");
@@ -307,6 +422,7 @@ const ok = (name) => console.log(`  ✓ ${String(++step).padStart(2, "0")} ${nam
   await page.getByText("Yakılan (saatinizden)").waitFor();
   await page.getByText(/^450/).first().waitFor();
   await page.getByRole("button", { name: "D vitamini alındı olarak işaretle" }).waitFor();
+  await page.getByText("2 günlük seri").waitFor();
   await shot("11-ana-sayfa");
   await page.screenshot({ path: path.join(SHOTS, "11b-ana-sayfa-tam.png"), fullPage: true });
   ok(`ana panel: alınan ${total} kcal ve kalan ${remaining} kcal veritabanıyla tutarlı`);

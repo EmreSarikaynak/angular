@@ -5,7 +5,8 @@ import { addDays } from "../dates";
 import { dayRows } from "../stats";
 import type { Activity, DailyLog, FoodEntry, HealthRing, Profile, Supplement, SupplementLog, WaterLog } from "../types";
 import { proteinGap, trendInsights, type InsightKey } from "./insights";
-import { insightNotice, proteinNotice, summaryNotice, supplementNotice, waterNotice, type Notice } from "./messages";
+import { eveningNotice, insightNotice, proteinNotice, stockNotice, summaryNotice, supplementNotice, waterNotice, type Notice } from "./messages";
+import { LOW_STOCK_DAYS, stockDaysLeft } from "./fasting";
 import { pickRecipes } from "./recipes";
 
 export function localParts(tz: string, d = new Date()) {
@@ -36,7 +37,7 @@ type P = Profile & { last_reminder_at: string | null };
 export async function runReminders(now = new Date()) {
   const db = adminClient();
   setVapidDetails(process.env.VAPID_SUBJECT || "mailto:admin@example.com", process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!, process.env.VAPID_PRIVATE_KEY!);
-  const counts = { users: 0, water: 0, supplement: 0, protein: 0, insight: 0, summary: 0, failed: 0 };
+  const counts = { users: 0, water: 0, supplement: 0, protein: 0, insight: 0, summary: 0, evening: 0, stock: 0, failed: 0 };
 
   const { data: subs } = await db.from("push_subscriptions").select("id, user_id, endpoint, p256dh, auth").limit(20000);
   const byUser = new Map<string, NonNullable<typeof subs>>();
@@ -90,6 +91,45 @@ export async function runReminders(now = new Date()) {
             if (!(await claim(p.id, "supplement", `${s.id}:${t.date}:${slot}:${attempt}`))) continue;
             if (await push(p.id, supplementNotice(lang, s.name, s.dose, attempt), `bkn-supp-${s.id}-${slot}`)) counts.supplement++;
           }
+        }
+      }
+
+      // ── Akşam kapanışı: günün kısa özeti ──────────────────────────────────
+      if (p.notify_evening && t.hour === p.evening_hour && (await claim(p.id, "evening", t.date))) {
+        const [{ data: food }, { data: water }, { data: supps }, { data: logs }] = await Promise.all([
+          db.from("food_entries").select("meal, protein_g").eq("user_id", p.id).eq("entry_date", t.date),
+          db.from("water_logs").select("amount_ml").eq("user_id", p.id).eq("entry_date", t.date),
+          db.from("supplements").select("id, times").eq("user_id", p.id).eq("active", true),
+          db.from("supplement_logs").select("id").eq("user_id", p.id).eq("entry_date", t.date),
+        ]);
+        const planned = (supps ?? []).reduce((n, x) => n + (x.times as string[]).length, 0);
+        const notice = eveningNotice(lang, {
+          meals: new Set((food ?? []).filter((f) => f.meal !== "drink").map((f) => f.meal)).size,
+          waterMl: (water ?? []).reduce((n, w) => n + w.amount_ml, 0),
+          waterTarget: p.water_target_ml ?? 2000,
+          proteinG: Math.round((food ?? []).reduce((n, f) => n + Number(f.protein_g), 0)),
+          proteinTarget: p.protein_target_g ?? 0,
+          supplementsLeft: Math.max(0, planned - (logs ?? []).length),
+        });
+        if (await push(p.id, notice, "bkn-evening")) counts.evening++;
+      }
+
+      // ── Takviye stoku azaldı (takviye başına, stok yenilenene kadar bir kez) ─
+      if (p.notify_supplements && t.hour >= 10 && t.hour < 20) {
+        const { data: stocked } = await db.from("supplements").select("id, name, times, active, stock_count, per_dose").eq("user_id", p.id).eq("active", true).not("stock_count", "is", null);
+        for (const s of (stocked ?? []) as Supplement[]) {
+          const left = stockDaysLeft(s);
+          if (left == null || left > LOW_STOCK_DAYS) continue;
+          // Anahtar stok adedine bağlı değil; kullanıcı stoku yenileyince kayıt silinir (aşağıda).
+          if (!(await claim(p.id, "stock", s.id))) continue;
+          if (await push(p.id, stockNotice(lang, s.name, left), `bkn-stock-${s.id}`)) counts.stock++;
+        }
+        // Stoku yeniden dolan takviyelerin "azaldı" kaydını temizle ki bir sonraki azalışta yine bildirilsin.
+        const { data: sent } = await db.from("notification_log").select("id, key").eq("user_id", p.id).eq("kind", "stock");
+        for (const row of sent ?? []) {
+          const s = ((stocked ?? []) as Supplement[]).find((x) => x.id === row.key);
+          const left = s ? stockDaysLeft(s) : null;
+          if (!s || left == null || left > LOW_STOCK_DAYS) await db.from("notification_log").delete().eq("id", row.id);
         }
       }
 

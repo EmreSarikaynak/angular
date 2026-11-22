@@ -14,6 +14,8 @@ export interface DrinkType {
   fatPer100?: number;
   defaultMl: number;
   servings: number[];
+  /** Yaklaşık kafein (mg/100 ml). */
+  caffeinePer100?: number;
 }
 
 /** Etanol yoğunluğu (g/ml) ve enerji değeri (kcal/g). */
@@ -31,16 +33,16 @@ export const DRINK_TYPES: DrinkType[] = [
   { key: "vodka", alcoholic: true, abv: 40, baseKcalPer100: 0, sugarPer100: 0, carbsPer100: 0, defaultMl: 40, servings: [40, 60, 80] },
   { key: "gin", alcoholic: true, abv: 40, baseKcalPer100: 0, sugarPer100: 0, carbsPer100: 0, defaultMl: 40, servings: [40, 60] },
   { key: "cocktail", alcoholic: true, abv: 12, baseKcalPer100: 45, sugarPer100: 10, carbsPer100: 11, defaultMl: 200, servings: [150, 200, 300] },
-  { key: "coffee", alcoholic: false, abv: 0, baseKcalPer100: 1, sugarPer100: 0, carbsPer100: 0, defaultMl: 200, servings: [60, 200, 300] },
-  { key: "turkish_coffee", alcoholic: false, abv: 0, baseKcalPer100: 3, sugarPer100: 0, carbsPer100: 0.5, defaultMl: 70, servings: [70] },
-  { key: "latte", alcoholic: false, abv: 0, baseKcalPer100: 45, sugarPer100: 4.5, carbsPer100: 4.5, proteinPer100: 3, fatPer100: 1.7, defaultMl: 300, servings: [240, 300, 400] },
-  { key: "tea", alcoholic: false, abv: 0, baseKcalPer100: 1, sugarPer100: 0, carbsPer100: 0.2, defaultMl: 100, servings: [100, 200, 330] },
+  { key: "coffee", caffeinePer100: 40, alcoholic: false, abv: 0, baseKcalPer100: 1, sugarPer100: 0, carbsPer100: 0, defaultMl: 200, servings: [60, 200, 300] },
+  { key: "turkish_coffee", caffeinePer100: 90, alcoholic: false, abv: 0, baseKcalPer100: 3, sugarPer100: 0, carbsPer100: 0.5, defaultMl: 70, servings: [70] },
+  { key: "latte", caffeinePer100: 25, alcoholic: false, abv: 0, baseKcalPer100: 45, sugarPer100: 4.5, carbsPer100: 4.5, proteinPer100: 3, fatPer100: 1.7, defaultMl: 300, servings: [240, 300, 400] },
+  { key: "tea", caffeinePer100: 20, alcoholic: false, abv: 0, baseKcalPer100: 1, sugarPer100: 0, carbsPer100: 0.2, defaultMl: 100, servings: [100, 200, 330] },
   { key: "juice", alcoholic: false, abv: 0, baseKcalPer100: 46, sugarPer100: 9.5, carbsPer100: 10.8, proteinPer100: 0.5, defaultMl: 200, servings: [200, 250, 330] },
-  { key: "soda", alcoholic: false, abv: 0, baseKcalPer100: 42, sugarPer100: 10.6, carbsPer100: 10.6, defaultMl: 330, servings: [200, 250, 330, 500] },
-  { key: "soda_zero", alcoholic: false, abv: 0, baseKcalPer100: 0.3, sugarPer100: 0, carbsPer100: 0, defaultMl: 330, servings: [250, 330, 500] },
+  { key: "soda", caffeinePer100: 9, alcoholic: false, abv: 0, baseKcalPer100: 42, sugarPer100: 10.6, carbsPer100: 10.6, defaultMl: 330, servings: [200, 250, 330, 500] },
+  { key: "soda_zero", caffeinePer100: 9, alcoholic: false, abv: 0, baseKcalPer100: 0.3, sugarPer100: 0, carbsPer100: 0, defaultMl: 330, servings: [250, 330, 500] },
   { key: "ayran", alcoholic: false, abv: 0, baseKcalPer100: 37, sugarPer100: 2.6, carbsPer100: 2.6, proteinPer100: 1.9, fatPer100: 1.9, defaultMl: 200, servings: [200, 300] },
   { key: "milk", alcoholic: false, abv: 0, baseKcalPer100: 61, sugarPer100: 4.8, carbsPer100: 4.8, proteinPer100: 3.2, fatPer100: 3.3, defaultMl: 200, servings: [200, 250] },
-  { key: "energy", alcoholic: false, abv: 0, baseKcalPer100: 45, sugarPer100: 11, carbsPer100: 11, defaultMl: 250, servings: [250, 355, 500] },
+  { key: "energy", caffeinePer100: 32, alcoholic: false, abv: 0, baseKcalPer100: 45, sugarPer100: 11, carbsPer100: 11, defaultMl: 250, servings: [250, 355, 500] },
   { key: "other", alcoholic: false, abv: 0, baseKcalPer100: 0, sugarPer100: 0, carbsPer100: 0, defaultMl: 200, servings: [200, 330] },
 ];
 
@@ -84,4 +86,13 @@ export function calcDrink(input: DrinkCalcInput): Nutrients {
 
 export function standardDrinks(alcoholG: number): number {
   return Math.round((alcoholG / STANDARD_DRINK_G) * 10) / 10;
+}
+
+/** Yetişkinler için genel kabul gören günlük üst sınır (EFSA): 400 mg. */
+export const CAFFEINE_DAILY_LIMIT_MG = 400;
+/** Bu saatten sonra alınan kafein uykuyu etkileyebilir. */
+export const CAFFEINE_LATE_HOUR = 16;
+
+export function caffeineMg(type: string, volumeMl: number): number {
+  return Math.round(((drinkType(type).caffeinePer100 ?? 0) * Math.max(0, volumeMl)) / 100);
 }

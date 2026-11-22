@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchAll, fetchRange, subscribe } from "./store";
-import type { Activity, BodyMeasurement, DailyLog, Favorite, FoodEntry, HealthRing, Supplement, SupplementLog, WaterLog } from "../types";
+import type { Activity, BodyMeasurement, DailyLog, FastingSession, Favorite, FoodEntry, HealthRing, MealPlan, Supplement, SupplementLog, WaterLog } from "../types";
 
 /** Asenkron veri yükler; veri katmanında değişiklik olduğunda sessizce yeniler. */
 export function useData<T>(loader: () => Promise<T>, deps: unknown[]) {
@@ -79,6 +79,7 @@ function numFood(f: FoodEntry): FoodEntry {
     grams: f.grams == null ? null : Number(f.grams),
     volume_ml: f.volume_ml == null ? null : Number(f.volume_ml),
     abv: f.abv == null ? null : Number(f.abv),
+    caffeine_mg: Number(f.caffeine_mg ?? 0),
   };
 }
 
@@ -108,4 +109,15 @@ export function useSupplements() {
 
 export function useSupplementLogs(from: string, to: string) {
   return useData(() => fetchRange<SupplementLog & { [k: string]: unknown }>("supplement_logs", from, to) as Promise<SupplementLog[]>, [from, to]);
+}
+
+export function useFasting(from: string, to: string) {
+  return useData(async () => {
+    const rows = await fetchRange<FastingSession & { [k: string]: unknown }>("fasting_sessions", from, to, "started_at");
+    return rows.map((r) => ({ ...r, target_hours: Number(r.target_hours) })) as FastingSession[];
+  }, [from, to]);
+}
+
+export function useMealPlans() {
+  return useData(() => fetchAll<MealPlan & { [k: string]: unknown }>("meal_plans", "created_at", false) as Promise<MealPlan[]>, []);
 }

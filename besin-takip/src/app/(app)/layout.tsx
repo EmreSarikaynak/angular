@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Activity, BarChart3, BookOpen, CircleDot, CloudOff, Droplets, GlassWater, Home, Lightbulb, MessageCircle, Moon, Pill, Plus, RefreshCw, Ruler, Shield, Trophy, User } from "lucide-react";
+import { Activity, BarChart3, BookOpen, CalendarDays, CircleDot, CloudOff, Droplets, GlassWater, Home, Lightbulb, MessageCircle, Moon, Pill, Plus, RefreshCw, Ruler, Shield, Timer, Trophy, User } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { supabaseConfigured } from "@/lib/supabase/client";
 import { cx } from "@/components/ui";
@@ -61,7 +61,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { href: "/rings", icon: CircleDot, label: t("Sağlık halkaları") },
     { href: "/body", icon: Ruler, label: t("Ölçümler") },
     { href: "/wellbeing", icon: Moon, label: t("Uyku ve durum") },
+    { href: "/fasting", icon: Timer, label: t("Aralıklı oruç") },
     { href: "/coach", icon: Lightbulb, label: t("Öneriler") },
+    { href: "/plan", icon: CalendarDays, label: t("Öğün planı") },
     { href: "/stats", icon: BarChart3, label: t("İstatistikler") },
     { href: "/performance", icon: Trophy, label: t("Performans") },
     { href: "/assistant", icon: MessageCircle, label: t("Asistan") },

@@ -47,6 +47,9 @@ export interface Profile {
   protein_check_hour: number;
   notify_insights: boolean;
   notify_summary: boolean;
+  notify_evening: boolean;
+  evening_hour: number;
+  fasting_target_hours: number;
   onboarded_at: string | null;
   created_at?: string;
   updated_at?: string;
@@ -83,6 +86,7 @@ export interface FoodEntry extends Nutrients {
   drink_type: string | null;
   volume_ml: number | null;
   abv: number | null;
+  caffeine_mg?: number;
   note: string | null;
   created_at?: string;
 }
@@ -205,6 +209,9 @@ export interface Supplement {
   times: string[];
   active: boolean;
   note: string | null;
+  /** Kutuda kalan adet; null = stok takip edilmiyor. */
+  stock_count?: number | null;
+  per_dose?: number;
   created_at?: string;
 }
 
@@ -230,4 +237,51 @@ export interface HealthRing {
   steps: number | null;
   distance_km: number | null;
   source: "manual" | "screenshot";
+}
+
+export interface FastingSession {
+  id: string;
+  user_id?: string;
+  entry_date: string;
+  started_at: string;
+  ended_at: string | null;
+  target_hours: number;
+}
+
+export interface PlanMeal {
+  slot: "breakfast" | "lunch" | "dinner" | "snack";
+  name: string;
+  kcal: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+}
+
+export interface MealPlanData {
+  days: { day: number; meals: PlanMeal[] }[];
+  shopping: { category: string; items: string[] }[];
+}
+
+export interface MealPlan {
+  id: string;
+  user_id?: string;
+  entry_date: string;
+  plan: MealPlanData;
+  checked: string[];
+  created_at?: string;
+}
+
+export interface ShareLink {
+  id: string;
+  user_id?: string;
+  label: string | null;
+  days: 7 | 30 | 90;
+  include_meals: boolean;
+  include_body: boolean;
+  include_wellbeing: boolean;
+  expires_at: string;
+  revoked_at: string | null;
+  last_viewed_at: string | null;
+  view_count: number;
+  created_at: string;
 }

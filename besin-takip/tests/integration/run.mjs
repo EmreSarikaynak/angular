@@ -367,6 +367,91 @@ await test("hatırlatmalar: alınan takviye ve kapatılan bildirim gönderilmez;
   await C.db.from("profiles").update({ notify_supplements: false }).eq("id", C.id);
   assert.equal((await cron()).supplement, 0);
 });
+
+console.log("BKN ekleri: oruç, plan, paylaşım, akşam kapanışı, stok");
+await test("oruç, plan ve paylaşım tabloları yalnızca sahibine açık", async () => {
+  const now = local();
+  assert.ifError((await C.db.from("fasting_sessions").insert({ entry_date: now.date, started_at: new Date(Date.now() - 3600e3).toISOString(), target_hours: 16 })).error);
+  assert.ok((await C.db.from("fasting_sessions").insert({ entry_date: now.date, started_at: new Date().toISOString(), ended_at: new Date(Date.now() - 1e6).toISOString() })).error, "bitiş başlangıçtan önce olamaz");
+  assert.ifError((await C.db.from("meal_plans").insert({ entry_date: now.date, plan: { days: [], shopping: [] } })).error);
+  for (const t of ["fasting_sessions", "meal_plans", "share_links"]) assert.equal((await D.db.from(t).select("*")).data.length, 0, t);
+  assert.ok((await C.db.from("food_entries").insert(entry({ caffeine_mg: -1 }))).error);
+  assert.ok((await C.db.from("supplements").insert({ name: "x", times: ["09:00"], stock_count: -3 })).error);
+});
+await test("haftalık öğün planı: 7 gün + alışveriş listesi, profilsiz kullanıcıya 400", async () => {
+  const r = await call("/api/ai/meal-plan", C, { lang: "tr", note: "akşamları hafif" });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(r.json.result.days.length, 7);
+  assert.equal(r.json.result.days[0].meals.length, 4);
+  assert.ok(r.json.result.shopping.length >= 3);
+  assert.equal((await call("/api/ai/meal-plan", D, { lang: "tr" })).json.error, "profile_incomplete");
+  assert.equal((await call("/api/ai/meal-plan", null, {})).status, 401);
+});
+let shareToken, shareId;
+await test("paylaşım bağlantısı: yalnızca seçilen bölümler, kimlik bilgisi sızmaz", async () => {
+  const now = local();
+  await C.db.from("profiles").update({ first_name: "Cem", last_name: "GizliSoyad", birth_date: "1990-01-01" }).eq("id", C.id);
+  await C.db.from("food_entries").insert(entry({ entry_date: now.date, name: "Paylaşılan çorba", note: "çok gizli not" }));
+  await C.db.from("daily_logs").upsert({ entry_date: now.date, sleep_hours: 6.5, mood: 4, note: "gizli günlük" }, { onConflict: "user_id,entry_date" });
+  await C.db.from("body_measurements").insert({ entry_date: now.date, weight_kg: 71.3 });
+  assert.equal((await call("/api/share", null, {})).status, 401);
+  assert.equal((await call("/api/share", C, { days: 45, valid_days: 7, include_meals: true, include_body: true, include_wellbeing: false })).status, 400);
+  const made = await call("/api/share", C, { label: "Dyt. Elif", days: 30, valid_days: 7, include_meals: true, include_body: false, include_wellbeing: false });
+  assert.equal(made.status, 200);
+  shareToken = made.json.token;
+  shareId = made.json.id;
+  assert.ok(shareToken.length >= 40);
+  const stored = (await service.from("share_links").select("token_hash").eq("id", shareId).single()).data.token_hash;
+  assert.notEqual(stored, shareToken, "belirteç düz metin saklanmamalı");
+  const res = await fetch(`${APP}/api/share/${shareToken}`);
+  assert.equal(res.status, 200);
+  const text = await res.text();
+  const data = JSON.parse(text);
+  assert.equal(data.first_name, "Cem");
+  assert.ok(data.meals.some((m) => m.name === "Paylaşılan çorba"));
+  assert.equal(data.weights, null);
+  assert.equal(data.profile.weight_kg, undefined);
+  assert.equal(data.days[0].sleep_hours, undefined);
+  for (const secret of ["GizliSoyad", C.email, "1990-01-01", "gizli", "71.3", C.id, "photo_path"]) assert.ok(!text.includes(secret), `${secret} sızdı`);
+  assert.equal((await service.from("share_links").select("view_count").eq("id", shareId).single()).data.view_count, 1);
+});
+await test("paylaşım: bölüm açılınca gelir; geçersiz, iptal edilmiş ve süresi dolmuş bağlantı 404", async () => {
+  const full = await call("/api/share", C, { days: 7, valid_days: 1, include_meals: false, include_body: true, include_wellbeing: true });
+  const data = await (await fetch(`${APP}/api/share/${full.json.token}`)).json();
+  assert.equal(data.meals, null);
+  assert.equal(data.weights[0].weight_kg, 71.3);
+  assert.equal(data.days[0].sleep_hours, 6.5);
+  assert.equal((await fetch(`${APP}/api/share/${"x".repeat(43)}`)).status, 404);
+  assert.equal((await fetch(`${APP}/api/share/kisa`)).status, 404);
+  assert.equal((await D.db.from("share_links").update({ revoked_at: null, expires_at: "2099-01-01" }).eq("id", shareId).select()).data.length, 0, "başkası bağlantıyı değiştirebildi");
+  await service.from("share_links").update({ expires_at: new Date(Date.now() - 1000).toISOString() }).eq("id", full.json.id);
+  assert.equal((await fetch(`${APP}/api/share/${full.json.token}`)).status, 404, "süresi dolan bağlantı açıldı");
+  assert.ifError((await C.db.from("share_links").update({ revoked_at: new Date().toISOString() }).eq("id", shareId)).error);
+  assert.equal((await fetch(`${APP}/api/share/${shareToken}`)).status, 404, "iptal edilen bağlantı açıldı");
+});
+await test("akşam kapanışı ve azalan stok bildirimi bir kez gönderilir", async () => {
+  await fetch("https://127.0.0.1:8789/__reset");
+  await service.from("notification_log").delete().eq("user_id", C.id);
+  const now = local();
+  await C.db.from("profiles").update({ reminder_enabled: false, notify_protein: false, notify_supplements: true, notify_evening: true, evening_hour: now.hour }).eq("id", C.id);
+  await C.db.from("supplements").update({ active: false }).eq("id", suppId);
+  await C.db.from("supplements").insert({ name: "Omega 3", times: ["23:59"], stock_count: 4, per_dose: 1 });
+  const first = await cron();
+  assert.equal(first.evening, 1, JSON.stringify(first));
+  assert.equal(first.stock, now.hour >= 10 && now.hour < 20 ? 1 : 0, JSON.stringify(first));
+  const second = await cron();
+  assert.deepEqual([second.evening, second.stock], [0, 0], JSON.stringify(second));
+  // Stok yenilenince kayıt temizlenir; yeniden azalınca tekrar bildirilir.
+  if (first.stock === 1) {
+    await C.db.from("supplements").update({ stock_count: 60 }).eq("name", "Omega 3");
+    await cron();
+    await C.db.from("supplements").update({ stock_count: 2 }).eq("name", "Omega 3");
+    assert.equal((await cron()).stock, 1, "yeniden azalan stok bildirilmedi");
+  }
+  await C.db.from("profiles").update({ notify_evening: false }).eq("id", C.id);
+  await service.from("notification_log").delete().eq("user_id", C.id).eq("kind", "evening");
+  assert.equal((await cron()).evening, 0, "kapalı akşam bildirimi gönderildi");
+});
 await service.auth.admin.deleteUser(C.id);
 await service.auth.admin.deleteUser(D.id);
 await service.auth.admin.deleteUser(B.id);
