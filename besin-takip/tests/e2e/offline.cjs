@@ -1,0 +1,73 @@
+// Service worker: uygulama kabuğu çevrimdışıyken açılır, önbellekteki veriler görünür.
+const { chromium } = require("playwright");
+const assert = require("node:assert/strict");
+const APP = process.env.APP_URL ?? "http://localhost:3000"; // service worker yalnızca güvenli kökende (localhost/HTTPS) çalışır
+(async () => {
+  const browser = await chromium.launch();
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: "tr-TR" });
+  const page = await ctx.newPage();
+  const email = `sw${Date.now()}@example.com`;
+  await page.goto(APP + "/register");
+  await page.getByLabel("Ad", { exact: true }).fill("Can");
+  await page.getByLabel("Soyad").fill("Demir");
+  await page.getByLabel("E-posta").fill(email);
+  await page.getByLabel("Şifre").fill("Test-parola-123");
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button", { name: "Kayıt ol" }).click();
+  await page.waitForURL("**/onboarding");
+  await page.getByLabel("Doğum tarihi").fill("1990-01-01");
+  await page.getByRole("button", { name: "Erkek" }).click();
+  await page.getByLabel("Boy (cm)").fill("180");
+  await page.getByLabel("Kilo (kg)").fill("80");
+  await page.getByRole("button", { name: "Devam" }).click();
+  await page.getByLabel("Hedef kilo (kg)").fill("75");
+  await page.getByRole("button", { name: "Devam" }).click();
+  await page.getByRole("button", { name: "Başla" }).click();
+  await page.getByRole("heading", { name: "Merhaba, Can" }).waitFor();
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 15000 });
+  await page.goto(APP + "/water");
+  await page.getByRole("button", { name: "330 ml", exact: true }).click();
+  await page.getByText("330 ml su eklendi").waitFor();
+  await page.waitForTimeout(1500);
+
+  await ctx.setOffline(true);
+  await page.reload();
+  await page.getByText("Su takibi").waitFor();
+  await page.getByText(/330 \/ 2\.650 ml/).waitFor();
+  console.log("  ✓ çevrimdışı yeniden yükleme: sayfa ve son veriler önbellekten açıldı");
+  await page.getByRole("button", { name: "200 ml", exact: true }).click();
+  await page.getByText(/530 \/ 2\.650 ml/).waitFor();
+  await page.goto(APP + "/add");
+  await page.getByText("Çevrimdışısınız. Yapay zekâ analizi için bağlantı gerekir").waitFor();
+  await page.getByRole("button", { name: /Elle gir/ }).click();
+  await page.getByLabel("Yiyecek adı").fill("Elma");
+  await page.getByLabel("Kalori (kcal)").fill("80");
+  await page.getByRole("button", { name: "Onayla ve ekle" }).click();
+  await page.waitForURL("**/diary**");
+  await page.getByText("Elma").waitFor();
+  await page.getByText("2 kayıt bağlantı gelince gönderilecek").waitFor();
+  console.log("  ✓ çevrimdışı elle öğün ve su kaydı; kuyrukta 2 kayıt");
+  await page.reload();
+  await page.getByText("Elma").waitFor();
+  console.log("  ✓ kuyruk sayfa yenilemesinden sonra da korunuyor");
+  await ctx.setOffline(false);
+  await page.getByText("bağlantı gelince gönderilecek").waitFor({ state: "detached", timeout: 15000 });
+  await page.reload();
+  await page.getByText("Elma").waitFor();
+  await page.goto(APP + "/water");
+  await page.getByText(/530 \/ 2\.650 ml/).waitFor();
+  assert.equal(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith("bt:outbox")).map((k) => JSON.parse(localStorage[k]).length).join()), "0");
+  console.log("  ✓ bağlantı gelince kuyruk sunucuya gönderildi");
+  // hesabı temizle
+  page.on("dialog", (d) => d.accept());
+  await page.goto(APP + "/profile");
+  await page.getByRole("button", { name: "Hesabımı sil", exact: true }).click();
+  await page.getByLabel("Onaylamak için SİL yazın").fill("SİL");
+  await page.getByRole("button", { name: "Hesabımı kalıcı olarak sil" }).click();
+  await page.waitForURL("**/login");
+  await browser.close();
+})().catch((e) => {
+  console.error("✗ " + e.message.split("\n").slice(0, 5).join("\n"));
+  process.exit(1);
+});
