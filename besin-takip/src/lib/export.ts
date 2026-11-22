@@ -78,7 +78,7 @@ export function entriesCsv(food: FoodEntry[], h: Record<string, string>, mealNam
   );
 }
 
-async function fontBase64(path: string): Promise<string> {
+export async function fontBase64(path: string): Promise<string> {
   const buf = new Uint8Array(await (await fetch(path)).arrayBuffer());
   let bin = "";
   for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));

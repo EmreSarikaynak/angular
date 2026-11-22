@@ -56,6 +56,6 @@ export async function disableNotifications(): Promise<void> {
 export async function showLocalNotification(title: string, body: string) {
   if (!notificationsSupported() || Notification.permission !== "granted") return;
   const reg = await navigator.serviceWorker.getRegistration();
-  if (reg) await reg.showNotification(title, { body, icon: "/icons/icon-192.png", tag: "bt-reminder" });
+  if (reg) await reg.showNotification(title, { body, icon: "/icons/icon-192.png", tag: "bkn-local" });
   else new Notification(title, { body, icon: "/icons/icon-192.png" });
 }

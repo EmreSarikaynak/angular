@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase, supabaseConfigured } from "@/lib/supabase/client";
 import { useApp } from "./app-provider";
 import { Button, Field, Input } from "./ui";
+import { Logo } from "./logo";
 
 type Mode = "login" | "register" | "reset";
 
@@ -90,9 +91,10 @@ export function AuthForm({ mode }: { mode: Mode }) {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center px-5 py-8">
       <div className="mb-8 text-center">
-        <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-primary text-3xl">🥗</div>
-        <p className="text-2xl font-bold tracking-tight">Besin Takip</p>
-        <p className="mt-1 text-sm text-muted">{t("Yapay zekâ destekli beslenme ve yaşam takibi")}</p>
+        <Logo size={64} className="mx-auto mb-3" />
+        <p className="text-2xl font-bold tracking-tight">BKN</p>
+        <p className="mt-1 text-sm font-medium text-primary">{t("Bugün kendin için ne yaptın?")}</p>
+        <p className="mt-1 text-xs text-muted">{t("Yapay zekâ destekli beslenme ve yaşam takibi")}</p>
       </div>
       <form onSubmit={submit} className="space-y-3 rounded-2xl border border-border bg-surface p-5" noValidate>
         <h1 className="text-lg font-semibold">{title}</h1>

@@ -1,12 +1,13 @@
 import { addDays, dateRange } from "./dates";
 import { summarizeDay, type DaySummary } from "./day";
-import type { Activity, BodyMeasurement, DailyLog, FoodEntry, Profile, WaterLog } from "./types";
+import type { Activity, BodyMeasurement, DailyLog, FoodEntry, HealthRing, Profile, WaterLog } from "./types";
 
 export interface RangeInput {
   food: FoodEntry[];
   water: WaterLog[];
   activities: Activity[];
   daily: DailyLog[];
+  rings?: HealthRing[];
 }
 
 export interface DayRow extends DaySummary {

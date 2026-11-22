@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Activity as ActivityIcon, Camera, Copy, Droplets, Flame, Moon, Plus, Trash2 } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { DateNav, useDateParam } from "@/components/date-nav";
+import { ActivityRings, RingLegend } from "@/components/activity-rings";
 import { ItemFields, SourceBadges } from "@/components/item-fields";
 import { Button, Card, Chip, Field, Input, PageHeader, Sheet, Skeleton } from "@/components/ui";
 import { useDay } from "@/lib/data/hooks";
@@ -46,10 +47,11 @@ function DiaryInner() {
   const [copyDate, setCopyDate] = useState(toDateKey());
   const [busy, setBusy] = useState(false);
 
-  const data = day.data ?? { food: [], water: [], activities: [], daily: [] };
+  const data = day.data ?? { food: [], water: [], activities: [], daily: [], rings: [] };
   const s = summarizeDay(date, data, profile);
   const nf = (n: number, d = 0) => numberFmt(lang, n, d);
   const daily = data.daily[0];
+  const ring = data.rings.find((r) => r.entry_date === date);
 
   async function saveEdit() {
     if (!editing || !editing.name.trim()) return;
@@ -199,6 +201,16 @@ function DiaryInner() {
               </Card>
             );
           })}
+
+          {ring && (
+            <Link href={`/rings?date=${date}`} className="flex items-center gap-4 rounded-2xl border border-border bg-surface p-4">
+              <ActivityRings ring={ring} size={92} label={t("Sağlık halkaları")} />
+              <div className="min-w-0 flex-1">
+                <p className="mb-1.5 text-sm font-semibold">{t("Sağlık halkaları")}</p>
+                <RingLegend ring={ring} labels={{ move: t("Hareket"), exercise: t("Egzersiz"), stand: t("Ayakta"), min: t("dk"), hours: t("saat") }} />
+              </div>
+            </Link>
+          )}
 
           <div className="grid gap-3 sm:grid-cols-3">
             <Link href={`/water?date=${date}`} className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3.5">

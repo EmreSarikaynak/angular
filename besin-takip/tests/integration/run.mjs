@@ -291,6 +291,84 @@ await test("hesabı sil: tüm veriler kalıcı olarak silinir", async () => {
   assert.ok(error);
 });
 
+
+console.log("BKN: takviyeler, halkalar, tarifler, hatırlatmalar");
+const C = await makeUser(`c${stamp}@example.com`);
+const D = await makeUser(`d${stamp}@example.com`);
+const { createECDH, randomBytes } = await import("node:crypto");
+const pushHits = async () => JSON.parse(await (await fetch("https://127.0.0.1:8789/__hits")).text());
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // yalnızca bu test betiğinin sahte push sunucusunu okuması için
+const cron = async () => (await fetch(`${APP}/api/cron/reminders`, { headers: { Authorization: `Bearer ${process.env.CRON_SECRET}` } })).json();
+const local = (d = new Date()) => {
+  const p = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(d).map((x) => [x.type, x.value]));
+  return { date: `${p.year}-${p.month}-${p.day}`, hour: Number(p.hour) % 24, time: `${String(Number(p.hour) % 24).padStart(2, "0")}:${p.minute}` };
+};
+let suppId;
+await test("takviye, takviye kaydı ve halkalar yalnızca sahibine açık", async () => {
+  const due = local(new Date(Date.now() - 5 * 60_000));
+  const { data, error } = await C.db.from("supplements").insert({ name: "D vitamini", dose: "1000 IU", times: [due.time] }).select().single();
+  assert.ifError(error);
+  suppId = data.id;
+  assert.ifError((await C.db.from("health_rings").insert({ entry_date: due.date, move_kcal: 400, move_goal: 500 })).error);
+  for (const t of ["supplements", "supplement_logs", "health_rings"]) assert.equal((await D.db.from(t).select("*")).data.length, 0, t);
+  assert.ok((await D.db.from("supplement_logs").insert({ supplement_id: suppId, entry_date: due.date, time_slot: due.time, user_id: C.id })).error);
+  assert.equal((await D.db.from("supplements").update({ name: "x" }).eq("id", suppId).select()).data.length, 0);
+  assert.ok((await C.db.from("supplements").insert({ name: "Saatsiz", times: [] })).error, "saatsiz takviye kabul edildi");
+  assert.ok((await C.db.from("health_rings").insert({ entry_date: due.date, move_kcal: 1 })).error, "aynı güne ikinci halka kaydı");
+  const nl = await C.db.from("notification_log").select("*").limit(1);
+  assert.ok(nl.error || nl.data.length === 0);
+  assert.ok((await C.db.from("notification_log").insert({ user_id: C.id, kind: "x", key: "y" })).error);
+});
+await test("halka ekran görüntüsü okunur; görsel yoksa 400", async () => {
+  const r = await call("/api/ai/rings", C, { image: { data: img.data + "R", mimeType: "image/jpeg" } });
+  assert.equal(r.status, 200);
+  assert.deepEqual([r.json.result.is_rings, r.json.result.move_kcal, r.json.result.exercise_goal, r.json.result.steps, r.json.result.distance_km], [true, 420, 30, 7350, 5.2]);
+  assert.equal((await call("/api/ai/rings", C, {})).status, 400);
+  assert.equal((await call("/api/ai/rings", null, { image: img })).status, 401);
+});
+await test("kişisel tarif: doğrulanmış JSON, geçersiz istek 400", async () => {
+  const r = await call("/api/ai/recipes", C, { focus: "high_protein", remaining_kcal: 600, remaining_protein_g: 45, lang: "tr" });
+  assert.equal(r.status, 200);
+  assert.equal(r.json.result.recipes[0].protein_g, 38);
+  assert.ok(r.json.result.recipes[0].ingredients.length >= 3);
+  assert.equal((await call("/api/ai/recipes", C, { focus: "keto", remaining_kcal: 1, remaining_protein_g: 1 })).status, 400);
+  assert.equal((await call("/api/ai/recipes", null, { focus: "low_cal", remaining_kcal: 1, remaining_protein_g: 1 })).status, 401);
+});
+await test("hatırlatmalar: takviye ve su bildirimi gönderilir, tekrar çağrıda yinelenmez", async () => {
+  await fetch("https://127.0.0.1:8789/__reset");
+  const now = local();
+  const keys = () => { const e = createECDH("prime256v1"); e.generateKeys(); return { p256dh: e.getPublicKey().toString("base64url"), auth: randomBytes(16).toString("base64url") }; };
+  await C.db.from("push_subscriptions").insert([{ endpoint: `https://127.0.0.1:8789/push/${stamp}`, ...keys() }, { endpoint: `https://127.0.0.1:8789/gone/${stamp}`, ...keys() }]);
+  await C.db.from("profiles").update({ water_target_ml: 2000, protein_target_g: 120, kcal_target: 2000, reminder_enabled: true, reminder_start_hour: now.hour, reminder_end_hour: (now.hour + 2) % 24, notify_protein: true, protein_check_hour: now.hour, notify_insights: false, notify_summary: false, supplement_nag_min: 30 }).eq("id", C.id);
+  await C.db.from("food_entries").insert(entry({ entry_date: now.date, protein_g: 5 }));
+  const first = await cron();
+  assert.equal(first.ok, true);
+  assert.equal(first.supplement, 1, JSON.stringify(first));
+  assert.equal(first.water, 1, JSON.stringify(first));
+  assert.equal(first.protein, now.hour >= 11 ? 1 : 0, JSON.stringify(first));
+  const hits = await pushHits();
+  assert.equal(hits.length, first.supplement + first.water + first.protein);
+  assert.ok(hits.every((h) => h.encoding === "aes128gcm" && h.hasVapid), "şifreli ve VAPID imzalı olmalı");
+  assert.equal((await C.db.from("push_subscriptions").select("id")).data.length, 1, "geçersiz (410) abonelik silinmeli");
+  const second = await cron();
+  assert.deepEqual([second.supplement, second.water, second.protein], [0, 0, 0], JSON.stringify(second));
+});
+await test("hatırlatmalar: alınan takviye ve kapatılan bildirim gönderilmez; D'ye hiçbir şey gitmez", async () => {
+  const { data: logs } = await service.from("notification_log").select("user_id, kind");
+  assert.ok(logs.length >= 1 && logs.every((l) => l.user_id === C.id));
+  await service.from("notification_log").delete().eq("user_id", C.id);
+  const now = local();
+  const { data: s } = await C.db.from("supplements").select("times").eq("id", suppId).single();
+  await C.db.from("supplement_logs").insert({ supplement_id: suppId, entry_date: now.date, time_slot: s.times[0] });
+  await C.db.from("profiles").update({ notify_protein: false }).eq("id", C.id);
+  const r = await cron();
+  assert.deepEqual([r.supplement, r.protein], [0, 0], JSON.stringify(r));
+  await C.db.from("supplement_logs").delete().eq("supplement_id", suppId);
+  await C.db.from("profiles").update({ notify_supplements: false }).eq("id", C.id);
+  assert.equal((await cron()).supplement, 0);
+});
+await service.auth.admin.deleteUser(C.id);
+await service.auth.admin.deleteUser(D.id);
 await service.auth.admin.deleteUser(B.id);
 await service.auth.admin.deleteUser(ADMIN.id);
 await service.from("app_settings").delete().neq("key", "");

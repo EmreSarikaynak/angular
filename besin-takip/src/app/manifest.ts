@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Besin Takip",
-    short_name: "Besin Takip",
-    description: "Yapay zekâ destekli beslenme, kalori, su, spor ve sağlık takibi.",
+    name: "BKN — Bugün kendin için ne yaptın?",
+    short_name: "BKN — Bugün kendin için ne yaptın?",
+    description: "Bugün kendin için ne yaptın? Beslenme, su, takviye, spor ve sağlık takibi.",
     start_url: "/",
     scope: "/",
     display: "standalone",
@@ -21,7 +21,7 @@ export default function manifest(): MetadataRoute.Manifest {
     shortcuts: [
       { name: "Fotoğrafla ekle", url: "/add?mode=photo" },
       { name: "Su ekle", url: "/water" },
-      { name: "Yazarak ekle", url: "/add?mode=text" },
+      { name: "Takviyelerim", url: "/supplements" },
     ],
   };
 }

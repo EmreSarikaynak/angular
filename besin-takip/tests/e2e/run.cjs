@@ -204,6 +204,90 @@ const ok = (name) => console.log(`  ✓ ${String(++step).padStart(2, "0")} ${nam
   await page.getByText("Kaydedildi.").waitFor();
   ok("uyku ve günlük durum kaydı");
 
+
+  // BKN-1. Takviyeler
+  await toastGone();
+  await page.goto(APP + "/supplements");
+  await page.getByText("Henüz takviye eklemediniz").waitFor();
+  await page.getByRole("button", { name: "Takviye ekle" }).click();
+  await page.getByRole("button", { name: "Kaydet", exact: true }).click();
+  await page.getByText("Takviye adını girin.").waitFor();
+  await page.getByLabel("Takviye adı").fill("D vitamini");
+  await page.getByLabel("Doz").fill("1000 IU");
+  await page.getByLabel("Saat 1").fill("00:05");
+  await page.getByRole("button", { name: "Saat ekle" }).click();
+  await page.getByLabel("Saat 2").fill("23:55");
+  await page.getByRole("button", { name: "Kaydet", exact: true }).click();
+  await page.getByText("Takviye kaydedildi.").waitFor();
+  await page.getByText("0 / 2").waitFor();
+  await page.getByText("saati geçti").waitFor();
+  await page.getByRole("checkbox", { name: "D vitamini 00:05" }).click();
+  await page.getByText("Harika! D vitamini tamamlandı.").waitFor();
+  await page.getByText("1 / 2").waitFor();
+  await shot("21-takviyeler");
+  ok("takviye: ad/doz/saat ekleme, doğrulama, alındı işaretleme");
+
+  // BKN-2. Sağlık halkaları: ekran görüntüsünden okuma
+  await toastGone();
+  await page.goto(APP + "/rings");
+  await page.getByText("Bu gün için halka kaydı yok").waitFor();
+  await page.locator("#bkn-rings-gallery").setInputFiles(jpg);
+  await page.getByText("Değerler okundu. Kontrol edip kaydedin.").waitFor();
+  assert.equal(await page.getByLabel("Hareket (kcal)").inputValue(), "420");
+  assert.equal(await page.getByLabel("Egzersiz hedefi").inputValue(), "30");
+  assert.equal(await page.getByLabel("Adım", { exact: true }).inputValue(), "7350");
+  await page.getByLabel("Hareket (kcal)").fill("450");
+  await page.getByRole("img", { name: "Sağlık halkaları" }).first().waitFor();
+  await page.getByRole("button", { name: "Günlüğe kaydet" }).click();
+  await page.getByText("Halkalar günlüğe kaydedildi.").waitFor();
+  await shot("22-saglik-halkalari");
+  await page.goto(APP + "/diary");
+  await page.getByText("450/500").waitFor();
+  ok("sağlık halkaları: ekran görüntüsü okundu, düzenlendi, halka grafiği günlüğe yazıldı");
+
+  // BKN-3. Öneriler ve tarifler
+  await page.goto(APP + "/coach");
+  await page.getByText("Bugünkü protein").waitFor();
+  await page.getByText("Son 3 günün eğilimi").waitFor();
+  await page.getByRole("button", { name: "Lifli" }).click();
+  await page.getByText("Ton balıklı nohut salatası").waitFor();
+  // Profilde gluten alerjisi var: glutenli tarifler önerilmemeli.
+  assert.equal(await page.getByText("Izgara tavuklu bulgur tabağı").count(), 0);
+  await page.getByRole("button", { name: "Tarifi gör" }).first().click();
+  await page.getByRole("button", { name: "Gizle" }).waitFor();
+  await page.getByRole("button", { name: "Yapay zekâdan bana özel tarif iste" }).click();
+  await page.getByText("Yoğurtlu tavuklu dürüm").waitFor();
+  await page.getByText("Size özel").waitFor();
+  await shot("23-oneriler");
+  await page.getByRole("button", { name: "Günlüğe ekle" }).first().click();
+  await page.getByText("Günlüğe eklendi.").waitFor();
+  ok("öneriler: protein durumu, eğilim, etiketli tarifler, kişisel tarif ve günlüğe ekleme");
+
+  // BKN-4. Performans özeti + PDF / PNG
+  await toastGone();
+  await page.goto(APP + "/performance");
+  await page.getByRole("columnheader", { name: "3 haftalık" }).waitFor();
+  await page.getByRole("rowheader", { name: "Takviye düzeni" }).waitFor();
+  await shot("24-performans");
+  for (const [label, magic] of [["PDF", "%PDF"], ["PNG", "\x89PNG"]]) {
+    const [dl] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: label, exact: true }).click()]);
+    const file = path.join(SHOTS, `_performans.${label.toLowerCase()}`);
+    await dl.saveAs(file);
+    const buf = fs.readFileSync(file);
+    assert.ok(buf.toString("latin1", 0, 4) === magic && buf.length > 15000, `${label} beklenmedik`);
+  }
+  ok("performans: 5 dönem bir arada, PDF ve PNG indirme");
+
+  // BKN-5. Bildirim ayarları
+  await page.goto(APP + "/profile");
+  await page.getByRole("heading", { name: "Bildirimler" }).waitFor();
+  await page.getByLabel("Alınmayan takviye için tekrar sıklığı").selectOption("15");
+  await page.getByRole("switch", { name: "Eğilim uyarıları" }).click();
+  await page.waitForTimeout(600);
+  const { data: np } = await service.from("profiles").select("supplement_nag_min, notify_insights, notify_supplements").eq("first_name", "Ayşe").order("created_at", { ascending: false }).limit(1).single();
+  assert.deepEqual(np, { supplement_nag_min: 15, notify_insights: false, notify_supplements: true });
+  ok("bildirim ayarları: tekrar sıklığı ve tür bazında aç/kapat kaydediliyor");
+
   // 14. Ana panel toplamları (veritabanıyla karşılaştır)
   await toastGone();
   await page.goto(APP + "/");
@@ -219,7 +303,12 @@ const ok = (name) => console.log(`  ✓ ${String(++step).padStart(2, "0")} ${nam
   await page.getByText(re(Math.abs(remaining))).first().waitFor();
   await page.getByText(remaining < 0 ? "kcal fazla" : "kcal kaldı").waitFor();
   await page.getByText(/^67,2/).first().waitFor();
+  await page.getByRole("img", { name: /BKN skoru: \d+ / }).waitFor();
+  await page.getByText("Yakılan (saatinizden)").waitFor();
+  await page.getByText(/^450/).first().waitFor();
+  await page.getByRole("button", { name: "D vitamini alındı olarak işaretle" }).waitFor();
   await shot("11-ana-sayfa");
+  await page.screenshot({ path: path.join(SHOTS, "11b-ana-sayfa-tam.png"), fullPage: true });
   ok(`ana panel: alınan ${total} kcal ve kalan ${remaining} kcal veritabanıyla tutarlı`);
 
   // 15. İstatistikler + dışa aktarma

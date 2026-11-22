@@ -12,6 +12,7 @@ import { goalProgress } from "@/lib/nutrition/calc";
 import { numberFmt } from "@/lib/i18n";
 import { ACTIVITY_LABELS, MEAL_LABELS, label } from "@/lib/i18n/labels";
 import { setPendingPhoto } from "@/lib/image";
+import { BknToday } from "@/components/bkn-today";
 import { MEALS } from "@/lib/types";
 
 export default function DashboardPage() {
@@ -21,7 +22,7 @@ export default function DashboardPage() {
   const day = useDay(today);
   const body = useBody();
 
-  const data = day.data ?? { food: [], water: [], activities: [], daily: [] };
+  const data = day.data ?? { food: [], water: [], activities: [], daily: [], rings: [] };
   const s = summarizeDay(today, data, profile);
   const nf = (n: number, d = 0) => numberFmt(lang, n, d);
   const waterTarget = profile?.water_target_ml ?? 2000;
@@ -88,7 +89,7 @@ export default function DashboardPage() {
             <div className="grid min-w-0 flex-1 gap-2.5">
               <Stat label={t("Günlük hedef")} value={nf(s.target_kcal)} unit="kcal" />
               <Stat label={t("Alınan")} value={nf(s.intake.kcal)} unit="kcal" />
-              <Stat label={t("Sporla yakılan (tahmini)")} value={nf(s.burned_kcal)} unit="kcal" color="var(--burn)" />
+              <Stat label={s.burned_source === "rings" ? t("Yakılan (saatinizden)") : t("Sporla yakılan (tahmini)")} value={nf(s.burned_kcal)} unit="kcal" color="var(--burn)" />
             </div>
           </div>
           <div className="mt-4 flex gap-3">
@@ -123,6 +124,8 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      <BknToday date={today} summary={s} data={data} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Card>

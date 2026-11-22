@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchAll, fetchRange, subscribe } from "./store";
-import type { Activity, BodyMeasurement, DailyLog, Favorite, FoodEntry, WaterLog } from "../types";
+import type { Activity, BodyMeasurement, DailyLog, Favorite, FoodEntry, HealthRing, Supplement, SupplementLog, WaterLog } from "../types";
 
 /** Asenkron veri yükler; veri katmanında değişiklik olduğunda sessizce yeniler. */
 export function useData<T>(loader: () => Promise<T>, deps: unknown[]) {
@@ -44,14 +44,16 @@ export interface RangeData {
   water: WaterLog[];
   activities: Activity[];
   daily: DailyLog[];
+  rings: HealthRing[];
 }
 
 export async function loadRange(from: string, to: string): Promise<RangeData> {
-  const [food, water, activities, daily] = await Promise.all([
+  const [food, water, activities, daily, rings] = await Promise.all([
     fetchRange<FoodEntry & { [k: string]: unknown }>("food_entries", from, to, "consumed_at"),
     fetchRange<WaterLog & { [k: string]: unknown }>("water_logs", from, to, "logged_at"),
     fetchRange<Activity & { [k: string]: unknown }>("activities", from, to, "started_at"),
     fetchRange<DailyLog & { [k: string]: unknown }>("daily_logs", from, to),
+    fetchRange<HealthRing & { [k: string]: unknown }>("health_rings", from, to),
   ]);
   // Postgres numeric alanları metin olarak gelebilir; sayıya çevir.
   return {
@@ -59,6 +61,7 @@ export async function loadRange(from: string, to: string): Promise<RangeData> {
     water: water.map((w) => ({ ...w, amount_ml: Number(w.amount_ml) })),
     activities: activities.map((a) => ({ ...a, duration_min: Number(a.duration_min), kcal_burned: Number(a.kcal_burned), distance_km: a.distance_km == null ? null : Number(a.distance_km) })),
     daily: daily.map((d) => ({ ...d, sleep_hours: d.sleep_hours == null ? null : Number(d.sleep_hours) })),
+    rings: rings.map((r) => ({ ...r, distance_km: r.distance_km == null ? null : Number(r.distance_km) })),
   };
 }
 
@@ -97,4 +100,12 @@ export function useBody() {
 
 export function useFavorites() {
   return useData(() => fetchAll<Favorite & { [k: string]: unknown }>("favorites", "use_count", false) as Promise<Favorite[]>, []);
+}
+
+export function useSupplements() {
+  return useData(() => fetchAll<Supplement & { [k: string]: unknown }>("supplements", "created_at", true) as Promise<Supplement[]>, []);
+}
+
+export function useSupplementLogs(from: string, to: string) {
+  return useData(() => fetchRange<SupplementLog & { [k: string]: unknown }>("supplement_logs", from, to) as Promise<SupplementLog[]>, [from, to]);
 }

@@ -27,7 +27,7 @@ function ActivityInner() {
   const [steps, setSteps] = useState<number | null>(null);
   const [stepsTouched, setStepsTouched] = useState(false);
 
-  const data = day.data ?? { food: [], water: [], activities: [], daily: [] };
+  const data = day.data ?? { food: [], water: [], activities: [], daily: [], rings: [] };
   const daily = data.daily[0];
   const s = summarizeDay(date, data, profile);
   const weight = profile?.weight_kg ?? 70;

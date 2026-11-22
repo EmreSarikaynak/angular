@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Download, LogOut, Shield, Trash2 } from "lucide-react";
+import { Bell, Download, LogOut, Shield, Trash2 } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { Bar, Button, Card, Chip, Field, Input, NumberInput, PageHeader, Segmented, Select, Sheet, Switch } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -13,6 +13,7 @@ import { download } from "@/lib/export";
 import { ACTIVITY_LEVEL_LABELS, ALLERGY_OPTIONS, DIET_OPTIONS, GOAL_LABELS, label } from "@/lib/i18n/labels";
 import { calculateTargets } from "@/lib/nutrition/calc";
 import { supabase } from "@/lib/supabase/client";
+import { disableNotifications, enableNotifications } from "@/lib/push";
 import type { ActivityLevel, Goal, Lang, Profile, Sex, Theme } from "@/lib/types";
 
 export default function ProfilePage() {
@@ -90,7 +91,7 @@ export default function ProfilePage() {
   async function exportData() {
     setBusy("export");
     try {
-      download(`besin-takip-verilerim_${toDateKey()}.json`, await exportAllData());
+      download(`bkn-verilerim_${toDateKey()}.json`, await exportAllData());
     } catch {
       toast(t("Veriler indirilemedi. Bağlantınızı kontrol edin."), "error");
     } finally {
@@ -130,6 +131,35 @@ export default function ProfilePage() {
       setBusy(null);
     }
   }
+
+  /** Bildirim tercihini kaydeder; bir bildirim türü açılırken tarayıcı izni de istenir. */
+  async function notify(patch: Partial<Profile>, turningOn = false) {
+    try {
+      if (turningOn) {
+        const result = await enableNotifications();
+        if (result === "unsupported") return toast(t("Bu cihaz veya tarayıcı bildirimleri desteklemiyor. iPhone'da önce uygulamayı ana ekrana ekleyin."), "error");
+        if (result === "denied") return toast(t("Bildirim izni verilmedi. Tarayıcı ayarlarından izin verebilirsiniz."), "error");
+        patch = { ...patch, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || profile?.timezone };
+      }
+      await saveProfile(patch);
+      const next = { ...profile, ...patch } as Profile;
+      if (!next.reminder_enabled && !next.notify_supplements && !next.notify_protein && !next.notify_insights && !next.notify_summary) await disableNotifications();
+    } catch {
+      toast(t("Kaydedilemedi."), "error");
+    }
+  }
+  const hours = Array.from({ length: 24 }, (_, h) => (
+    <option key={h} value={h}>{`${String(h).padStart(2, "0")}:00`}</option>
+  ));
+  const toggleRow = (title: string, sub: string, checked: boolean, onChange: (v: boolean) => void) => (
+    <div className="flex items-center justify-between gap-3">
+      <div>
+        <p className="text-sm font-medium">{title}</p>
+        <p className="text-xs text-muted">{sub}</p>
+      </div>
+      <Switch checked={checked} onChange={onChange} label={title} />
+    </div>
+  );
 
   const targetField = (name: string, key: "kcal_target" | "protein_target_g" | "carbs_target_g" | "fat_target_g" | "water_target_ml", auto?: number) => (
     <Field label={name} hint={auto != null && auto !== form[key] ? t("Önerilen: {n}", { n: auto }) : undefined}>
@@ -278,6 +308,74 @@ export default function ProfilePage() {
           </Button>
         </div>
       )}
+
+      <Card className="space-y-4">
+        <h2 className="font-semibold">{t("Bildirimler")}</h2>
+        <p className="text-xs text-muted">{t("BKN; su, takviye ve hedeflerinizi motive edici mesajlarla hatırlatır. Sıklığı buradan ayarlayabilirsiniz.")}</p>
+        {toggleRow(t("Su hatırlatmaları"), t("Hedefe ulaşana kadar belirlediğiniz aralıkla."), profile.reminder_enabled, (v) => notify({ reminder_enabled: v }, v))}
+        {profile.reminder_enabled && (
+          <div className="grid grid-cols-3 gap-2">
+            <Field label={t("Aralık")}>
+              <Select value={profile.reminder_interval_min} onChange={(e) => notify({ reminder_interval_min: Number(e.target.value) })}>
+                {[30, 60, 90, 120, 180, 240].map((m) => (
+                  <option key={m} value={m}>
+                    {m < 60 ? `${m} ${t("dk")}` : `${m / 60} ${t("saat")}`}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label={t("Başlangıç")}>
+              <Select value={profile.reminder_start_hour} onChange={(e) => notify({ reminder_start_hour: Number(e.target.value) })}>
+                {hours}
+              </Select>
+            </Field>
+            <Field label={t("Bitiş")}>
+              <Select value={profile.reminder_end_hour} onChange={(e) => notify({ reminder_end_hour: Number(e.target.value) })}>
+                {hours}
+              </Select>
+            </Field>
+          </div>
+        )}
+        {toggleRow(t("Takviye hatırlatmaları"), t("Saati geldiğinde; almadıysanız seçtiğiniz aralıkla yeniden."), profile.notify_supplements, (v) => notify({ notify_supplements: v }, v))}
+        {profile.notify_supplements && (
+          <Field label={t("Alınmayan takviye için tekrar sıklığı")}>
+            <Select value={profile.supplement_nag_min} onChange={(e) => notify({ supplement_nag_min: Number(e.target.value) })}>
+              <option value={0}>{t("Tekrar etme (yalnızca bir kez)")}</option>
+              <option value={15}>{t("15 dakikada bir")}</option>
+              <option value={30}>{t("30 dakikada bir")}</option>
+              <option value={60}>{t("Saatte bir")}</option>
+              <option value={120}>{t("2 saatte bir")}</option>
+            </Select>
+          </Field>
+        )}
+        {toggleRow(t("Protein hatırlatması"), t("Gün içinde protein hedefinin gerisindeyseniz tarif önerisiyle."), profile.notify_protein, (v) => notify({ notify_protein: v }, v))}
+        {profile.notify_protein && (
+          <Field label={t("Kontrol saati")}>
+            <Select value={profile.protein_check_hour} onChange={(e) => notify({ protein_check_hour: Number(e.target.value) })}>
+              {hours}
+            </Select>
+          </Field>
+        )}
+        {toggleRow(t("Eğilim uyarıları"), t("Son 2–3 günde bir değer hedefin belirgin üstünde ya da altındaysa öneriyle; aynı konuda en çok 3 günde bir."), profile.notify_insights, (v) => notify({ notify_insights: v }, v))}
+        {toggleRow(t("Performans özeti"), t("Her pazartesi haftalık, her ayın ilk günü aylık özet hazır olduğunda."), profile.notify_summary, (v) => notify({ notify_summary: v }, v))}
+        <Button
+          variant="secondary"
+          className="w-full"
+          onClick={async () => {
+            const result = await enableNotifications();
+            if (result === "unsupported") toast(t("Bu cihaz veya tarayıcı bildirimleri desteklemiyor. iPhone'da önce uygulamayı ana ekrana ekleyin."), "error");
+            else if (result === "denied") toast(t("Bildirim izni verilmedi. Tarayıcı ayarlarından izin verebilirsiniz."), "error");
+            else {
+              await saveProfile({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || profile.timezone }).catch(() => {});
+              toast(result === "push" ? t("Bu cihazda bildirimler açık.") : t("Hatırlatmalar açıldı (uygulama açıkken gösterilir)."));
+            }
+          }}
+        >
+          <Bell size={16} />
+          {t("Bu cihazda bildirimleri aç")}
+        </Button>
+        <p className="text-xs text-muted">{config?.push_available ? t("Bildirimler bu cihazda tarayıcı izni gerektirir. iPhone'da önce uygulamayı ana ekrana ekleyin.") : t("Sunucu bildirimleri yapılandırılmamış; hatırlatmalar yalnızca uygulama açıkken gösterilir.")}</p>
+      </Card>
 
       <Card className="space-y-4">
         <h2 className="font-semibold">{t("Uygulama")}</h2>

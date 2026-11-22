@@ -22,7 +22,7 @@ export async function GET(req: Request, ctx: RouteContext<"/api/barcode/[code]">
   try {
     const res = await fetch(
       `https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=product_name,product_name_tr,brands,serving_quantity,serving_size,quantity,nutriments`,
-      { headers: { "User-Agent": "BesinTakip/1.0 (nutrition tracker)" }, signal: AbortSignal.timeout(10_000) },
+      { headers: { "User-Agent": "BKN/1.0 (nutrition tracker)" }, signal: AbortSignal.timeout(10_000) },
     );
     if (res.status === 404) return json({ error: "not_found" }, 404);
     if (!res.ok) throw new Error(`OFF HTTP ${res.status}`);

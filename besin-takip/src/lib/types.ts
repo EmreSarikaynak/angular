@@ -41,6 +41,12 @@ export interface Profile {
   reminder_interval_min: number;
   reminder_start_hour: number;
   reminder_end_hour: number;
+  notify_supplements: boolean;
+  supplement_nag_min: number;
+  notify_protein: boolean;
+  protein_check_hour: number;
+  notify_insights: boolean;
+  notify_summary: boolean;
   onboarded_at: string | null;
   created_at?: string;
   updated_at?: string;
@@ -190,3 +196,38 @@ export const NUTRIENT_KEYS = [
   "salt_g",
   "alcohol_g",
 ] as const satisfies readonly (keyof Nutrients)[];
+
+export interface Supplement {
+  id: string;
+  user_id?: string;
+  name: string;
+  dose: string | null;
+  times: string[];
+  active: boolean;
+  note: string | null;
+  created_at?: string;
+}
+
+export interface SupplementLog {
+  id: string;
+  user_id?: string;
+  supplement_id: string;
+  entry_date: string;
+  time_slot: string;
+  taken_at: string;
+}
+
+export interface HealthRing {
+  id: string;
+  user_id?: string;
+  entry_date: string;
+  move_kcal: number | null;
+  move_goal: number | null;
+  exercise_min: number | null;
+  exercise_goal: number | null;
+  stand_hours: number | null;
+  stand_goal: number | null;
+  steps: number | null;
+  distance_km: number | null;
+  source: "manual" | "screenshot";
+}

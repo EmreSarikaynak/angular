@@ -27,7 +27,7 @@ export default function StatsPage() {
   const step = { day: 1, week: 7, month: 30, year: 365 }[period];
 
   const model = useMemo(() => {
-    const data = range.data ?? { food: [], water: [], activities: [], daily: [] };
+    const data = range.data ?? { food: [], water: [], activities: [], daily: [], rings: [] };
     const rows = dayRows(from, to, data, profile);
     const logged = rows.filter((r) => r.logged);
     const months = period === "year" ? monthlyBuckets(rows) : null;
@@ -115,12 +115,12 @@ export default function StatsPage() {
         sugar: t("Şeker (g)"), fiber: t("Lif (g)"), salt: t("Tuz (g)"), alcohol: t("Alkol (g)"), water: t("Su (ml)"), burned: t("Yakılan (kcal)"), steps: t("Adım"), sleep: t("Uyku (saat)"),
         sleepQuality: t("Uyku kalitesi"), mood: t("Ruh hali"), energy: t("Enerji"), stress: t("Stres"), weight: t("Kilo (kg)"), source: t("Kaynak"), estimated: t("Tahmini"), yes: t("Evet"), no: t("Hayır"),
       };
-      if (kind === "csv") download(`besin-takip-ozet_${stamp}.csv`, summaryCsv(model.rows, body.data ?? [], h));
-      else if (kind === "entries") download(`besin-takip-kayitlar_${stamp}.csv`, entriesCsv(model.data.food, h, (m) => label(MEAL_LABELS, m, lang)));
+      if (kind === "csv") download(`bkn-ozet_${stamp}.csv`, summaryCsv(model.rows, body.data ?? [], h));
+      else if (kind === "entries") download(`bkn-kayitlar_${stamp}.csv`, entriesCsv(model.data.food, h, (m) => label(MEAL_LABELS, m, lang)));
       else {
         const pctText = (v: number | null) => (v == null ? "–" : `%${v}`);
         const blob = await reportPdf({
-          title: t("Besin Takip Raporu"),
+          title: t("BKN Raporu"),
           subtitle: `${[profile?.first_name, profile?.last_name].filter(Boolean).join(" ")} · ${periodTitle}`,
           generated: t("Oluşturulma: {d}", { d: new Date().toLocaleString(lang === "en" ? "en-GB" : "tr-TR") }),
           summary: [
@@ -148,7 +148,7 @@ export default function StatsPage() {
           daily: model.rows.filter((r) => r.logged || r.water_ml > 0 || r.burned_kcal > 0).map((r) => [r.date, Math.round(r.intake.kcal), Math.round(r.intake.protein_g), Math.round(r.intake.carbs_g), Math.round(r.intake.fat_g), r.water_ml, r.burned_kcal, r.steps || ""]),
           disclaimer: t("Bu rapordaki değerler kullanıcı kayıtlarına ve tahminlere dayanır; tıbbi değerlendirme yerine geçmez."),
         });
-        download(`besin-takip-rapor_${stamp}.pdf`, blob);
+        download(`bkn-rapor_${stamp}.pdf`, blob);
       }
     } catch {
       toast(t("Dışa aktarılamadı. Lütfen tekrar deneyin."), "error");

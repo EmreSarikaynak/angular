@@ -8,6 +8,10 @@ const item = (name, ref_key, grams, kcal, p, c, f, confidence) => ({ name, ref_k
 
 function analysis(text, hasImage) {
   if (/FAIL_SCHEMA/.test(text)) return "this is not json";
+  if (/activity values from this screenshot/.test(text))
+    return JSON.stringify({ is_rings: true, move_kcal: 420, move_goal: 500, exercise_min: 24, exercise_goal: 30, stand_hours: 9, stand_goal: 12, steps: 7350, distance_km: 5.2, date: null });
+  if (/Goal: recipes that are/.test(text))
+    return JSON.stringify({ recipes: [{ name: "Yoğurtlu tavuklu dürüm", kcal: 410, protein_g: 38, carbs_g: 36, fat_g: 11, minutes: 15, ingredients: ["120 g ızgara tavuk", "1 lavaş", "3 yemek kaşığı yoğurt", "Marul, domates"], steps: "Tavuğu dilimleyin, lavaşa yoğurt sürüp malzemeleri sarın.", why: "Kalan protein açığının büyük kısmını kapatır." }] });
   if (/nutrition facts label/i.test(text))
     return JSON.stringify({ is_food: true, dish_name: "Bisküvi", items: [item("Kakaolu bisküvi", null, 30, 142, 2, 20, 6, 0.95)], overall_confidence: 0.95, needs_clarification: false });
   if (hasImage) {

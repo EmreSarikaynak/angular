@@ -2,7 +2,7 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Activity, ArrowLeft, Barcode, Camera, Droplets, GlassWater, Image as ImageIcon, Moon, PenLine, Ruler, ScanText, Star, Trash2, Type } from "lucide-react";
+import { Activity, ArrowLeft, Barcode, Camera, CircleDot, Droplets, GlassWater, Image as ImageIcon, Lightbulb, MessageCircle, Moon, PenLine, Pill, Ruler, ScanText, Star, Trash2, Trophy, Type } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { BarcodeScanner } from "@/components/barcode-scanner";
 import { Review } from "@/components/review";
@@ -384,13 +384,18 @@ function AddInner() {
         {tile(<Star size={20} />, t("Favoriler"), t("Sık yedikleriniz"), () => setMode("favorites"))}
         {tile(<PenLine size={20} />, t("Elle gir"), t("Değerleri kendiniz yazın"), () => setDraft({ source: "manual", name: "", items: [blankItem()], analysis: null, image: null, version: 1 }))}
       </div>
-      <p className="pt-2 text-xs font-semibold uppercase tracking-wide text-muted">{t("Diğer kayıtlar")}</p>
+      <p className="pt-2 text-xs font-semibold uppercase tracking-wide text-muted">{t("Diğer kayıtlar ve bölümler")}</p>
       <div className="grid grid-cols-2 gap-3">
         {link(`/water?date=${date}`, <Droplets size={18} />, t("Su"))}
         {link(`/drinks?date=${date}`, <GlassWater size={18} />, t("İçecek"))}
         {link(`/activity?date=${date}`, <Activity size={18} />, t("Aktivite"))}
         {link("/body", <Ruler size={18} />, t("Kilo ve ölçüm"))}
         {link(`/wellbeing?date=${date}`, <Moon size={18} />, t("Uyku ve durum"))}
+        {link(`/supplements?date=${date}`, <Pill size={18} />, t("Takviyeler"))}
+        {link(`/rings?date=${date}`, <CircleDot size={18} />, t("Sağlık halkaları"))}
+        {link("/coach", <Lightbulb size={18} />, t("Öneriler"))}
+        {link("/performance", <Trophy size={18} />, t("Performans"))}
+        {link("/assistant", <MessageCircle size={18} />, t("Asistan"))}
       </div>
     </div>
   );

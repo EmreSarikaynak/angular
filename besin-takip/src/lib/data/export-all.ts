@@ -1,7 +1,7 @@
 "use client";
 import { supabase } from "../supabase/client";
 
-const TABLES = ["food_entries", "water_logs", "activities", "daily_logs", "body_measurements", "favorites", "chat_messages"] as const;
+const TABLES = ["food_entries", "water_logs", "activities", "daily_logs", "body_measurements", "favorites", "chat_messages", "supplements", "supplement_logs", "health_rings"] as const;
 
 /** KVKK/GDPR veri taşınabilirliği: kullanıcının tüm verilerini tek bir JSON dosyasında toplar. */
 export async function exportAllData(): Promise<Blob> {

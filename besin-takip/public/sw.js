@@ -1,13 +1,13 @@
-/* Besin Takip service worker
+/* BKN service worker
  * - Sayfa gezinmeleri: önce ağ, başarısızsa önbellekteki son sürüm (çevrimdışı açılış).
  * - Statik dosyalar (/_next/static, yazı tipleri, simgeler): önbellekten, arka planda tazelenir.
  * - /api/* ve Supabase istekleri ASLA önbelleklenmez (kişisel veri service worker'da tutulmaz).
  * - Web Push bildirimleri.
  */
-const VERSION = "bt-v1";
+const VERSION = "bkn-v2";
 const PAGES = `${VERSION}-pages`;
 const ASSETS = `${VERSION}-assets`;
-const SHELL = ["/", "/diary", "/add", "/water", "/drinks", "/activity", "/body", "/wellbeing", "/stats", "/profile", "/assistant", "/login"];
+const SHELL = ["/", "/diary", "/add", "/water", "/drinks", "/activity", "/body", "/wellbeing", "/stats", "/profile", "/assistant", "/supplements", "/coach", "/rings", "/performance", "/login"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -71,7 +71,7 @@ self.addEventListener("fetch", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-  let data = { title: "Besin Takip", body: "", url: "/" };
+  let data = { title: "BKN", body: "", url: "/", tag: "bkn" };
   try {
     data = { ...data, ...event.data.json() };
   } catch (e) {}
@@ -80,7 +80,7 @@ self.addEventListener("push", (event) => {
       body: data.body,
       icon: "/icons/icon-192.png",
       badge: "/icons/badge-72.png",
-      tag: "bt-reminder",
+      tag: data.tag || "bkn",
       renotify: true,
       data: { url: data.url },
     }),

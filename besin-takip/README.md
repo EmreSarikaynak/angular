@@ -1,6 +1,6 @@
-# Besin Takip
+# BKN — Bugün Kendin için Ne yaptın?
 
-Yapay zekâ destekli beslenme, kalori, su, spor ve sağlık takip uygulaması. Mobil öncelikli, çevrimdışı çalışabilen bir PWA.
+Yapay zekâ destekli beslenme, su, takviye, spor ve sağlık takip uygulaması. Mobil öncelikli, çevrimdışı çalışabilen bir PWA. (Kod `besin-takip/` klasöründedir.)
 
 - **Frontend / backend:** Next.js 16 (App Router, TypeScript), Tailwind CSS 4
 - **Veritabanı, kimlik doğrulama, depolama:** Supabase (PostgreSQL + RLS, Auth, Storage)
@@ -21,6 +21,12 @@ Yapay zekâ destekli beslenme, kalori, su, spor ve sağlık takip uygulaması. M
 | Ölçümler | Kilo, bel, kalça, göğüs, yağ oranı, VKİ; grafikler; hedef ilerlemesi |
 | Uyku ve durum | Uyku süresi/kalitesi, ruh hali, enerji, stres, not |
 | İstatistikler | Günlük/haftalık/aylık/yıllık; kalori, makro dağılımı, su, kilo, aktivite, alkol, en sık yiyecekler, hedeflere uyum, kişisel ilişkiler; PDF ve CSV |
+| Takviyeler | Kullanıcının girdiği ad, doz ve saatler; günlük kontrol listesi; saati gelince ve alınmadıysa motive edici tekrar bildirimleri (uygulama doz önermez) |
+| Öneriler | Bugünkü protein açığı, son 3 günün eğilimi (fazla/eksik olan değer), buna uygun tarifler, alerji/tercih filtresi, Gemini ile kişisel tarif, tek dokunuşla günlüğe ekleme |
+| Sağlık halkaları | Akıllı saat/telefon ekran görüntüsünden (ya da elle) hareket, egzersiz, ayakta, adım; üç halkalı grafik günlüğe ve ana sayfaya yazılır |
+| Performans özeti | Haftalık, 3 haftalık, aylık, 3 aylık ve yıllık değerler tek tabloda; BKN skoru; PDF ve PNG indirme |
+| Bildirimler | Su, takviye, protein açığı, eğilim uyarısı, haftalık/aylık özet; tür bazında aç/kapat ve sıklık ayarı (Profil › Bildirimler) |
+| BKN skoru | "Bugün kendin için ne yaptın?" kartı: öğün, protein, su, hareket, takviye ve uyku üzerinden 0–100 |
 | Asistan | Kullanıcının kendi kayıtlarına dayalı sohbet; teşhis/tedavi önermez |
 | Yönetim paneli | Kullanıcılar, Gemini ayarları ve bağlantı testi, kullanım/maliyet, limitler, hata kayıtları, duyuru |
 | Gizlilik | RLS, özel fotoğraf deposu, veri indirme, fotoğraf ve hesap silme |
@@ -34,7 +40,7 @@ Yapay zekâ destekli beslenme, kalori, su, spor ve sağlık takip uygulaması. M
 1. [supabase.com](https://supabase.com) üzerinde bir proje oluşturun (KVKK/GDPR için AB bölgesi önerilir).
 2. Şemayı uygulayın — iki yoldan biri:
    - **CLI:** `npx supabase link --project-ref <ref>` ardından `npx supabase db push`
-   - **Elle:** `supabase/migrations/20261122000000_init.sql` dosyasının içeriğini SQL Editor'de çalıştırın.
+   - **Elle:** `supabase/migrations/` klasöründeki dosyaları **tarih sırasıyla** SQL Editor'de çalıştırın (önce `20261122000000_init.sql`, sonra `20261123000000_bkn_features.sql`).
    Migration; tabloları, RLS politikalarını, yeni kullanıcı tetikleyicisini ve özel `meal-photos` depolama kovasını oluşturur.
 3. **Authentication › URL Configuration:** Site URL olarak yayın adresinizi girin; Redirect URLs listesine `https://alan-adiniz/reset` ekleyin.
 4. **Authentication › Providers › Email:** en az şifre uzunluğunu 8 yapın. E-posta doğrulamasını açık tutmanız önerilir (yönetici ataması doğrulanmış e-posta ister).
@@ -80,7 +86,7 @@ Yönetim paneli: `/admin`. Panel kişisel sağlık kayıtlarını göstermez.
 1. Depoyu Vercel'e aktarın; **Root Directory** olarak `besin-takip` seçin.
 2. Yukarıdaki ortam değişkenlerini Production ortamına ekleyin.
 3. Dağıtın, ardından Supabase'de Site URL'yi yayın adresiyle güncelleyin.
-4. **Su hatırlatmaları:** `vercel.json` içindeki cron 30 dakikada bir `/api/cron/reminders` ucunu çağırır (Vercel, `CRON_SECRET` değerini `Authorization: Bearer` başlığıyla kendisi gönderir). Vercel Hobby planı cron'u günde bir kezle sınırlar; sık hatırlatma için Pro plan ya da harici bir zamanlayıcı (ör. Supabase `pg_cron` + `pg_net`, cron-job.org) kullanın. Push yapılandırılmazsa hatırlatmalar yalnızca uygulama açıkken yerel bildirim olarak gösterilir.
+4. **Hatırlatmalar (su, takviye, protein, eğilim, özet):** `vercel.json` içindeki cron 10 dakikada bir `/api/cron/reminders` ucunu çağırır; takviye saatlerinin dakikliği bu sıklığa bağlıdır (Vercel, `CRON_SECRET` değerini `Authorization: Bearer` başlığıyla kendisi gönderir). Vercel Hobby planı cron'u günde bir kezle sınırlar; sık hatırlatma için Pro plan ya da harici bir zamanlayıcı (ör. Supabase `pg_cron` + `pg_net`, cron-job.org) kullanın. Push yapılandırılmazsa su ve takviye hatırlatmaları yalnızca uygulama açıkken yerel bildirim olarak gösterilir; protein, eğilim ve özet bildirimleri gönderilmez.
 
 Başka bir Node.js barındırma ortamında `npm run build && npm start` yeterlidir; cron ucunu kendi zamanlayıcınızla çağırın.
 
@@ -98,10 +104,13 @@ src/
       barcode/[code]   Open Food Facts araması
       account/delete   fotoğrafları veya hesabı kalıcı silme
       admin/[action]   yönetim API'si
-      cron/reminders   su hatırlatmaları (Web Push)
+      ai/rings         sağlık halkası ekran görüntüsü okuma
+      ai/recipes       kişisel tarif önerileri
+      cron/reminders   tüm hatırlatmalar (Web Push)
       config           kota, duyuru, YZ durumu
   lib/
     nutrition/         hedef hesabı, MET tablosu, içecek/alkol hesabı, referans besin tablosu
+    bkn/               tarif kitaplığı, eğilim analizi, BKN skoru, performans özeti, bildirim mesajları ve motoru
     ai/                Gemini istemcisi, istemler, şemalar, son işleme, limit/önbellek/kullanım kaydı
     data/              çevrimdışı öncelikli veri katmanı (kuyruk + önbellek) ve kancalar
     i18n/              Türkçe kaynak metinler, İngilizce sözlük
@@ -112,6 +121,8 @@ public/sw.js           service worker
 - **İstemci öncelikli:** Ekranlar Supabase'e doğrudan (RLS korumalı) bağlanır; YZ ve yönetici işlemleri `Authorization: Bearer <jwt>` bekleyen HTTP API'leridir. Aynı sözleşme native (React Native / Capacitor) bir istemciden değişmeden kullanılabilir.
 - **Çevrimdışı:** Yazma işlemleri ağ yoksa cihazdaki kuyruğa alınır; kimlikler istemcide üretildiği için yeniden gönderim güvenlidir. Bağlantı gelince sırayla gönderilir.
 - **Besin doğruluğu:** Gemini her kalemi tanır ve gramajı tahmin eder. Kalem referans tablosundaki (USDA FoodData Central ve TürKomp tipik değerlerinden derlenmiş 154 yiyecek) bir kayıtla eşleşirse besin değerleri modelin tahmininden değil tablodan hesaplanır. Eşleşmeyenler "Yapay zekâ tahmini" olarak işaretlenir; kalori makrolarla %25'ten fazla çelişirse düzeltilir ve güven düşürülür.
+- **Bildirimler:** Her bildirim `notification_log` tablosundaki benzersiz anahtarla yalnızca bir kez gönderilir. Alınmayan takviye, kullanıcının seçtiği aralıkla en fazla 4 kez ve saatinden sonraki 3 saat içinde hatırlatılır. Eğilim uyarısı aynı konuda en erken 3 günde bir gider; hiç kayıt girmemiş kullanıcıya "eksik" uyarısı gönderilmez.
+- **Sağlık halkaları:** Halka kaydı olan günde yakılan kalori için cihazın değeri kullanılır; aktivite/adım tahminiyle toplanmaz.
 - **Çifte sayım:** Aktivitelerde yalnızca dinlenme harcamasının üzerindeki net enerji `(MET − 1) × kg × saat` hesaplanır; yürüyüş/koşu kayıtlarının adımları adım sayısından düşülür; yakılan kalori varsayılan olarak günlük bütçeye eklenmez (Profil › Hedefler).
 - **Limitler ve önbellek:** Kullanıcı başına günlük ve dakikalık limit `ai_usage` tablosundan sayılır (sunucusuz ortamda da tutarlı). Aynı istek `ai_cache` tablosundan döner ve kotadan düşmez.
 
@@ -137,6 +148,8 @@ npx supabase start && npx supabase db reset
 # .env.local: yerel Supabase anahtarları, GEMINI_API_KEY=test-key-local-mock,
 #             GEMINI_API_BASE_URL=http://127.0.0.1:8787, ADMIN_EMAILS=admin@example.com, CRON_SECRET=…
 npm run mock:gemini &
+# Bildirim testi için: kendinden imzalı sertifikayla sahte push sunucusu
+#   node tests/integration/mock-push.mjs key.pem cert.pem &   ve uygulamayı NODE_EXTRA_CA_CERTS=cert.pem ile başlatın
 npm run build && npm start &
 npm run test:integration   # RLS, depolama, API yetkileri, limitler, önbellek, hesap silme
 npm run test:e2e           # tarayıcıda mobil + masaüstü akış, çevrimdışı kuyruk, service worker

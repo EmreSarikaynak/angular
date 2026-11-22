@@ -2,10 +2,11 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Activity, BarChart3, BookOpen, CloudOff, Droplets, GlassWater, Home, MessageCircle, Moon, Plus, RefreshCw, Ruler, Shield, User } from "lucide-react";
+import { Activity, BarChart3, BookOpen, CircleDot, CloudOff, Droplets, GlassWater, Home, Lightbulb, MessageCircle, Moon, Pill, Plus, RefreshCw, Ruler, Shield, Trophy, User } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { supabaseConfigured } from "@/lib/supabase/client";
 import { cx } from "@/components/ui";
+import { Logo } from "@/components/logo";
 import { ReminderTicker } from "@/components/reminder-ticker";
 
 function Splash() {
@@ -55,10 +56,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { href: "/add", icon: Plus, label: t("Kayıt ekle") },
     { href: "/water", icon: Droplets, label: t("Su") },
     { href: "/drinks", icon: GlassWater, label: t("İçecekler") },
+    { href: "/supplements", icon: Pill, label: t("Takviyeler") },
     { href: "/activity", icon: Activity, label: t("Aktivite") },
+    { href: "/rings", icon: CircleDot, label: t("Sağlık halkaları") },
     { href: "/body", icon: Ruler, label: t("Ölçümler") },
     { href: "/wellbeing", icon: Moon, label: t("Uyku ve durum") },
+    { href: "/coach", icon: Lightbulb, label: t("Öneriler") },
     { href: "/stats", icon: BarChart3, label: t("İstatistikler") },
+    { href: "/performance", icon: Trophy, label: t("Performans") },
     { href: "/assistant", icon: MessageCircle, label: t("Asistan") },
     { href: "/profile", icon: User, label: t("Profil") },
     ...(config?.is_admin ? [{ href: "/admin", icon: Shield, label: t("Yönetim") }] : []),
@@ -79,17 +84,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="lg:flex">
       <ReminderTicker />
-      <aside className="no-print sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-1 border-r border-border bg-surface p-4 lg:flex">
+      <aside className="no-print sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-0.5 overflow-y-auto border-r border-border bg-surface p-4 lg:flex">
         <div className="mb-4 flex items-center gap-2 px-2">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-lg text-white">🥗</span>
-          <span className="text-lg font-bold tracking-tight">Besin Takip</span>
+          <Logo size={38} />
+          <span className="leading-tight">
+            <span className="block text-lg font-bold tracking-tight">BKN</span>
+            <span className="block text-[10px] text-muted">{t("Bugün kendin için ne yaptın?")}</span>
+          </span>
         </div>
         {side.map((s) => (
           <Link
             key={s.href}
             href={s.href}
             aria-current={isActive(s.href) ? "page" : undefined}
-            className={cx("flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium", isActive(s.href) ? "bg-primary-soft text-primary" : "text-muted hover:bg-surface-2 hover:text-text")}
+            className={cx("flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium", isActive(s.href) ? "bg-primary-soft text-primary" : "text-muted hover:bg-surface-2 hover:text-text")}
           >
             <s.icon size={19} />
             {s.label}
