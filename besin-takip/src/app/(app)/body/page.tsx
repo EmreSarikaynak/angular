@@ -4,7 +4,8 @@ import { Ruler, Trash2 } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { LineSeries } from "@/components/charts";
 import { Button, Card, Chip, Empty, Field, Input, NumberInput, PageHeader, Skeleton, Stat } from "@/components/ui";
-import { useBody } from "@/lib/data/hooks";
+import { useBody, useCycleLogs } from "@/lib/data/hooks";
+import { cycleInfo } from "@/lib/bkn/cycle";
 import { deleteRow, upsertRow, uuid } from "@/lib/data/store";
 import { formatShort, toDateKey } from "@/lib/dates";
 import { numberFmt } from "@/lib/i18n";
@@ -16,6 +17,7 @@ type Metric = "weight_kg" | "waist_cm" | "hip_cm" | "chest_cm" | "body_fat_pct" 
 export default function BodyPage() {
   const { t, lang, profile, saveProfile, toast } = useApp();
   const body = useBody();
+  const cycle = cycleInfo(useCycleLogs().data ?? [], toDateKey());
   const [date, setDate] = useState(toDateKey());
   const [weight, setWeight] = useState<number | null>(null);
   const [waist, setWaist] = useState<number | null>(null);
@@ -108,6 +110,11 @@ export default function BodyPage() {
         )}
       </Card>
 
+      {cycle && (cycle.premenstrual || cycle.ongoing) && (
+        <p className="mb-4 rounded-xl bg-protein/10 px-3 py-2.5 text-sm">
+          {t("Döngünüzün {n}. günündesiniz. Bu dönemde su tutulumu tartıda 1–2 kg'a kadar geçici artış gösterebilir; eğilimi haftalık ortalamayla değerlendirin.", { n: cycle.day })}
+        </p>
+      )}
       <div className="grid gap-4 lg:grid-cols-2">
         <Card className="space-y-3">
           <p className="text-sm font-semibold">{t("Yeni ölçüm")}</p>

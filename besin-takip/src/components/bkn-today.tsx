@@ -1,6 +1,7 @@
 "use client";
+import { useState } from "react";
 import Link from "next/link";
-import { Check, ChevronRight, Flame, Lightbulb } from "lucide-react";
+import { Check, ChevronRight, Flame, Lightbulb, MoonStar } from "lucide-react";
 import { useApp } from "./app-provider";
 import { ActivityRings, RingLegend } from "./activity-rings";
 import { Card, Ring, cx } from "./ui";
@@ -10,6 +11,7 @@ import { useRange, useSupplementLogs, useSupplements, type RangeData } from "@/l
 import { addDays } from "@/lib/dates";
 import { dayRows } from "@/lib/stats";
 import { computeStreaks } from "@/lib/bkn/streaks";
+import { nextRamadanEvent, waterPlan } from "@/lib/bkn/ramadan";
 import { takeSupplement } from "@/lib/data/actions";
 import type { DaySummary } from "@/lib/day";
 
@@ -26,6 +28,8 @@ export function BknToday({ date, summary, data }: { date: string; summary: DaySu
   const { items, score } = bknDay(summary, profile, { mealsLogged: meals, daily, slots, exerciseMin: Math.max(exerciseMin, ring?.exercise_min ?? 0) });
   const gap = proteinGap(summary.intake.protein_g, profile?.protein_target_g, new Date().getHours());
   const pending = slots.filter((s) => !s.log);
+  const [nowMin] = useState(() => new Date().getHours() * 60 + new Date().getMinutes());
+  const ramadan = profile?.ramadan_mode ? { next: nextRamadanEvent(nowMin, profile.iftar_time, profile.sahur_time), plan: waterPlan(profile.water_target_ml ?? 2000, profile.iftar_time, profile.sahur_time) } : null;
   // Seri: son 60 günün kayıtlarından (60 günü aşan seriler "60+" olarak gösterilir).
   const history = useRange(addDays(date, -59), date);
   const streak = history.data ? computeStreaks(dayRows(addDays(date, -59), date, history.data, profile), profile, { activityCount: 0, supplementPerfectDays: 0, totalEntries: 0 }).current : 0;
@@ -88,6 +92,23 @@ export function BknToday({ date, summary, data }: { date: string; summary: DaySu
       </Card>
 
       <div className="space-y-4">
+        {ramadan && (
+          <Card className="flex items-center gap-3">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
+              <MoonStar size={20} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold">
+                {ramadan.next.kind === "iftar" ? t("İftara {h} sa {m} dk", { h: Math.floor(ramadan.next.minutes / 60), m: ramadan.next.minutes % 60 }) : t("Sahurun bitmesine {h} sa {m} dk", { h: Math.floor(ramadan.next.minutes / 60), m: ramadan.next.minutes % 60 })}
+              </p>
+              <p className="text-xs text-muted">
+                {ramadan.next.kind === "sahur"
+                  ? t("Su hedefinize {n} ml kaldı; saatte yaklaşık {p} ml için.", { n: Math.max(0, (profile?.water_target_ml ?? 2000) - summary.water_ml), p: ramadan.plan.perHourMl })
+                  : t("Hatırlatmalar iftardan sonra başlayacak. Kolay gelsin.")}
+              </p>
+            </div>
+          </Card>
+        )}
         {slots.length > 0 && (
           <Card>
             <Link href="/supplements" className="flex items-center justify-between">

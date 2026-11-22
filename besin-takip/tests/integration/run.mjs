@@ -452,6 +452,94 @@ await test("akşam kapanışı ve azalan stok bildirimi bir kez gönderilir", as
   await service.from("notification_log").delete().eq("user_id", C.id).eq("kind", "evening");
   assert.equal((await cron()).evening, 0, "kapalı akşam bildirimi gönderildi");
 });
+
+console.log("BKN: tarifler, mektup, meydan okuma, döngü, mikro besin, Ramazan, menü");
+await test("tarif, döngü ve mektup yalnızca sahibine açık; meydan okuma tabloları tarayıcıya kapalı", async () => {
+  const now = local();
+  assert.ifError((await C.db.from("user_recipes").insert({ name: "Kuru fasulye", servings: 4, ingredients: [{ name: "Fasulye", kcal: 1200 }] })).error);
+  assert.ifError((await C.db.from("cycle_logs").insert({ entry_date: now.date })).error);
+  assert.ok((await C.db.from("cycle_logs").insert({ entry_date: "2026-01-01", end_date: "2026-03-01" })).error, "60 günlük adet kabul edildi");
+  for (const t of ["user_recipes", "cycle_logs", "weekly_letters"]) assert.equal((await D.db.from(t).select("*")).data.length, 0, t);
+  for (const t of ["challenges", "challenge_members"]) {
+    const r = await C.db.from(t).select("*").limit(1);
+    assert.ok(r.error || r.data.length === 0, `${t} okunabildi`);
+  }
+  assert.ok((await C.db.from("challenge_members").insert({ challenge_id: C.id, user_id: C.id, display_name: "x", progress: 30 })).error);
+});
+await test("analiz mikro besinleri döndürür; bozuk değerler ayıklanır ve kayda yazılır", async () => {
+  const r = await call("/api/ai/analyze", C, { kind: "text", text: `1 haşlanmış yumurta mikro ${stamp}`, lang: "tr" });
+  assert.equal(r.status, 200);
+  assert.deepEqual(r.json.result.items[0].micros, { iron_mg: 1.2, calcium_mg: 50, vitamin_b12_mcg: 1.1, vitamin_d_mcg: 2.2 });
+  const now = local();
+  const ins = await C.db.from("food_entries").insert(entry({ entry_date: now.date, micros: r.json.result.items[0].micros })).select("micros").single();
+  assert.equal(ins.data.micros.iron_mg, 1.2);
+});
+await test("haftalık mektup: haftada bir üretilir, tekrar istekte kayıtlı olan döner", async () => {
+  const now = local();
+  assert.equal((await call("/api/ai/weekly-letter", D, { today: now.date, lang: "tr" })).json.error, "no_data");
+  assert.equal((await call("/api/ai/weekly-letter", null, { today: now.date })).status, 401);
+  const first = await call("/api/ai/weekly-letter", C, { today: now.date, lang: "tr" });
+  assert.equal(first.status, 200, JSON.stringify(first.json));
+  assert.match(first.json.letter.content, /Merhaba Cem/);
+  const before = await mockCalls();
+  const second = await call("/api/ai/weekly-letter", C, { today: now.date, lang: "tr" });
+  assert.equal(second.json.existing, true);
+  assert.equal(second.json.letter.id, first.json.letter.id);
+  assert.equal(await mockCalls(), before, "ikinci istekte Gemini çağrıldı");
+});
+await test("menü rehberi: yemekler uygunluk ve alerjen uyarısıyla", async () => {
+  const r = await call("/api/ai/menu", C, { image: { data: img.data + "M", mimeType: "image/jpeg" }, remaining_kcal: 600, remaining_protein_g: 40, lang: "tr" });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(r.json.result.dishes.length, 3);
+  assert.deepEqual(r.json.result.dishes.map((d) => d.fit), ["ok", "good", "avoid"]);
+  assert.equal(r.json.result.dishes[2].allergen_warning, true);
+  assert.equal((await call("/api/ai/menu", C, { remaining_kcal: 1 })).status, 400);
+  assert.equal((await call("/api/ai/menu", null, {})).status, 400);
+});
+let chCode, chId;
+await test("meydan okuma: oluştur, kodla katıl, yalnızca ad ve gün sayısı paylaşılır", async () => {
+  await C.db.from("profiles").update({ ramadan_mode: false }).eq("id", C.id);
+  assert.equal((await call("/api/challenges", null)).status, 401);
+  assert.equal((await call("/api/challenges", C, { action: "create", title: "x", metric: "sleep", days: 7, display_name: "C" })).status, 400);
+  const made = await call("/api/challenges", C, { action: "create", title: "7 gün kayıt", metric: "logging", days: 7, display_name: "Cem" });
+  assert.equal(made.status, 200, JSON.stringify(made.json));
+  chCode = made.json.challenges[0].join_code;
+  chId = made.json.challenges[0].id;
+  assert.match(chCode, /^[A-Z2-9]{8}$/);
+  assert.deepEqual(made.json.challenges[0].members, [{ name: "Cem", progress: 1, me: true }]);
+  assert.equal((await call("/api/challenges", D, { action: "join", code: "ZZZZ2222", display_name: "Deniz" })).status, 404);
+  const joined = await call("/api/challenges", D, { action: "join", code: chCode.toLowerCase(), display_name: "Deniz" });
+  assert.equal(joined.status, 200, JSON.stringify(joined.json));
+  const view = joined.json.challenges[0];
+  assert.deepEqual(view.members, [{ name: "Cem", progress: 1, me: false }, { name: "Deniz", progress: 0, me: true }]);
+  assert.equal(view.is_owner, false);
+  const text = JSON.stringify(joined.json);
+  for (const secret of [C.id, C.email, "GizliSoyad", "Paylaşılan çorba", "kcal", "protein_g"]) assert.ok(!text.includes(secret), `${secret} sızdı`);
+});
+await test("meydan okuma: ilerleme sunucuda kendi kayıtlarından hesaplanır, üye sahte ilerleme yazamaz, ayrılma", async () => {
+  await service.from("challenge_members").update({ progress: 7 }).eq("challenge_id", chId).eq("user_id", D.id);
+  const list = await call("/api/challenges", D);
+  assert.equal(list.json.challenges[0].members.find((m) => m.me).progress, 0, "ilerleme yeniden hesaplanmadı");
+  const left = await call("/api/challenges", D, { action: "leave", id: chId });
+  assert.equal(left.json.challenges.length, 0);
+  assert.equal((await call("/api/challenges", C)).json.challenges[0].members.length, 1);
+  await call("/api/challenges", C, { action: "leave", id: chId });
+  assert.equal((await service.from("challenges").select("id").eq("id", chId)).data.length, 0, "üyesiz meydan okuma silinmedi");
+});
+await test("Ramazan modu: su hatırlatması yalnızca iftar–sahur arasında", async () => {
+  await fetch("https://127.0.0.1:8789/__reset");
+  await service.from("notification_log").delete().eq("user_id", C.id);
+  const now = local();
+  const hh = (h) => `${String((h + 24) % 24).padStart(2, "0")}:00`;
+  await service.from("water_logs").delete().eq("user_id", C.id);
+  const base = { reminder_enabled: true, notify_protein: false, notify_supplements: false, notify_evening: false, notify_insights: false, notify_summary: false, ramadan_mode: true, last_reminder_at: null };
+  // Şu an oruç saatleri içinde (yeme penceresi 2 saat sonra başlıyor): bildirim yok.
+  await service.from("profiles").update({ ...base, iftar_time: hh(now.hour + 2), sahur_time: hh(now.hour + 8) }).eq("id", C.id);
+  assert.equal((await cron()).water, 0, "oruç saatinde su bildirimi gitti");
+  // Şu an yeme penceresinde: bildirim gider.
+  await service.from("profiles").update({ ...base, iftar_time: hh(now.hour - 1), sahur_time: hh(now.hour + 6) }).eq("id", C.id);
+  assert.equal((await cron()).water, 1, "yeme penceresinde su bildirimi gitmedi");
+});
 await service.auth.admin.deleteUser(C.id);
 await service.auth.admin.deleteUser(D.id);
 await service.auth.admin.deleteUser(B.id);

@@ -27,6 +27,7 @@ export default function PrivacyPage() {
         t("Fotoğraf ve metin analizinde yalnızca gönderdiğiniz fotoğraf ya da metin Google Gemini API'sine iletilir; kimlik bilgileriniz iletilmez."),
         t("Asistan sorularında ad, yaş, hedefler ve günlük özetler gibi yanıt için gerekli en az veri iletilir. Soyad, e-posta, doğum tarihi, fotoğraflar ve günlük notlarınız iletilmez."),
         t("Yapay zekâ anahtarı yalnızca sunucuda tutulur; tarayıcıya gönderilmez."),
+        t("Sesle girişte ses kaydı tarayıcınızın konuşma tanıma servisinde işlenir; bize yalnızca ortaya çıkan metin ulaşır. Döngü kayıtlarınız yapay zekâya hiçbir zaman gönderilmez."),
       ],
     ],
     [

@@ -1,4 +1,5 @@
 "use client";
+import { mealLabel } from "@/lib/bkn/ramadan";
 import { useState } from "react";
 import { CalendarDays, Check, Copy, Plus, ShoppingCart, Sparkles } from "lucide-react";
 import { useApp } from "@/components/app-provider";
@@ -8,7 +9,6 @@ import { useMealPlans } from "@/lib/data/hooks";
 import { upsertRow, uuid } from "@/lib/data/store";
 import { addDays, formatDate, timestampFor, toDateKey } from "@/lib/dates";
 import { errorText } from "@/lib/errors";
-import { MEAL_LABELS, label } from "@/lib/i18n/labels";
 import type { MealPlanData, PlanMeal } from "@/lib/types";
 
 export default function PlanPage() {
@@ -136,7 +136,7 @@ export default function PlanPage() {
                   {dayData.meals.map((m, i) => (
                     <li key={i} className="flex items-center gap-3 px-4 py-3">
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-primary">{label(MEAL_LABELS, m.slot, lang)}</p>
+                        <p className="text-xs font-semibold text-primary">{mealLabel(m.slot, lang, profile?.ramadan_mode)}</p>
                         <p className="text-sm">{m.name}</p>
                         <p className="text-xs text-muted">
                           {m.kcal} kcal · P {m.protein_g} · K {m.carbs_g} · Y {m.fat_g} g

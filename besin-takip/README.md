@@ -34,6 +34,15 @@ Yapay zekâ destekli beslenme, su, takviye, spor ve sağlık takip uygulaması. 
 | Kafein | İçecek türüne göre mg hesabı, günlük 400 mg sınırı, 16:00 sonrası uyarısı |
 | Aralıklı oruç | Hedef süre (12–20 saat), geçmiş saatten başlatma, sayaç, geçmiş ve ortalama |
 | Diyetisyen paylaşımı | Açık rızayla oluşturulan süreli, salt okunur rapor bağlantısı; bölüm seçimi; görüntülenme sayısı; tek dokunuşla iptal |
+| Sesle ekleme | Tarayıcının konuşma tanımasıyla söylenen yemek metne çevrilir ve analiz edilir (Chrome, Edge, Safari) |
+| Tariflerim | Ev yemeğinin malzemeleri bir kez girilir; toplam ve porsiyon başı değer hesaplanır, porsiyon sayısıyla günlüğe eklenir |
+| Öğünü tekrarla | Günlükte boş öğünde, önceki günlerdeki son kaydı tek dokunuşla ekleme |
+| Haftalık mektup | Son 7 günün kayıtlarından Gemini ile kişisel kısa değerlendirme; haftada bir, saklanır |
+| Meydan okumalar | Katılım koduyla arkadaş grubu; kayıt, su, protein ya da adım hedefi; yalnızca takma ad ve başarılan gün sayısı paylaşılır |
+| Döngü takibi | Adet dönemi kaydı, döngü günü ve evresi, sonraki tahmin; ölçüm sayfasında su tutulumu notu |
+| Vitamin ve mineraller | Demir, kalsiyum, magnezyum, potasyum, C, B12, D; analizle birlikte tahmin edilir, İstatistikler'de referans değere göre gösterilir |
+| Ramazan modu | Sahur/İftar öğün adları, iftar–sahur geri sayımı, hatırlatmaların yalnızca yeme penceresinde gönderilmesi |
+| Dışarıda yemek | Menü fotoğrafından yemekler, tahmini değerler, kalan hedefe göre öneri ve alerjen uyarısı |
 | Asistan | Kullanıcının kendi kayıtlarına dayalı sohbet; teşhis/tedavi önermez |
 | Yönetim paneli | Kullanıcılar, Gemini ayarları ve bağlantı testi, kullanım/maliyet, limitler, hata kayıtları, duyuru |
 | Gizlilik | RLS, özel fotoğraf deposu, veri indirme, fotoğraf ve hesap silme |
@@ -47,7 +56,7 @@ Yapay zekâ destekli beslenme, su, takviye, spor ve sağlık takip uygulaması. 
 1. [supabase.com](https://supabase.com) üzerinde bir proje oluşturun (KVKK/GDPR için AB bölgesi önerilir).
 2. Şemayı uygulayın — iki yoldan biri:
    - **CLI:** `npx supabase link --project-ref <ref>` ardından `npx supabase db push`
-   - **Elle:** `supabase/migrations/` klasöründeki dosyaları **tarih sırasıyla** SQL Editor'de çalıştırın (`20261122000000_init.sql`, `20261123000000_bkn_features.sql`, `20261124000000_bkn_extras.sql`).
+   - **Elle:** `supabase/migrations/` klasöründeki dosyaları **tarih sırasıyla** SQL Editor'de çalıştırın (`20261122000000_init.sql`, `20261123000000_bkn_features.sql`, `20261124000000_bkn_extras.sql`, `20261125000000_bkn_more.sql`).
    Migration; tabloları, RLS politikalarını, yeni kullanıcı tetikleyicisini ve özel `meal-photos` depolama kovasını oluşturur.
 3. **Authentication › URL Configuration:** Site URL olarak yayın adresinizi girin; Redirect URLs listesine `https://alan-adiniz/reset` ekleyin.
 4. **Authentication › Providers › Email:** en az şifre uzunluğunu 8 yapın. E-posta doğrulamasını açık tutmanız önerilir (yönetici ataması doğrulanmış e-posta ister).
@@ -114,6 +123,9 @@ src/
       ai/rings         sağlık halkası ekran görüntüsü okuma
       ai/recipes       kişisel tarif önerileri
       ai/meal-plan     haftalık öğün planı ve alışveriş listesi
+      ai/weekly-letter haftalık mektup
+      ai/menu          restoran menüsü rehberi
+      challenges       meydan okumalar (oluştur, kodla katıl, ayrıl; ilerleme sunucuda hesaplanır)
       share            paylaşım bağlantısı oluşturma; share/[token] salt okunur rapor verisi (oturumsuz)
       cron/reminders   tüm hatırlatmalar (Web Push)
       config           kota, duyuru, YZ durumu
@@ -142,6 +154,8 @@ public/sw.js           service worker
 - Asistana yalnızca ad, yaş, hedefler ve günlük özetler gönderilir; soyad, e-posta, doğum tarihi, fotoğraflar ve notlar gönderilmez.
 - Profil › Verilerim: JSON olarak indirme, fotoğrafları silme, hesabı kalıcı silme (`ON DELETE CASCADE`).
 - Paylaşım bağlantısındaki 256 bitlik belirtecin yalnızca SHA-256 özeti saklanır; bağlantı bir kez gösterilir, süresi dolunca ya da iptal edilince 404 döner. Soyad, e-posta, doğum tarihi, fotoğraflar, notlar ve sohbetler hiçbir zaman paylaşılmaz; öğün ayrıntıları, vücut ölçümleri ve uyku/ruh hali yalnızca kullanıcı seçerse eklenir.
+- Meydan okuma tablolarına tarayıcıdan erişim yoktur; üyeler birbirinin yalnızca takma adını ve başardığı gün sayısını görür, ilerleme her üyenin kendi kayıtlarından sunucuda hesaplanır.
+- Döngü kayıtları yapay zekâya, paylaşım raporuna ve meydan okumalara gönderilmez. Sesle girişte ses tarayıcının kendi tanıma servisine gider; uygulama sunucusuna yalnızca metin ulaşır.
 - `/privacy` sayfası bir KVKK/GDPR aydınlatma metni **taslağıdır**; yayına almadan önce veri sorumlusu bilgilerinizi ekleyip hukuki incelemeden geçirin. Gemini API'nin veri işleme koşulları (ücretli katman, bölge) ve Supabase ile veri işleme sözleşmesi sizin sorumluluğunuzdadır.
 
 ## Testler

@@ -1,3 +1,5 @@
+import type { Micros } from "./nutrition/micros";
+
 export type Sex = "male" | "female";
 export type ActivityLevel = "sedentary" | "light" | "moderate" | "active" | "very_active";
 export type Goal = "lose" | "maintain" | "gain";
@@ -50,6 +52,9 @@ export interface Profile {
   notify_evening: boolean;
   evening_hour: number;
   fasting_target_hours: number;
+  ramadan_mode: boolean;
+  iftar_time: string;
+  sahur_time: string;
   onboarded_at: string | null;
   created_at?: string;
   updated_at?: string;
@@ -87,6 +92,7 @@ export interface FoodEntry extends Nutrients {
   volume_ml: number | null;
   abv: number | null;
   caffeine_mg?: number;
+  micros?: Micros | null;
   note: string | null;
   created_at?: string;
 }
@@ -149,6 +155,8 @@ export interface FoodItem extends Nutrients {
   confidence: number | null;
   is_estimated: boolean;
   data_source: DataSource;
+  /** Vitamin ve mineraller (yapay zekâ tahmini; yoksa bilinmiyor). */
+  micros?: Micros | null;
 }
 
 export interface Favorite {
@@ -283,5 +291,31 @@ export interface ShareLink {
   revoked_at: string | null;
   last_viewed_at: string | null;
   view_count: number;
+  created_at: string;
+}
+
+export interface UserRecipe {
+  id: string;
+  user_id?: string;
+  name: string;
+  servings: number;
+  ingredients: FoodItem[];
+  note: string | null;
+  use_count: number;
+  created_at?: string;
+}
+
+export interface CycleLog {
+  id: string;
+  user_id?: string;
+  entry_date: string;
+  end_date: string | null;
+  note: string | null;
+}
+
+export interface WeeklyLetter {
+  id: string;
+  entry_date: string;
+  content: string;
   created_at: string;
 }

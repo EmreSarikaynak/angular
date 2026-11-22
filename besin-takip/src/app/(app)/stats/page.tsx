@@ -10,6 +10,7 @@ import { download, entriesCsv, reportPdf, summaryCsv } from "@/lib/export";
 import { numberFmt } from "@/lib/i18n";
 import { ACTIVITY_LABELS, MEAL_LABELS, label } from "@/lib/i18n/labels";
 import { standardDrinks } from "@/lib/nutrition/drinks";
+import { MICRO_DEFS, microTarget, sumMicros } from "@/lib/nutrition/micros";
 import { activityStats, adherence, avg, dayRows, monthlyBuckets, periodRange, relations, topFoods, type Relation } from "@/lib/stats";
 import { MEALS } from "@/lib/types";
 
@@ -78,6 +79,13 @@ export default function StatsPage() {
       alcoholDays: rows.filter((r) => r.intake.alcohol_g > 0).length,
       top: topFoods(data.food.filter((f) => f.meal !== "drink")),
       adh: adherence(rows, profile),
+      micros: (() => {
+        const foods = data.food.filter((f) => f.meal !== "drink");
+        const withData = foods.filter((f) => f.micros && Object.keys(f.micros).length > 0);
+        const days = new Set(withData.map((f) => f.entry_date)).size;
+        const total = sumMicros(withData.map((f) => f.micros));
+        return { coverage: foods.length ? Math.round((withData.length / foods.length) * 100) : 0, days, avg: MICRO_DEFS.map((d) => ({ def: d, value: days ? total[d.key] / days : 0 })) };
+      })(),
       rel: relations(rows, body.data ?? []),
     };
   }, [range.data, body.data, from, to, period, profile, lang, t]);
@@ -327,6 +335,35 @@ export default function StatsPage() {
                     </li>
                   ))}
                 </ol>
+              )}
+            </Card>
+
+            <Card>
+              <h2 className="mb-1 font-semibold">{t("Vitamin ve mineraller")}</h2>
+              <p className="mb-3 text-xs text-muted">{t("Günlük ortalama, yetişkinler için genel referans değerlere göre. Yapay zekâ tahminidir.")}</p>
+              {model.micros.days === 0 ? (
+                <p className="text-sm text-muted">{t("Bu dönemde vitamin ve mineral verisi yok. Fotoğrafla ya da yazarak eklenen kayıtlarda otomatik hesaplanır.")}</p>
+              ) : (
+                <>
+                  <div className="space-y-2.5">
+                    {model.micros.avg.map(({ def, value }) => {
+                      const target = microTarget(def, profile?.sex);
+                      const pct = Math.round((value / target) * 100);
+                      return (
+                        <div key={def.key}>
+                          <div className="mb-1 flex justify-between text-sm">
+                            <span>{lang === "en" ? def.en : def.tr}</span>
+                            <span className="text-muted">
+                              <b className={pct < 60 ? "text-warn" : "text-text"}>{nf(value, value < 10 ? 1 : 0)}</b> / {nf(target, target < 10 ? 1 : 0)} {def.unit} · %{pct}
+                            </span>
+                          </div>
+                          <Bar value={value} max={target} color={pct < 60 ? "var(--warn)" : "var(--primary)"} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="mt-3 text-xs text-muted">{t("Yiyecek kayıtlarınızın %{n} kadarında mikro besin verisi var; elle, barkodla ve içecek olarak eklenenler dahil değildir. Düşük görünen bir değer eksiklik teşhisi değildir.", { n: model.micros.coverage })}</p>
+                </>
               )}
             </Card>
 

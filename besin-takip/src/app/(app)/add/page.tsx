@@ -2,7 +2,7 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Activity, ArrowLeft, Barcode, CalendarDays, Camera, CircleDot, Droplets, GlassWater, Image as ImageIcon, Lightbulb, MessageCircle, Moon, PenLine, Pill, Ruler, ScanText, Star, Timer, Trash2, Trophy, Type } from "lucide-react";
+import { Activity, ArrowLeft, Barcode, CalendarDays, CalendarHeart, Camera, ChefHat, CircleDot, Droplets, GlassWater, Image as ImageIcon, Lightbulb, Mail, MessageCircle, Mic, Moon, PenLine, Pill, Ruler, ScanText, Square, Star, Timer, Trash2, Trophy, Type, Users, UtensilsCrossed } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { BarcodeScanner } from "@/components/barcode-scanner";
 import { Review } from "@/components/review";
@@ -13,6 +13,7 @@ import { errorText } from "@/lib/errors";
 import { compressImage, takePendingPhoto, type CompressedImage } from "@/lib/image";
 import { scaleNutrients, sumNutrients } from "@/lib/nutrition/calc";
 import { toDateKey } from "@/lib/dates";
+import { listen, speechSupported } from "@/lib/speech";
 import { deleteRow, upsertRow } from "@/lib/data/store";
 import { useFavorites } from "@/lib/data/hooks";
 import type { AnalysisResult, EntrySource, Favorite, FoodItem, Meal } from "@/lib/types";
@@ -56,6 +57,36 @@ function AddInner() {
   const [scanning, setScanning] = useState(true);
   const [fileKind, setFileKind] = useState<"photo" | "label">("photo");
   const favorites = useFavorites();
+  const [listening, setListening] = useState(false);
+  const [interim, setInterim] = useState("");
+  const [stopFn, setStopFn] = useState<(() => void) | null>(null);
+  const [canSpeak, setCanSpeak] = useState(false);
+  useEffect(() => {
+    setCanSpeak(speechSupported());
+  }, []);
+  useEffect(() => () => stopFn?.(), [stopFn]);
+
+  /** Sesle kayıt: konuşma metne çevrilip yazı alanına eklenir. Kullanıcı dokunuşuyla başlatılmalıdır. */
+  function toggleVoice() {
+    if (listening) {
+      stopFn?.();
+      return;
+    }
+    setError(null);
+    setListening(true);
+    const stop = listen(lang, {
+      final: (said) => said && setText((v) => (v.trim() ? `${v.trim()}, ${said}` : said)),
+      interim: setInterim,
+      end: (err) => {
+        setListening(false);
+        setInterim("");
+        setStopFn(null);
+        if (err === "not-allowed" || err === "service-not-allowed") setError(t("Mikrofon izni verilmedi. Tarayıcı ayarlarından izin verip tekrar deneyin."));
+        else if (err && err !== "no-speech" && err !== "aborted") setError(t("Ses tanınamadı. Tekrar deneyin ya da yazarak girin."));
+      },
+    });
+    setStopFn(() => stop);
+  }
 
   const aiReady = online && config?.ai_available !== false;
 
@@ -232,8 +263,17 @@ function AddInner() {
         {errorBox}
         <Card className="space-y-3">
           <Field label={t("Ne yediniz?")} hint={t("Her satıra ya da virgülle ayırarak birden fazla yiyecek yazabilirsiniz.")}>
-            <Textarea value={text} onChange={(e) => setText(e.target.value)} maxLength={1000} placeholder={t("Örn. 2 haşlanmış yumurta, 2 dilim ekmek, 1 bardak ayran")} autoFocus />
+            <Textarea value={text} onChange={(e) => setText(e.target.value)} maxLength={1000} placeholder={t("Örn. 2 haşlanmış yumurta, 2 dilim ekmek, 1 bardak ayran")} autoFocus={!listening} />
           </Field>
+          {canSpeak ? (
+            <Button variant={listening ? "danger" : "secondary"} className="w-full" aria-pressed={listening} onClick={toggleVoice}>
+              {listening ? <Square size={16} /> : <Mic size={16} />}
+              {listening ? t("Dinleniyor… durdurmak için dokunun") : t("Sesle söyle")}
+            </Button>
+          ) : (
+            <p className="text-xs text-muted">{t("Bu tarayıcı sesle girişi desteklemiyor; klavyenizdeki mikrofon tuşunu kullanabilirsiniz.")}</p>
+          )}
+          {listening && interim && <p className="rounded-xl bg-surface-2 px-3 py-2 text-sm text-muted">{interim}</p>}
           <div className="flex flex-wrap gap-1.5">
             {EXAMPLES.map((ex) => (
               <button key={ex} type="button" onClick={() => setText((v) => (v.trim() ? `${v.trim()}, ${ex}` : ex))} className="rounded-full bg-surface-2 px-2.5 py-1 text-xs text-muted">
@@ -378,10 +418,13 @@ function AddInner() {
       <div className="grid grid-cols-2 gap-3">
         {tile(<Camera size={20} />, t("Fotoğraf çek"), t("Yemeği kameradan analiz et"), () => pick("photo", "camera"), !aiReady, true)}
         {tile(<ImageIcon size={20} />, t("Galeriden seç"), t("Kayıtlı bir fotoğrafı yükle"), () => pick("photo", "gallery"), !aiReady)}
+        {canSpeak && tile(<Mic size={20} />, t("Sesle ekle"), t("Ne yediğinizi söyleyin"), () => { setMode("text"); toggleVoice(); }, !aiReady)}
         {tile(<Type size={20} />, t("Yazarak ekle"), t("“2 yumurta, 1 dilim ekmek”"), () => setMode("text"), !aiReady)}
         {tile(<Barcode size={20} />, t("Barkod okut"), t("Paketli ürünler"), () => { setScanning(true); setMode("barcode"); }, !online)}
         {tile(<ScanText size={20} />, t("Besin etiketi"), t("Etiket fotoğrafını oku"), () => setMode("label"), !aiReady)}
         {tile(<Star size={20} />, t("Favoriler"), t("Sık yedikleriniz"), () => setMode("favorites"))}
+        {tile(<ChefHat size={20} />, t("Tariflerim"), t("Kendi ev yemekleriniz"), () => router.push("/recipes"))}
+        {tile(<UtensilsCrossed size={20} />, t("Dışarıda yemek"), t("Menü fotoğrafından öneri"), () => router.push("/eating-out"), !aiReady)}
         {tile(<PenLine size={20} />, t("Elle gir"), t("Değerleri kendiniz yazın"), () => setDraft({ source: "manual", name: "", items: [blankItem()], analysis: null, image: null, version: 1 }))}
       </div>
       <p className="pt-2 text-xs font-semibold uppercase tracking-wide text-muted">{t("Diğer kayıtlar ve bölümler")}</p>
@@ -396,6 +439,9 @@ function AddInner() {
         {link("/fasting", <Timer size={18} />, t("Aralıklı oruç"))}
         {link("/coach", <Lightbulb size={18} />, t("Öneriler"))}
         {link("/plan", <CalendarDays size={18} />, t("Öğün planı"))}
+        {link("/letter", <Mail size={18} />, t("Haftalık mektup"))}
+        {link("/challenges", <Users size={18} />, t("Meydan okumalar"))}
+        {link("/cycle", <CalendarHeart size={18} />, t("Döngü takibi"))}
         {link("/performance", <Trophy size={18} />, t("Performans"))}
         {link("/assistant", <MessageCircle size={18} />, t("Asistan"))}
       </div>

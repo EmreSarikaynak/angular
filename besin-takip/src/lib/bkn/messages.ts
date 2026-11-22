@@ -116,10 +116,10 @@ export function insightText(lang: Lang, i: { key: InsightKey; value: number; tar
 }
 
 export function summaryNotice(lang: Lang, kind: "week" | "month"): Notice {
-  const tr = kind === "week" ? ["Haftalık performansın hazır 📊", "Bu hafta kendin için neler yaptın? Özetine göz at."] : ["Aylık performans özetin hazır 📊", "Geçen ay kendin için neler yaptın? Özetini incele, indir."];
-  const en = kind === "week" ? ["Your weekly performance is ready 📊", "What did you do for yourself this week? Have a look at your summary."] : ["Your monthly performance summary is ready 📊", "What did you do for yourself last month? Review and download your summary."];
+  const tr = kind === "week" ? ["Haftalık mektubun hazır 💌", "Bu hafta kendin için neler yaptın? Sana özel mektubunu oku."] : ["Aylık performans özetin hazır 📊", "Geçen ay kendin için neler yaptın? Özetini incele, indir."];
+  const en = kind === "week" ? ["Your weekly letter is ready 💌", "What did you do for yourself this week? Read your personal letter."] : ["Your monthly performance summary is ready 📊", "What did you do for yourself last month? Review and download your summary."];
   const [title, body] = lang === "en" ? en : tr;
-  return { title, body, url: "/performance" };
+  return { title, body, url: kind === "week" ? "/letter" : "/performance" };
 }
 
 /** Akşam kapanışı: günün kısa özeti. */

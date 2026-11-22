@@ -2,6 +2,7 @@ import type { AnalysisResult, FoodItem } from "../types";
 import { kcalFromMacros, roundNutrients } from "../nutrition/calc";
 import { nutrientsFromReference, referenceFood } from "../nutrition/reference-foods";
 import { rawAnalysisSchema, type RawItem } from "./schemas";
+import { cleanMicros } from "../nutrition/micros";
 
 /** Bu eşiğin altında kullanıcıya porsiyon sorulur. */
 export const LOW_CONFIDENCE = 0.6;
@@ -28,6 +29,7 @@ function processItem(raw: RawItem, kind: AnalysisKind): FoodItem {
       // Fotoğrafta gramaj her zaman tahmindir; yazıda kullanıcı gram verdiyse değildir.
       is_estimated: kind === "photo" || raw.confidence < 0.8,
       data_source: "reference",
+      micros: cleanMicros(raw),
     };
   }
 
@@ -47,6 +49,7 @@ function processItem(raw: RawItem, kind: AnalysisKind): FoodItem {
     confidence: raw.confidence,
     is_estimated: kind !== "label",
     data_source: kind === "label" ? "label" : "ai",
+    micros: cleanMicros(raw),
   });
 
   // Tutarlılık denetimi: kalori, makrolardan hesaplanan enerjiyle %25'ten fazla

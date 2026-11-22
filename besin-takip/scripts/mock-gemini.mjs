@@ -10,6 +10,12 @@ function analysis(text, hasImage) {
   if (/FAIL_SCHEMA/.test(text)) return "this is not json";
   if (/activity values from this screenshot/.test(text))
     return JSON.stringify({ is_rings: true, move_kcal: 420, move_goal: 500, exercise_min: 24, exercise_goal: 30, stand_hours: 9, stand_goal: 12, steps: 7350, distance_km: 5.2, date: null });
+  if (/Remaining today: about/.test(text))
+    return JSON.stringify({ is_menu: true, dishes: [
+      { name: "Izgara Köfte", kcal: 520, protein_g: 38, carbs_g: 12, fat_g: 35, fit: "ok", reason: "Protein yüksek ama yağlı.", tip: "Pilav yerine salata isteyin.", allergen_warning: false },
+      { name: "Tavuk Şiş", kcal: 380, protein_g: 45, carbs_g: 8, fat_g: 14, fit: "good", reason: "Kalan kalorinize sığar, proteini yüksek.", tip: null, allergen_warning: false },
+      { name: "Kıymalı Pide", kcal: 780, protein_g: 34, carbs_g: 90, fat_g: 30, fit: "avoid", reason: "Kalan kalorinizi aşar.", tip: null, allergen_warning: true },
+    ] });
   if (/Daily targets:/.test(text)) {
     const meals = (d) => [
       { slot: "breakfast", name: `Lorlu menemen, 1 dilim tam buğday ekmeği (gün ${d})`, kcal: 380, protein_g: 28, carbs_g: 24, fat_g: 19 },
@@ -38,7 +44,7 @@ function analysis(text, hasImage) {
   return JSON.stringify({
     is_food: true,
     dish_name: "Kahvaltı",
-    items: [item("Haşlanmış yumurta", "egg_boiled", 100, 155, 12.6, 1.1, 10.6, 0.95), item("Beyaz ekmek", "bread_white", 50, 132, 4.5, 24.5, 1.6, 0.9), item("Ev yapımı özel sos", null, 30, 90, 1, 3, 8.2, 0.7)],
+    items: [{ ...item("Haşlanmış yumurta", "egg_boiled", 100, 155, 12.6, 1.1, 10.6, 0.95), iron_mg: 1.2, calcium_mg: 50, vitamin_b12_mcg: 1.1, vitamin_d_mcg: 2.2, vitamin_c_mg: -5, potassium_mg: 99999 }, item("Beyaz ekmek", "bread_white", 50, 132, 4.5, 24.5, 1.6, 0.9), item("Ev yapımı özel sos", null, 30, 90, 1, 3, 8.2, 0.7)],
     overall_confidence: 0.9,
     needs_clarification: false,
   });
@@ -63,7 +69,7 @@ createServer((req, res) => {
       return res.end("boom");
     }
     const structured = !!json.generationConfig?.responseSchema;
-    const out = structured ? analysis(text, hasImage) : /USER DATA/.test(text) ? `Bugün kayıtlarınıza göre ${(JSON.parse(text.split("USER DATA (JSON):\n")[1].split("\n")[0]).today_entries ?? []).reduce((s, e) => s + e.kcal, 0)} kcal aldınız.` : "OK";
+    const out = structured ? analysis(text, hasImage) : /THIS WEEK \(last 7 days\)/.test(text) ? `Merhaba ${(JSON.parse(text.split("(JSON):\n")[1]).profile ?? {}).first_name ?? ""}, bu hafta ${JSON.parse(text.split("(JSON):\n")[1]).last_14_days.length} gün kayıt girdin. Böyle devam!\n\n— BKN` : /USER DATA/.test(text) ? `Bugün kayıtlarınıza göre ${(JSON.parse(text.split("USER DATA (JSON):\n")[1].split("\n")[0]).today_entries ?? []).reduce((s, e) => s + e.kcal, 0)} kcal aldınız.` : "OK";
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ candidates: [{ content: { parts: [{ text: out }] }, finishReason: "STOP" }], usageMetadata: { promptTokenCount: 1200, candidatesTokenCount: 300 } }));
   });

@@ -12,6 +12,7 @@ Rules:
 - Nutrient fields are for the WHOLE item amount (not per 100 g). kcal must be consistent with macros (4/4/9 kcal per g, alcohol 7).
 - "salt_g" is salt (sodium x 2.5). Include visible cooking oil, butter and sauces in the estimate.
 - "ref_key": if the item clearly matches one entry of the reference list below, set its key exactly; otherwise null. Never invent keys.
+- Micronutrients for the whole item amount: iron_mg, calcium_mg, magnesium_mg, potassium_mg, vitamin_c_mg, vitamin_b12_mcg, vitamin_d_mcg. Give your best estimate from standard food composition data; use null when you cannot estimate (and for nutrition labels unless printed).
 - "confidence" is 0..1 for how sure you are about BOTH identity and amount of the item. Be honest; do not default to high values.
 - "overall_confidence" is 0..1 for the whole analysis.
 - If portion sizes cannot be judged reliably, set "needs_clarification" true and ask ONE short, concrete question in "clarification_question".

@@ -1,10 +1,10 @@
 "use client";
+import { mealLabel, ramadanDefaultMeal } from "@/lib/bkn/ramadan";
 import { useState } from "react";
 import { HelpCircle, Plus } from "lucide-react";
 import { useApp } from "./app-provider";
 import { Button, Card, Chip, Field, Input } from "./ui";
 import { ItemFields, blankItem } from "./item-fields";
-import { MEAL_LABELS, label } from "@/lib/i18n/labels";
 import { sumNutrients } from "@/lib/nutrition/calc";
 import { defaultMeal, timeOf, timestampFor, toDateKey } from "@/lib/dates";
 import { upsertRow, upsertRows, uuid } from "@/lib/data/store";
@@ -30,7 +30,11 @@ export interface ReviewProps {
 export function Review({ source, initial, analysis, image, date: initialDate, meal: initialMeal, onClarify, onSaved, onCancel }: ReviewProps) {
   const { t, lang, profile, toast, online } = useApp();
   const [items, setItems] = useState<FoodItem[]>(initial.items.length ? initial.items : [blankItem()]);
-  const [meal, setMeal] = useState<Meal>(initialMeal ?? defaultMeal());
+  const [meal, setMeal] = useState<Meal>(() => {
+    if (initialMeal) return initialMeal;
+    const now = new Date();
+    return profile?.ramadan_mode ? ramadanDefaultMeal(now.getHours() * 60 + now.getMinutes(), profile.iftar_time, profile.sahur_time) : defaultMeal();
+  });
   const [date, setDate] = useState(initialDate);
   const [time, setTime] = useState(timeOf(new Date().toISOString()));
   const [favorite, setFavorite] = useState(false);
@@ -72,6 +76,7 @@ export function Review({ source, initial, analysis, image, date: initialDate, me
         fiber_g: i.fiber_g,
         salt_g: i.salt_g,
         alcohol_g: i.alcohol_g,
+        micros: i.micros ?? null,
         source,
         data_source: i.data_source,
         is_estimated: i.is_estimated,
@@ -178,7 +183,7 @@ export function Review({ source, initial, analysis, image, date: initialDate, me
           <div className="flex flex-wrap gap-2">
             {MEALS.map((m) => (
               <Chip key={m} active={meal === m} onClick={() => setMeal(m)}>
-                {label(MEAL_LABELS, m, lang)}
+                {mealLabel(m, lang, profile?.ramadan_mode)}
               </Chip>
             ))}
           </div>

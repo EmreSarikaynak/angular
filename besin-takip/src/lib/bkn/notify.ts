@@ -7,6 +7,7 @@ import type { Activity, DailyLog, FoodEntry, HealthRing, Profile, Supplement, Su
 import { proteinGap, trendInsights, type InsightKey } from "./insights";
 import { eveningNotice, insightNotice, proteinNotice, stockNotice, summaryNotice, supplementNotice, waterNotice, type Notice } from "./messages";
 import { LOW_STOCK_DAYS, stockDaysLeft } from "./fasting";
+import { inEatingWindow } from "./ramadan";
 import { pickRecipes } from "./recipes";
 
 export function localParts(tz: string, d = new Date()) {
@@ -72,7 +73,14 @@ export async function runReminders(now = new Date()) {
     counts.users++;
     const lang = p.language === "en" ? "en" : "tr";
     const t = localParts(p.timezone, now);
-    const inWindow = p.reminder_start_hour <= p.reminder_end_hour ? t.hour >= p.reminder_start_hour && t.hour < p.reminder_end_hour : t.hour >= p.reminder_start_hour || t.hour < p.reminder_end_hour;
+    // Ramazan modunda su ve beslenme hatırlatmaları yalnızca iftar–sahur arasında gönderilir.
+    const inWindow = p.ramadan_mode
+      ? inEatingWindow(t.minutes, p.iftar_time, p.sahur_time)
+      : p.reminder_start_hour <= p.reminder_end_hour
+        ? t.hour >= p.reminder_start_hour && t.hour < p.reminder_end_hour
+        : t.hour >= p.reminder_start_hour || t.hour < p.reminder_end_hour;
+    // Ramazan modunda protein kontrolü iftardan bir saat sonra yapılır.
+    const proteinHour = p.ramadan_mode ? (Number(p.iftar_time.slice(0, 2)) + 1) % 24 : p.protein_check_hour;
 
     try {
       // ── Takviyeler ────────────────────────────────────────────────────────
@@ -150,11 +158,12 @@ export async function runReminders(now = new Date()) {
       }
 
       // ── Protein açığı ─────────────────────────────────────────────────────
-      if (p.notify_protein && p.protein_target_g && t.hour >= p.protein_check_hour && t.hour < p.protein_check_hour + 3) {
+      if (p.notify_protein && p.protein_target_g && t.hour >= proteinHour && t.hour < proteinHour + 3) {
         const { data: food } = await db.from("food_entries").select("protein_g, kcal").eq("user_id", p.id).eq("entry_date", t.date);
         const protein = (food ?? []).reduce((s, f) => s + Number(f.protein_g), 0);
         const kcal = (food ?? []).reduce((s, f) => s + Number(f.kcal), 0);
-        const gap = proteinGap(protein, p.protein_target_g, t.hour);
+        // Ramazan modunda gün iftarla başladığı için saat bazlı beklenti yerine sabit eşik kullanılır.
+        const gap = p.ramadan_mode ? { remaining: Math.max(0, Math.round(p.protein_target_g - protein)), behind: protein < p.protein_target_g * 0.4 } : proteinGap(protein, p.protein_target_g, t.hour);
         // Hiç kayıt girmemiş kullanıcıya "protein eksik" denmez; önce kayıt hatırlatması anlamsız olur.
         if (gap.behind && (food ?? []).length > 0 && (await claim(p.id, "protein", t.date))) {
           const recipe = pickRecipes("high_protein", { allergies: p.allergies, diets: p.diet_preferences, maxKcal: Math.max(250, (p.kcal_target ?? 2000) - kcal), limit: 1 })[0];

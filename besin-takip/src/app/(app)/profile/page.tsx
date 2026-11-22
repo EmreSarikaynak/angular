@@ -385,6 +385,21 @@ export default function ProfilePage() {
         <p className="text-xs text-muted">{config?.push_available ? t("Bildirimler bu cihazda tarayıcı izni gerektirir. iPhone'da önce uygulamayı ana ekrana ekleyin.") : t("Sunucu bildirimleri yapılandırılmamış; hatırlatmalar yalnızca uygulama açıkken gösterilir.")}</p>
       </Card>
 
+      <Card className="space-y-3">
+        {toggleRow(t("Ramazan modu"), t("Öğünler Sahur ve İftar olarak adlandırılır; su ve beslenme hatırlatmaları yalnızca iftar ile sahur arasında gönderilir."), profile.ramadan_mode, (v) => notify({ ramadan_mode: v }))}
+        {profile.ramadan_mode && (
+          <div className="grid grid-cols-2 gap-3">
+            <Field label={t("İftar saati")}>
+              <Input type="time" value={profile.iftar_time} onChange={(e) => e.target.value && notify({ iftar_time: e.target.value })} />
+            </Field>
+            <Field label={t("Sahur bitişi (imsak)")}>
+              <Input type="time" value={profile.sahur_time} onChange={(e) => e.target.value && notify({ sahur_time: e.target.value })} />
+            </Field>
+            <p className="col-span-2 text-xs text-muted">{t("Saatler şehre ve güne göre değişir; bulunduğunuz yerin vakitlerini girip birkaç günde bir güncelleyin.")}</p>
+          </div>
+        )}
+      </Card>
+
       <Card className="space-y-4">
         <h2 className="font-semibold">{t("Uygulama")}</h2>
         <Field label={t("Dil")}>

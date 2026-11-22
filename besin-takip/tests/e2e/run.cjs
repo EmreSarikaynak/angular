@@ -19,6 +19,20 @@ const ok = (name) => console.log(`  ✓ ${String(++step).padStart(2, "0")} ${nam
 (async () => {
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ ...devices["iPhone 13"], locale: "tr-TR", timezoneId: "Europe/Istanbul", acceptDownloads: true });
+  // Konuşma tanıma başsız tarayıcıda yoktur; arayüz akışını sınamak için taklit edilir.
+  await ctx.addInitScript(() => {
+    window.SpeechRecognition = window.webkitSpeechRecognition = class {
+      start() {
+        setTimeout(() => {
+          this.onresult?.({ resultIndex: 0, results: [Object.assign([{ transcript: "1 bardak ayran" }], { isFinal: true })] });
+          setTimeout(() => this.onend?.(), 400);
+        }, 500);
+      }
+      stop() {
+        this.onend?.();
+      }
+    };
+  });
   const page = await ctx.newPage();
   page.on("console", (m) => m.type() === "error" && !/Failed to load resource|net::ERR_INTERNET_DISCONNECTED|ERR_FAILED/.test(m.text()) && errors.push(m.text()));
   page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
@@ -403,6 +417,120 @@ const ok = (name) => console.log(`  ✓ ${String(++step).padStart(2, "0")} ${nam
   assert.deepEqual(ev, { evening_hour: 22, notify_evening: true });
   ok("seri ve rozetler hesaplanıyor; akşam kapanışı saati kaydediliyor");
 
+
+  // YENİ-1. Sesle ekleme (tarayıcının konuşma tanıması testte taklit edilir)
+  await toastGone();
+  await page.goto(APP + "/add");
+  await page.getByRole("button", { name: /Sesle ekle/ }).click();
+  await page.getByRole("button", { name: /Dinleniyor/ }).waitFor();
+  await page.waitForFunction(() => document.querySelector("textarea")?.value.includes("1 bardak ayran"));
+  await page.getByRole("button", { name: "Sesle söyle" }).waitFor();
+  ok("sesle ekleme: konuşma metne çevrilip yazı alanına geliyor");
+
+  // YENİ-2. Tariflerim
+  await page.goto(APP + "/recipes");
+  await page.getByText("Henüz tarifiniz yok").waitFor();
+  await page.getByRole("button", { name: "Yeni tarif" }).click();
+  await page.getByLabel("Tarif adı").fill("Annemin tarifi");
+  await page.getByLabel("Kaç porsiyon?").fill("4");
+  await page.getByLabel("Malzemeler").fill(`2 yumurta, 2 dilim ekmek, sos ${Date.now()}`);
+  await page.getByRole("button", { name: "Malzemeleri hesapla" }).click();
+  await page.getByText("378 kcal").waitFor();
+  await page.getByText(/1 porsiyon:\s*95 kcal/).waitFor();
+  await page.getByRole("button", { name: "Tarifi kaydet" }).click();
+  await page.getByText("Tarif kaydedildi.").waitFor();
+  await page.getByRole("button", { name: "Ekle", exact: true }).click();
+  await page.getByLabel("Kaç porsiyon yediniz?").fill("2");
+  await page.getByRole("button", { name: "Günlüğe ekle" }).click();
+  await page.getByText("Günlüğe eklendi.").waitFor();
+  const { data: recipeEntry } = await service.from("food_entries").select("kcal, quantity, micros").eq("name", "Annemin tarifi").order("created_at", { ascending: false }).limit(1).single();
+  assert.equal(Number(recipeEntry.kcal), 189);
+  assert.equal(Number(recipeEntry.quantity), 2);
+  assert.ok(recipeEntry.micros && recipeEntry.micros.iron_mg > 0, "tarifin mikro besinleri kayda geçmedi");
+  await shot("30-tariflerim");
+  ok("tariflerim: malzemelerden toplam ve porsiyon başı hesap, porsiyonla günlüğe ekleme");
+
+  // YENİ-3. Öğünü tekrarla kısayolu
+  await toastGone();
+  const tz = (off) => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul" }).format(new Date(Date.now() - off * 86400e3));
+  const { data: me0 } = await service.from("profiles").select("id").eq("first_name", "Ayşe").order("created_at", { ascending: false }).limit(1).single();
+  await service.from("food_entries").insert({ user_id: me0.id, entry_date: tz(2), meal: "lunch", name: "Dünden kalan mantı", kcal: 420, protein_g: 18, carbs_g: 50, fat_g: 16 });
+  await page.goto(`${APP}/diary?date=${tz(1)}`);
+  await page.getByRole("button", { name: /Tekrarla · bir önceki gün · Dünden kalan mantı/ }).click();
+  await page.getByText("1 kayıt eklendi.").waitFor();
+  await page.getByRole("button", { name: /Dünden kalan mantı/ }).first().waitFor();
+  assert.equal(await page.getByRole("button", { name: /Tekrarla · bir önceki gün · Dünden kalan mantı/ }).count(), 0);
+  ok("öğün tekrarlama: boş öğünde önceki günün kaydı tek dokunuşla ekleniyor");
+
+  // YENİ-4. Haftalık mektup
+  await toastGone();
+  await page.goto(APP + "/letter");
+  await page.getByRole("button", { name: "Mektubumu oluştur" }).click();
+  await page.getByText(/Merhaba Ayşe, bu hafta \d+ gün kayıt girdin/).waitFor();
+  await page.reload();
+  await page.getByText(/Merhaba Ayşe, bu hafta/).waitFor();
+  assert.equal(await page.getByRole("button", { name: "Mektubumu oluştur" }).count(), 0);
+  await shot("31-mektup");
+  ok("haftalık mektup: kayıtlara dayalı mektup oluşuyor ve saklanıyor");
+
+  // YENİ-5. Meydan okuma
+  await page.goto(APP + "/challenges");
+  await page.getByRole("button", { name: "Yeni başlat" }).click();
+  await page.getByLabel("Başlık").fill("7 gün her gün kayıt");
+  await page.getByRole("button", { name: "Her gün kayıt", exact: true }).click();
+  await page.getByRole("button", { name: "Başlat", exact: true }).click();
+  await page.getByText("Meydan okuma başladı!", { exact: false }).waitFor();
+  await page.getByRole("button", { name: "Daveti paylaş" }).waitFor();
+  assert.match(await page.getByRole("button", { name: "Daveti paylaş" }).innerText(), /^[A-Z2-9]{8}/);
+  await page.getByText("1 / 7 gün").waitFor();
+  await page.getByText("(siz)").waitFor();
+  await shot("32-meydan-okuma");
+  ok("meydan okuma: başlatma, katılım kodu, kendi ilerlemesi sunucudan");
+
+  // YENİ-6. Döngü takibi
+  await toastGone();
+  await page.goto(APP + "/cycle");
+  await page.getByLabel("Başlangıç").fill(tz(20));
+  await page.getByRole("button", { name: "Kaydet", exact: true }).click();
+  await page.getByText("Kaydedildi.").waitFor();
+  await page.getByRole("img", { name: "Döngünün 21. günü" }).waitFor();
+  await page.getByText("Luteal evre").waitFor();
+  await page.getByText("28 günlük varsayılan döngü kullanılıyor", { exact: false }).waitFor();
+  await shot("33-dongu");
+  ok("döngü takibi: gün, evre ve sonraki tahmin");
+
+  // YENİ-7. Dışarıda yemek
+  await toastGone();
+  await page.goto(APP + "/eating-out");
+  await page.locator("#bkn-menu-gallery").setInputFiles(jpg);
+  await page.getByText("Tavuk Şiş").waitFor();
+  await page.getByText("Önerilir").waitFor();
+  assert.equal(await page.getByText("Kıymalı Pide").count(), 0);
+  await page.getByRole("tab", { name: "Tüm menü (3)" }).click();
+  await page.getByText("Kıymalı Pide").waitFor();
+  await page.getByText("Alerjeniniz içerebilir", { exact: false }).waitFor();
+  await shot("34-disarida-yemek");
+  await page.getByRole("button", { name: "Bunu yedim, günlüğe ekle" }).first().click();
+  await page.getByText("Günlüğe eklendi.").waitFor();
+  ok("dışarıda yemek: menü okundu, öneri sıralaması, alerjen uyarısı, günlüğe ekleme");
+
+  // YENİ-8. Ramazan modu
+  await toastGone();
+  await page.goto(APP + "/profile");
+  await page.getByRole("switch", { name: "Ramazan modu" }).click();
+  await page.getByLabel("İftar saati").waitFor();
+  await page.goto(APP + "/diary");
+  await page.getByRole("heading", { name: "Sahur" }).waitFor();
+  await page.getByRole("heading", { name: "İftar" }).waitFor();
+  assert.equal(await page.getByRole("heading", { name: "Kahvaltı" }).count(), 0);
+  await page.goto(APP + "/");
+  await page.getByText(/İftara \d+ sa \d+ dk|Sahurun bitmesine \d+ sa \d+ dk/).waitFor();
+  await shot("35-ramazan");
+  await page.goto(APP + "/profile");
+  await page.getByRole("switch", { name: "Ramazan modu" }).click();
+  await page.getByLabel("İftar saati").waitFor({ state: "detached" });
+  ok("Ramazan modu: Sahur/İftar adları ve geri sayım; kapatılınca eski hâline dönüyor");
+
   // 14. Ana panel toplamları (veritabanıyla karşılaştır)
   await toastGone();
   await page.goto(APP + "/");
@@ -422,7 +550,7 @@ const ok = (name) => console.log(`  ✓ ${String(++step).padStart(2, "0")} ${nam
   await page.getByText("Yakılan (saatinizden)").waitFor();
   await page.getByText(/^450/).first().waitFor();
   await page.getByRole("button", { name: "D vitamini alındı olarak işaretle" }).waitFor();
-  await page.getByText("2 günlük seri").waitFor();
+  await page.getByText("3 günlük seri").waitFor();
   await shot("11-ana-sayfa");
   await page.screenshot({ path: path.join(SHOTS, "11b-ana-sayfa-tam.png"), fullPage: true });
   ok(`ana panel: alınan ${total} kcal ve kalan ${remaining} kcal veritabanıyla tutarlı`);
@@ -431,6 +559,9 @@ const ok = (name) => console.log(`  ✓ ${String(++step).padStart(2, "0")} ${nam
   await page.goto(APP + "/stats");
   await page.getByText("Kalori tüketimi").waitFor();
   await page.getByText("Hedeflere uyum").waitFor();
+  await page.getByRole("heading", { name: "Vitamin ve mineraller" }).waitFor();
+  await page.getByText("Demir", { exact: true }).waitFor();
+  await page.getByText("B12 vitamini").waitFor();
   await page.locator(".recharts-bar-rectangle").first().waitFor();
   await shot("12-istatistik");
   for (const [label, ext, magic] of [["PDF", ".pdf", "%PDF"], ["CSV (günlük özet)", ".csv", "﻿Tarih;"], ["CSV (tüm kayıtlar)", ".csv", "﻿Tarih;Saat;"]]) {

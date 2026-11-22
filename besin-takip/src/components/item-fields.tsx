@@ -4,6 +4,7 @@ import { ChevronDown, Trash2 } from "lucide-react";
 import { useApp } from "./app-provider";
 import { Field, Input, NumberInput, cx } from "./ui";
 import { scaleNutrients } from "@/lib/nutrition/calc";
+import { scaleMicros } from "@/lib/nutrition/micros";
 import type { FoodItem } from "@/lib/types";
 
 export function blankItem(): FoodItem {
@@ -32,7 +33,7 @@ export function ItemFields({ item, onChange, onRemove, defaultOpen }: { item: Fo
 
   function setGrams(g: number | null) {
     // Gramaj değişince besin değerleri orantılanır (önceki gramaj biliniyorsa).
-    if (g != null && g > 0 && item.grams && item.grams > 0 && item.kcal > 0) onChange({ ...scaleNutrients(item, g / item.grams), grams: g });
+    if (g != null && g > 0 && item.grams && item.grams > 0 && item.kcal > 0) onChange({ ...scaleNutrients(item, g / item.grams), grams: g, micros: scaleMicros(item.micros, g / item.grams) });
     else set({ grams: g });
   }
 

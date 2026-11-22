@@ -20,6 +20,13 @@ export const rawItemSchema = z.object({
   salt_g: nonNeg,
   alcohol_g: nonNeg.optional().default(0),
   confidence: conf,
+  iron_mg: z.coerce.number().finite().nullish().catch(null),
+  calcium_mg: z.coerce.number().finite().nullish().catch(null),
+  magnesium_mg: z.coerce.number().finite().nullish().catch(null),
+  potassium_mg: z.coerce.number().finite().nullish().catch(null),
+  vitamin_c_mg: z.coerce.number().finite().nullish().catch(null),
+  vitamin_b12_mcg: z.coerce.number().finite().nullish().catch(null),
+  vitamin_d_mcg: z.coerce.number().finite().nullish().catch(null),
 });
 
 export const rawAnalysisSchema = z.object({
@@ -60,6 +67,13 @@ export const ANALYSIS_RESPONSE_SCHEMA = {
           salt_g: { type: "NUMBER" },
           alcohol_g: { type: "NUMBER" },
           confidence: { type: "NUMBER" },
+          iron_mg: { type: "NUMBER", nullable: true },
+          calcium_mg: { type: "NUMBER", nullable: true },
+          magnesium_mg: { type: "NUMBER", nullable: true },
+          potassium_mg: { type: "NUMBER", nullable: true },
+          vitamin_c_mg: { type: "NUMBER", nullable: true },
+          vitamin_b12_mcg: { type: "NUMBER", nullable: true },
+          vitamin_d_mcg: { type: "NUMBER", nullable: true },
         },
         required: ["name", "grams", "kcal", "protein_g", "carbs_g", "fat_g", "sugar_g", "fiber_g", "salt_g", "confidence"],
       },

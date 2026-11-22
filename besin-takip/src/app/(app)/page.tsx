@@ -1,4 +1,5 @@
 "use client";
+import { mealLabel } from "@/lib/bkn/ramadan";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Activity as ActivityIcon, Barcode, Camera, ChevronRight, Droplets, Flame, Footprints, MessageCircle, Plus, Scale, Type, Utensils } from "lucide-react";
@@ -10,7 +11,7 @@ import { summarizeDay } from "@/lib/day";
 import { formatDate, toDateKey } from "@/lib/dates";
 import { goalProgress } from "@/lib/nutrition/calc";
 import { numberFmt } from "@/lib/i18n";
-import { ACTIVITY_LABELS, MEAL_LABELS, label } from "@/lib/i18n/labels";
+import { ACTIVITY_LABELS, label } from "@/lib/i18n/labels";
 import { setPendingPhoto } from "@/lib/image";
 import { BknToday } from "@/components/bkn-today";
 import { MEALS } from "@/lib/types";
@@ -237,7 +238,7 @@ export default function DashboardPage() {
               return (
                 <Link key={m} href="/diary" className="flex items-center justify-between gap-3 py-2.5">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium">{label(MEAL_LABELS, m, lang)}</p>
+                    <p className="text-sm font-medium">{mealLabel(m, lang, profile?.ramadan_mode)}</p>
                     <p className="truncate text-xs text-muted">{list.map((f) => f.name).join(", ")}</p>
                   </div>
                   <span className="shrink-0 text-sm font-semibold">
