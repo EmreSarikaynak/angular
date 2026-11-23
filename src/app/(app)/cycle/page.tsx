@@ -3,14 +3,15 @@ import { useState } from "react";
 import { CalendarHeart, Trash2 } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { Button, Card, Empty, Field, Input, PageHeader, Ring, Skeleton, Stat } from "@/components/ui";
-import { cycleInfo, type CyclePhase } from "@/lib/bkn/cycle";
+import Link from "next/link";
+import { cycleAvailable, cycleInfo, type CyclePhase } from "@/lib/bkn/cycle";
 import { useCycleLogs } from "@/lib/data/hooks";
 import { deleteRow, upsertRow, uuid } from "@/lib/data/store";
 import { addDays, daysBetween, formatDate, formatShort, toDateKey } from "@/lib/dates";
 import type { CycleLog } from "@/lib/types";
 
 export default function CyclePage() {
-  const { t, lang, toast } = useApp();
+  const { t, lang, toast, profile } = useApp();
   const logs = useCycleLogs();
   const today = toDateKey();
   const [start, setStart] = useState(today);
@@ -46,6 +47,24 @@ export default function CyclePage() {
 
   async function finish(l: CycleLog) {
     await upsertRow("cycle_logs", { id: l.id, entry_date: l.entry_date, end_date: today, note: l.note }).catch(() => toast(t("Kaydedilemedi."), "error"));
+  }
+
+  // Döngü takibi yalnızca kadın profillerinde sunulur; doğrudan adresle gelenlere açıklama gösterilir.
+  if (profile && !cycleAvailable(profile.sex)) {
+    return (
+      <div className="mx-auto max-w-3xl space-y-4">
+        <PageHeader title={t("Döngü takibi")} />
+        <Empty
+          icon={<CalendarHeart size={28} />}
+          title={t("Bu bölüm profilinizde kullanılmıyor")}
+          action={
+            <Link href="/" className="font-semibold text-primary">
+              {t("Ana sayfaya dön")}
+            </Link>
+          }
+        />
+      </div>
+    );
   }
 
   return (

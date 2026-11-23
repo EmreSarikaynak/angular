@@ -1,6 +1,9 @@
 import { addDays, daysBetween } from "../dates";
 import type { CycleLog } from "../types";
 
+/** Döngü takibi yalnızca kadın profillerinde sunulur (cinsiyet belirtilmemişse de gizlenir). */
+export const cycleAvailable = (sex: string | null | undefined): boolean => sex === "female";
+
 export type CyclePhase = "menstrual" | "follicular" | "ovulation" | "luteal";
 
 export interface CycleInfo {

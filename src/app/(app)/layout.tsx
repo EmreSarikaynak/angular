@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Activity, BarChart3, BookOpen, CalendarDays, CalendarHeart, ChefHat, CircleDot, CloudOff, Droplets, GlassWater, Home, Lightbulb, Mail, MessageCircle, Moon, Pill, Plus, Refrigerator, RefreshCw, Ruler, Shield, Stethoscope, Timer, Trophy, User, Users, UtensilsCrossed } from "lucide-react";
 import { useApp } from "@/components/app-provider";
+import { cycleAvailable } from "@/lib/bkn/cycle";
 import { supabaseConfigured } from "@/lib/supabase/client";
 import { cx } from "@/components/ui";
 import { Logo } from "@/components/logo";
@@ -70,7 +71,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { href: "/fridge", icon: Refrigerator, label: t("Buzdolabından yemeğe") },
     { href: "/eating-out", icon: UtensilsCrossed, label: t("Dışarıda yemek") },
     { href: "/challenges", icon: Users, label: t("Meydan okumalar") },
-    { href: "/cycle", icon: CalendarHeart, label: t("Döngü takibi") },
+    ...(cycleAvailable(profile?.sex) ? [{ href: "/cycle", icon: CalendarHeart, label: t("Döngü takibi") }] : []),
     { href: "/stats", icon: BarChart3, label: t("İstatistikler") },
     { href: "/performance", icon: Trophy, label: t("Performans") },
     { href: "/letter", icon: Mail, label: t("Haftalık mektup") },
