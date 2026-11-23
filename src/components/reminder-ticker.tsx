@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import { isNative } from "@/lib/native";
 import { useApp } from "./app-provider";
 import { showLocalNotification } from "@/lib/push";
 import { fetchAll, fetchRange } from "@/lib/data/store";
@@ -14,7 +15,8 @@ import type { Supplement, SupplementLog } from "@/lib/types";
  */
 export function ReminderTicker() {
   const { profile, config, lang } = useApp();
-  const local = config?.push_available === false;
+  // Bu cihazda sunucu bildirimi yoksa (web: VAPID yok, uygulama: FCM yok) hatırlatmalar yerel gösterilir.
+  const local = isNative() ? config?.fcm_available === false : config?.web_push_available === false;
   const water = local && !!profile?.reminder_enabled;
   const supps = local && !!profile?.notify_supplements;
   const interval = profile?.reminder_interval_min ?? 120;

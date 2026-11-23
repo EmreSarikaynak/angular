@@ -32,6 +32,8 @@ export async function GET(req: Request) {
     quota: { limit, used: count, remaining: Math.max(0, limit - count) },
     announcement: settings.announcement,
     is_admin: admin,
+    // Tarayıcı / ana ekrana eklenen web uygulaması için Web Push (VAPID); mağaza uygulaması için FCM.
+    web_push_available: !!(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY),
     push_available: !!(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) || fcmConfigured(),
     fcm_available: fcmConfigured(),
   });

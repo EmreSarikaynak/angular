@@ -11,6 +11,7 @@ import { clearLocalData } from "@/lib/data/store";
 import { ageFrom, toDateKey } from "@/lib/dates";
 import { download } from "@/lib/export";
 import { ACTIVITY_LEVEL_LABELS, ALLERGY_OPTIONS, DIET_OPTIONS, GOAL_LABELS, label } from "@/lib/i18n/labels";
+import { isNative } from "@/lib/native";
 import { calculateTargets } from "@/lib/nutrition/calc";
 import { supabase } from "@/lib/supabase/client";
 import { disableNotifications, enableNotifications, unsupportedText } from "@/lib/push";
@@ -382,7 +383,7 @@ export default function ProfilePage() {
           <Bell size={16} />
           {t("Bu cihazda bildirimleri aç")}
         </Button>
-        <p className="text-xs text-muted">{config?.push_available ? t("Bildirimler bu cihazda tarayıcı izni gerektirir. iPhone'da önce uygulamayı ana ekrana ekleyin.") : t("Sunucu bildirimleri yapılandırılmamış; hatırlatmalar yalnızca uygulama açıkken gösterilir.")}</p>
+        <p className="text-xs text-muted">{(isNative() ? config?.fcm_available : config?.web_push_available) ? t("Bildirimler bu cihazda tarayıcı izni gerektirir. iPhone'da önce uygulamayı ana ekrana ekleyin.") : t("Sunucu bildirimleri yapılandırılmamış; hatırlatmalar yalnızca uygulama açıkken gösterilir.")}</p>
       </Card>
 
       <Card className="space-y-3">
