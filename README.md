@@ -111,6 +111,43 @@ Yönetim paneli: `/admin`. Panel kişisel sağlık kayıtlarını göstermez.
 
 Başka bir Node.js barındırma ortamında `npm run build && npm start` yeterlidir; cron ucunu kendi zamanlayıcınızla çağırın.
 
+## Mobil uygulama (iOS ve Android)
+
+Uygulama, [Capacitor](https://capacitorjs.com) ile iOS ve Android için yerel bir kabuğa sarılmıştır (`ios/` ve `android/` klasörleri, yapılandırma: `capacitor.config.ts`, uygulama kimliği: `tr.com.bkny.app`). Kabuk, canlı web sürümünü yükler; web sürümü her güncellendiğinde mağaza güncellemesi beklemeden herkes yeni sürümü görür. Bağlantı yoksa `capacitor/www/index.html` yedek sayfası gösterilir (çevrimdışı kayıt kuyruğu, web sürümü bir kez yüklendiyse çalışmaya devam eder).
+
+### Mac'te kurulum
+1. Node.js 22+, [Xcode](https://apps.apple.com/app/xcode/id497799835) (iOS Simulator çalışma zamanıyla) ve [Android Studio](https://developer.android.com/studio) (SDK Platform 36, Android Emulator, bir sanal cihaz: Device Manager › Create Device › Pixel, API 35/36).
+2. `git clone` sonrası `npm install`. iOS projesi Swift Package Manager kullanır; CocoaPods gerekmez.
+3. `npm run cap:doctor` ile ortamı kontrol edin.
+
+### Simülatörde çalıştırma
+```bash
+npm run cap:ios        # Xcode açılır → üstten bir iPhone simülatörü seçin → ▶ Run
+npm run cap:android    # Android Studio açılır → bir emülatör başlatın → ▶ Run
+# ya da komut satırından: npm run cap:run:ios  /  npm run cap:run:android
+```
+Varsayılan olarak `https://bkn-black.vercel.app` yüklenir. Kendi alan adınız hazır olunca:
+```bash
+CAP_SERVER_URL=https://bkny.com.tr npm run cap:sync
+```
+Yerel geliştirme sunucusunu (`npm run dev`) simülatörde denemek için: iOS `CAP_SERVER_URL=http://localhost:3000 npx cap sync ios`, Android emülatörü `CAP_SERVER_URL=http://10.0.2.2:3000 npx cap sync android` (10.0.2.2, bilgisayarınızı gösterir). Yerel Supabase için Docker açık olmalıdır.
+
+Simülatörde kontrol edin: kamera/galeri izni ve fotoğraf analizi, barkod okuma, kayıt/giriş, e-posta bağlantılarının uygulamayı değil tarayıcıyı açması, üst ve alt güvenli alanlar (çentik, durum çubuğu, ana ekran çizgisi), klavye açılınca formların kayması, koyu tema, çevrimdışı yedek sayfa.
+
+### Simge ve açılış ekranı
+`node scripts/make-app-icons.cjs` kaynak görselleri `resources/` içine üretir, `npm run cap:assets` tüm boyutları iOS ve Android projelerine yazar.
+
+### Mağaza sürümü
+- **Android:** Android Studio › Build › Generate Signed App Bundle (`.aab`). Yükleme anahtarını (keystore) oluşturup güvenli yerde saklayın; kaybederseniz güncelleme yükleyemezsiniz. Her yüklemede `android/app/build.gradle` içindeki `versionCode`'u artırın. Play Console'da önce **Dahili/Kapalı test**, sonra üretim.
+- **iOS:** Xcode › App target › Signing & Capabilities: Team'inizi seçin (Automatic signing). Product › Archive › Distribute App › App Store Connect. Önce **TestFlight**. Her yüklemede Build numarasını artırın.
+- **Mağaza sayfası için:** gizlilik politikası adresi (`https://<alanadı>/privacy`), ekran görüntüleri, açıklama, yaş derecelendirmesi, Play'de "Veri güvenliği" ve "Sağlık uygulamaları" beyanı, Apple'da "App Privacy" ve inceleme için bir test hesabı. Hesap silme uygulama içinde mevcuttur (Profil › Hesabımı sil).
+- Apple, yalnızca siteyi saran uygulamaları reddedebilir (Guideline 4.2); kamera, barkod, çevrimdışı kayıt ve yerel bildirim bu riski azaltır.
+
+### Bilinen sınırlar (ilk sürüm)
+- **Bildirimler:** Web Push mağaza uygulamasının içinde çalışmaz; uygulama içinde bildirim ayarı "sonraki sürümde" mesajı verir. Yerel bildirim için gerekenler: Firebase projesi (Android) ve APNs anahtarı (iOS), `@capacitor/push-notifications`, cihaz belirteçlerini saklayan bir tablo ve sunucuda FCM ile gönderim.
+- **Sesle ekleme:** tarayıcı konuşma tanıması uygulama içindeki web görünümlerinde yoktur; düğme gizlenir ve klavyedeki mikrofon önerilir.
+- Bu kabuk bu depoda otomatik olarak simülatörde sınanmadı; güvenli alanlar ve klavye davranışı ilk çalıştırmada gözden geçirilmelidir.
+
 ## Mimari
 
 ```

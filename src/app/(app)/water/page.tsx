@@ -9,7 +9,7 @@ import { addWater } from "@/lib/data/actions";
 import { deleteRow } from "@/lib/data/store";
 import { timeOf } from "@/lib/dates";
 import { numberFmt } from "@/lib/i18n";
-import { disableNotifications, enableNotifications } from "@/lib/push";
+import { disableNotifications, enableNotifications, unsupportedText } from "@/lib/push";
 
 const QUICK = [100, 200, 250, 330, 500, 1000];
 
@@ -43,7 +43,7 @@ function WaterInner() {
     try {
       if (on) {
         const result = await enableNotifications();
-        if (result === "unsupported") return toast(t("Bu cihaz veya tarayıcı bildirimleri desteklemiyor. iPhone'da önce uygulamayı ana ekrana ekleyin."), "error");
+        if (result === "unsupported") return toast(unsupportedText(t), "error");
         if (result === "denied") return toast(t("Bildirim izni verilmedi. Tarayıcı ayarlarından izin verebilirsiniz."), "error");
         await saveProfile({ reminder_enabled: true, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || profile?.timezone });
         toast(result === "push" ? t("Hatırlatmalar açıldı.") : t("Hatırlatmalar açıldı (uygulama açıkken gösterilir)."));

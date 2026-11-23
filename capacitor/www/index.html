@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>BKN</title>
+    <style>
+      html, body { margin: 0; height: 100%; font-family: -apple-system, system-ui, "Segoe UI", Roboto, sans-serif; background: #f6f8f7; color: #17211d; }
+      @media (prefers-color-scheme: dark) { html, body { background: #0f1513; color: #e9efec; } }
+      main { min-height: 100%; display: grid; place-items: center; text-align: center; padding: 24px; box-sizing: border-box; }
+      .logo { width: 72px; height: 72px; border-radius: 18px; background: #1f9d76; color: #fff; font-weight: 800; font-size: 22px; display: grid; place-items: center; margin: 0 auto 16px; }
+      p { color: #65736d; margin: 6px 0 0; font-size: 15px; }
+      button { margin-top: 20px; height: 46px; padding: 0 22px; border: 0; border-radius: 12px; background: #1f9d76; color: #fff; font-size: 16px; font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <!-- Uygulama sunucudan yüklenir (capacitor.config.ts › server.url). Bu sayfa yalnızca bağlantı kurulamadığında görünür. -->
+    <main>
+      <div>
+        <div class="logo">BKN</div>
+        <h1 style="font-size:20px;margin:0">Bağlantı kurulamadı</h1>
+        <p>İnternet bağlantınızı kontrol edip tekrar deneyin.</p>
+        <button onclick="location.reload()">Tekrar dene</button>
+      </div>
+    </main>
+  </body>
+</html>

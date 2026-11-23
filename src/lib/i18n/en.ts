@@ -1103,4 +1103,5 @@ export const EN: Record<string, string> = {
   "Diyetisyeninize bağlandınız.": "You're connected to your dietitian.",
   "Bağlan": "Connect",
   "{name} size not bıraktı": "{name} left you a note",
+  "Uygulama bildirimleri bir sonraki sürümde eklenecek.": "App notifications will be added in a later version.",
 };

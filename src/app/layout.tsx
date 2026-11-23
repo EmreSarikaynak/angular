@@ -21,7 +21,7 @@ export const viewport: Viewport = {
 };
 
 // Tema, ilk boyamadan önce uygulanır (açık/koyu geçişinde titreme olmaz).
-const themeScript = `(function(){try{var t=localStorage.getItem('bt:theme')||'system';var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');var l=localStorage.getItem('bt:lang');if(l)document.documentElement.lang=l;}catch(e){}})()`;
+const themeScript = `(function(){try{var t=localStorage.getItem('bt:theme')||'system';var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');var l=localStorage.getItem('bt:lang');if(l)document.documentElement.lang=l;if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())document.documentElement.classList.add('native');}catch(e){}})()`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

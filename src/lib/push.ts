@@ -1,9 +1,12 @@
 "use client";
+import { isNative } from "./native";
 import { supabase } from "./supabase/client";
 
 const VAPID = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
 
 export function notificationsSupported(): boolean {
+  // Web Push, mağaza uygulamasının içindeki web görünümünde çalışmaz; yerel bildirim sonraki sürümde eklenecek.
+  if (isNative()) return false;
   return typeof window !== "undefined" && "Notification" in window && "serviceWorker" in navigator;
 }
 
@@ -58,4 +61,9 @@ export async function showLocalNotification(title: string, body: string) {
   const reg = await navigator.serviceWorker.getRegistration();
   if (reg) await reg.showNotification(title, { body, icon: "/icons/icon-192.png", tag: "bkn-local" });
   else new Notification(title, { body, icon: "/icons/icon-192.png" });
+}
+
+/** Bildirimler desteklenmediğinde kullanıcıya gösterilecek metin. */
+export function unsupportedText(t: (s: string) => string): string {
+  return isNative() ? t("Uygulama bildirimleri bir sonraki sürümde eklenecek.") : t("Bu cihaz veya tarayıcı bildirimleri desteklemiyor. iPhone'da önce uygulamayı ana ekrana ekleyin.");
 }
