@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchAll, fetchRange, subscribe } from "./store";
-import type { Activity, BodyMeasurement, DailyLog, CycleLog, FastingSession, Favorite, FoodEntry, HealthRing, MealPlan, Supplement, SupplementLog, UserRecipe, WaterLog } from "../types";
+import type { Activity, BodyMeasurement, DailyLog, CycleLog, FastingSession, Favorite, FoodEntry, HealthRing, MealPlan, PantryItem, Supplement, SupplementLog, UserRecipe, WaterLog } from "../types";
 
 /** Asenkron veri yükler; veri katmanında değişiklik olduğunda sessizce yeniler. */
 export function useData<T>(loader: () => Promise<T>, deps: unknown[]) {
@@ -127,6 +127,10 @@ export function useUserRecipes() {
     const rows = await fetchAll<UserRecipe & { [k: string]: unknown }>("user_recipes", "created_at", false);
     return rows.map((r) => ({ ...r, servings: Number(r.servings) })) as UserRecipe[];
   }, []);
+}
+
+export function usePantry() {
+  return useData(() => fetchAll<PantryItem & { [k: string]: unknown }>("pantry_items", "created_at", true) as Promise<PantryItem[]>, []);
 }
 
 export function useCycleLogs() {

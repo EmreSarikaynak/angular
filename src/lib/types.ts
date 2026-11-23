@@ -296,6 +296,19 @@ export interface ShareLink {
   created_at: string;
 }
 
+export type PantryLocation = "fridge" | "freezer" | "pantry";
+export interface PantryItem {
+  id: string;
+  user_id?: string;
+  name: string;
+  location: PantryLocation;
+  added_on: string;
+  expires_on: string | null;
+  shelf_days: number | null;
+  expiry_source: "label" | "estimate" | "user";
+  created_at?: string;
+}
+
 export interface UserRecipe {
   id: string;
   user_id?: string;
