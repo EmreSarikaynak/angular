@@ -78,15 +78,15 @@ export const COPY: Record<"tr" | "en", Copy> = {
     privacy: "Your data is yours: export it any time, or delete your account and all data from within the app. Data travels over encrypted connections; there are no ads and no tracking. See the privacy notice for details.",
     disclaimer: "BKNY is not a medical device and does not give medical advice. Nutrient values are AI estimates and may contain errors. If you have a health condition, take medication or supplements, are pregnant or have an eating disorder, talk to your doctor or dietitian about nutrition and fasting.",
     privacyLink: "Privacy notice",
-    other: { href: "/tanitim", label: "Türkçe" },
+    other: { href: "/", label: "Türkçe" },
     jsonLd: { description: "AI-assisted nutrition and wellbeing tracker: photo meal analysis, water, supplements, sleep, activity and goal tracking, in Turkish and English." },
   },
 };
 
 /** Herkese açık, sunucuda üretilen tanıtım sayfası (arama motorları için içerik). */
-export function Landing({ lang }: { lang: "tr" | "en" }) {
+export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
   const c = COPY[lang];
-  const url = `${SITE_URL}${lang === "tr" ? "/tanitim" : "/en"}`;
+  const url = `${SITE_URL}${path ?? (lang === "tr" ? "/tanitim" : "/en")}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",

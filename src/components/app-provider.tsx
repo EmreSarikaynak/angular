@@ -53,6 +53,12 @@ export function useApp(): AppState {
   return v;
 }
 
+/** Sunucu tarafındaki ana adres ayrımı için oturum çerezini hemen eşitler (bkz. src/proxy.ts). */
+function syncAuthCookie(signedIn: boolean) {
+  const secure = location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = signedIn ? `bt_auth=1; Path=/; Max-Age=31536000; SameSite=Lax${secure}` : `bt_auth=; Path=/; Max-Age=0; SameSite=Lax${secure}`;
+}
+
 function applyTheme(theme: Theme) {
   const dark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
   document.documentElement.classList.toggle("dark", dark);
@@ -97,7 +103,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setSession(data.session);
       setReady(true);
     });
-    const { data: sub } = sb.auth.onAuthStateChange((_event, s) => setSession(s));
+    const { data: sub } = sb.auth.onAuthStateChange((_event, s) => {
+      syncAuthCookie(!!s);
+      setSession(s);
+    });
 
     const on = () => setOnline(true);
     const off = () => setOnline(false);
@@ -115,6 +124,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     document.documentElement.lang = lang;
   }, [lang]);
+
+  // Ana adres ("/") oturumu olanlara uygulamayı, olmayanlara tanıtım sayfasını gösterir; sunucu bunu çerezden anlar.
+  useEffect(() => {
+    if (!ready) return;
+    syncAuthCookie(!!session);
+  }, [ready, session]);
 
   useEffect(() => {
     applyTheme(theme);

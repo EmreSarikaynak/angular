@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
       { source: "/(.*)", headers: securityHeaders },
       // Giriş gerektiren uygulama sayfaları ve paylaşım bağlantıları arama sonuçlarına girmez; yalnızca açık sayfalar indekslenir.
       {
-        source: "/((?!(?:tanitim|en|login|register|privacy|_next|icons|fonts|api)(?:/|$)|sw\\.js|manifest\\.webmanifest|robots\\.txt|sitemap\\.xml|icon\\.png).*)",
+        source: "/((?!$|(?:tanitim|en|login|register|privacy|_next|icons|fonts|api)(?:/|$)|sw\\.js|manifest\\.webmanifest|robots\\.txt|sitemap\\.xml|icon\\.png).*)",
         headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
       },
       { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }, { key: "Service-Worker-Allowed", value: "/" }] },

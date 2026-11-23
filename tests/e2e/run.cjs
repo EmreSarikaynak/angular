@@ -46,9 +46,15 @@ const ok = (name) => console.log(`  ✓ ${String(++step).padStart(2, "0")} ${nam
   await new Promise((r) => setTimeout(r, 31_000)); // sunucudaki ayar önbelleğinin (30 sn) yenilenmesini bekle
 
   // 1. Korumalı sayfa girişe yönlendirir
-  await page.goto(APP + "/");
+  await page.goto(APP + "/diary");
   await page.waitForURL("**/login");
   ok("oturumsuz kullanıcı giriş sayfasına yönlenir");
+  // Ana adreste ziyaretçiye tanıtım sayfası gösterilir (arama motorları için); oradan giriş sayfasına gidilir.
+  await page.goto(APP + "/");
+  await page.getByRole("heading", { level: 1, name: "Bugün kendin için ne yaptın?" }).waitFor();
+  await page.getByRole("link", { name: "Giriş yap" }).first().click();
+  await page.waitForURL("**/login");
+  ok("ana adres ziyaretçiye tanıtım sayfasını gösterir");
 
   // 2. Kayıt doğrulamaları
   await page.goto(APP + "/register");
