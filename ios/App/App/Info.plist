@@ -28,6 +28,11 @@
 	<string>BKN, galerinizden seçtiğiniz yemek fotoğrafını analiz etmek için fotoğraflarınıza erişir.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<!-- Yalnızca bildirim için Firebase kullanılır; Analytics verisi toplanmaz. -->
+	<key>FIREBASE_ANALYTICS_COLLECTION_ENABLED</key>
+	<false/>
+	<key>GOOGLE_ANALYTICS_ADID_COLLECTION_ENABLED</key>
+	<false/>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
