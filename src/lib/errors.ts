@@ -15,6 +15,7 @@ export function errorText(code: string, t: (s: string, v?: Record<string, string
     case "ai_not_configured":
     case "server_not_configured":
       return t("Yapay zekâ servisi şu anda kullanılamıyor. Elle kayıt ekleyebilirsiniz.");
+    case "timeout":
     case "ai_timeout":
       return t("Analiz zaman aşımına uğradı. Lütfen tekrar deneyin.");
     case "ai_busy":

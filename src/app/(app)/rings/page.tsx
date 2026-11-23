@@ -1,6 +1,6 @@
 "use client";
-import { Suspense, useEffect, useState } from "react";
-import { Camera, CircleDot, Image as ImageIcon, Trash2 } from "lucide-react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { Camera, CircleDot, Image as ImageIcon, Trash2, X } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { ActivityRings, RingLegend } from "@/components/activity-rings";
 import { DateNav, useDateParam } from "@/components/date-nav";
@@ -27,6 +27,16 @@ function RingsInner() {
   const [source, setSource] = useState<"manual" | "screenshot">("manual");
   const [busy, setBusy] = useState<"scan" | "save" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // Okuma sürerken geçen süreyi göster (kullanıcı takıldığını anlasın, iptal edebilsin).
+  useEffect(() => {
+    if (busy !== "scan") return;
+    setElapsed(0);
+    const id = window.setInterval(() => setElapsed((n) => n + 1), 1000);
+    return () => window.clearInterval(id);
+  }, [busy]);
 
   useEffect(() => {
     if (dirty) return;
@@ -48,9 +58,15 @@ function RingsInner() {
     if (!file) return;
     setBusy("scan");
     setError(null);
+    const ctl = new AbortController();
+    abortRef.current = ctl;
     try {
-      const image = await compressImage(file, 1600, 0.85);
-      const res = await api<{ result: Form & { is_rings: boolean } }>("/api/ai/rings", { body: { image: { data: image.base64, mimeType: image.mimeType } } });
+      // Küçültme de zaman aşımına bağlıdır: çözülemeyen görsel arayüzü kilitlemesin.
+      const image = await Promise.race([
+        compressImage(file, 1280, 0.82),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("image_timeout")), 20_000)),
+      ]);
+      const res = await api<{ result: Form & { is_rings: boolean } }>("/api/ai/rings", { body: { image: { data: image.base64, mimeType: image.mimeType } }, signal: ctl.signal });
       void refreshConfig();
       const r = res.result;
       if (!r.is_rings || (r.move_kcal == null && r.exercise_min == null && r.stand_hours == null && r.steps == null)) {
@@ -66,10 +82,16 @@ function RingsInner() {
       setDirty(true);
       toast(t("Değerler okundu. Kontrol edip kaydedin."), "info");
     } catch (e) {
-      setError(errorText(e instanceof ApiError ? e.code : ((e as Error).message ?? ""), t));
+      const code = e instanceof ApiError ? e.code : (e as Error).message === "image_timeout" ? "timeout" : ((e as Error).message ?? "");
+      if (code !== "cancelled") setError(errorText(code, t));
     } finally {
+      abortRef.current = null;
       setBusy(null);
     }
+  }
+
+  function cancelScan() {
+    abortRef.current?.abort();
   }
 
   async function save() {
@@ -130,16 +152,32 @@ function RingsInner() {
           ) : (
             <Empty icon={<CircleDot size={22} />} title={t("Bu gün için halka kaydı yok")} text={t("Saatinizdeki ya da telefonunuzdaki aktivite ekranının görüntüsünü yükleyin; değerleri okuyup halkaları burada çizelim.")} />
           )}
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <Button loading={busy === "scan"} disabled={!aiReady} onClick={() => document.getElementById("bkn-rings-gallery")?.click()}>
-              <ImageIcon size={16} />
-              {t("Ekran görüntüsü yükle")}
-            </Button>
-            <Button variant="secondary" disabled={!aiReady || busy === "scan"} onClick={() => document.getElementById("bkn-rings-camera")?.click()}>
-              <Camera size={16} />
-              {t("Fotoğrafını çek")}
-            </Button>
-          </div>
+          {busy === "scan" ? (
+            <div className="mt-4 flex items-center gap-3 rounded-2xl bg-surface-2 p-4" role="status" aria-live="polite">
+              <span className="h-6 w-6 shrink-0 animate-spin rounded-full border-[3px] border-primary border-t-transparent" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold">{t("Görüntü okunuyor…")}</p>
+                <p className="text-xs text-muted">{elapsed < 15 ? t("Genellikle birkaç saniye sürer.") : t("Beklenenden uzun sürüyor ({n} sn). İptal edip yeniden deneyebilirsiniz.", { n: elapsed })}</p>
+              </div>
+              <button type="button" onClick={cancelScan} aria-label={t("İptal")} className="grid h-10 shrink-0 place-items-center rounded-xl bg-surface px-3 text-sm font-semibold text-muted">
+                <span className="flex items-center gap-1">
+                  <X size={14} />
+                  {t("İptal")}
+                </span>
+              </button>
+            </div>
+          ) : (
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <Button size="lg" className="w-full" disabled={!aiReady} onClick={() => document.getElementById("bkn-rings-gallery")?.click()}>
+                <ImageIcon size={18} />
+                {t("Ekran görüntüsü yükle")}
+              </Button>
+              <Button size="lg" variant="secondary" className="w-full" disabled={!aiReady} onClick={() => document.getElementById("bkn-rings-camera")?.click()}>
+                <Camera size={18} />
+                {t("Fotoğrafını çek")}
+              </Button>
+            </div>
+          )}
           {!aiReady && <p className="mt-2 text-xs text-warn">{t("Görüntüden okuma için bağlantı ve yapay zekâ servisi gerekir; değerleri elle girebilirsiniz.")}</p>}
           {error && <p role="alert" className="mt-3 rounded-xl bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p>}
           <p className="mt-3 text-xs text-muted">{t("Halka kaydı olan günlerde yakılan kalori için cihazınızın ölçtüğü değer kullanılır; aktivite ve adım tahminiyle toplanmaz.")}</p>

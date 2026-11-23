@@ -1205,4 +1205,8 @@ export const EN: Record<string, string> = {
   "Kapat": "Close",
   "Bu bölüm profilinizde kullanılmıyor": "This section is not used with your profile",
   "Ana sayfaya dön": "Back to home",
+  "Görüntü okunuyor…": "Reading the image…",
+  "Genellikle birkaç saniye sürer.": "It usually takes a few seconds.",
+  "Beklenenden uzun sürüyor ({n} sn). İptal edip yeniden deneyebilirsiniz.": "This is taking longer than expected ({n} s). You can cancel and try again.",
+  "İptal": "Cancel",
 };

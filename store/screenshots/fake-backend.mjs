@@ -81,6 +81,9 @@ T.daily_logs.push({ id: uid(), user_id: USER_ID, entry_date: TODAY, steps: 5230,
 for (let i = 1; i <= 13; i++) T.daily_logs.push({ id: uid(), user_id: USER_ID, entry_date: day(i), steps: steps[i - 1], sleep_hours: 6.4 + (i % 5) * 0.4, sleep_quality: 3 + (i % 3 === 0 ? 1 : 0), mood: 3 + (i % 2), energy: 3 + (i % 2), stress: 2 + (i % 3 === 0 ? 1 : 0), note: null });
 const weights = [68, 67.8, 67.5, 67.1, 66.9, 66.4, 66.2, 65.8, 65.5, 65.2, 64.9, 64.7, 64.6];
 weights.forEach((w, i) => T.body_measurements.push({ id: uid(), user_id: USER_ID, entry_date: day(12 - i), weight_kg: w, waist_cm: 78 - i * 0.2, hip_cm: null, chest_cm: null, body_fat_pct: null, bmi: Math.round((w / (1.68 * 1.68)) * 10) / 10, note: null }));
+const ringRow = (date, m, e, st, steps) => ({ id: uid(), user_id: USER_ID, entry_date: date, move_kcal: m, move_goal: 600, exercise_min: e, exercise_goal: 30, stand_hours: st, stand_goal: 12, steps, distance_km: Math.round(steps / 13) / 100, source: "manual" });
+T.health_rings.push(ringRow(TODAY, 468, 41, 9, 5230));
+[[540, 32, 12, 9100], [310, 18, 8, 6200], [655, 47, 11, 10450], [420, 29, 10, 7480], [600, 30, 12, 8800], [250, 12, 6, 4300]].forEach((r, i) => T.health_rings.push(ringRow(day(i + 1), ...r)));
 const sup = (name, dose, times, stock, per = 1) => ({ id: uid(), user_id: USER_ID, name, dose, times, active: true, note: null, stock_count: stock, per_dose: per, created_at: at(day(15), "10:00") });
 const D = sup(t("D vitamini", "Vitamin D"), t("1 damla, 1000 IU", "1 drop, 1000 IU"), ["08:00"], 42), O = sup("Omega-3", t("1 kapsül", "1 capsule"), ["13:00"], 9), M = sup(t("Magnezyum", "Magnesium"), t("1 tablet, 200 mg", "1 tablet, 200 mg"), ["21:30"], 24);
 T.supplements.push(D, O, M);

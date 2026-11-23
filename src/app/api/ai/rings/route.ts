@@ -57,5 +57,7 @@ export async function POST(req: Request) {
     validate: result,
     cacheParts: [createHash("sha256").update(image.data).digest("hex")],
     temperature: 0,
+    // İki deneme (24 sn + 24 sn) Vercel'in 60 sn sınırını aşmaz; takılırsa kullanıcı JSON hata alır.
+    timeoutMs: 24_000,
   });
 }
