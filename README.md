@@ -105,9 +105,9 @@ Yönetim paneli: `/admin`. Panel kişisel sağlık kayıtlarını göstermez.
 3. Dağıtın, ardından Supabase'de Site URL'yi yayın adresiyle güncelleyin.
 4. **Hatırlatmalar (su, takviye, protein, eğilim, akşam kapanışı, özet):** `/api/cron/reminders` ucu düzenli çağrılmalıdır. Vercel Hobby planı günde birden sık cron'a izin vermediği için depoda `vercel.json` cron tanımı **yoktur**; ücretsiz bir dış zamanlayıcı kullanın:
    - Vercel'de `CRON_SECRET` (uzun rastgele bir metin) ve bildirim anahtarlarını ekleyin: `npx web-push generate-vapid-keys` ile üretilen `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` ve `VAPID_SUBJECT` (`mailto:siz@ornek.com`). Ardından yeniden dağıtın.
-   - [cron-job.org](https://cron-job.org) (ücretsiz) üzerinde 5 dakikada bir çalışan bir iş oluşturun. URL: `https://<adresiniz>/api/cron/reminders`, yöntem GET, başlık: `Authorization: Bearer <CRON_SECRET>`.
+   - [cron-job.org](https://cron-job.org) (ücretsiz) üzerinde **15 dakikada bir** (`*/15 * * * *`) çalışan bir iş oluşturun. Bildirim saatleri 15 dakikalık adımlarla (19:00, 19:15 …) ayarlandığı için bu sıklık yeterlidir. URL: `https://<adresiniz>/api/cron/reminders`, yöntem GET, başlık: `Authorization: Bearer <CRON_SECRET>`.
    - Alternatif: Supabase `pg_cron` + `pg_net`, GitHub Actions `schedule` (zamanlama gecikebilir) ya da Vercel Pro planında `vercel.json` içine `"crons": [{ "path": "/api/cron/reminders", "schedule": "*/10 * * * *" }]` eklemek.
-   - Takviye saatlerinin dakikliği çağrı sıklığına bağlıdır (öneri: 5–10 dakika). Push yapılandırılmazsa su ve takviye hatırlatmaları yalnızca uygulama açıkken yerel bildirim olarak gösterilir; protein, eğilim, akşam ve özet bildirimleri gönderilmez.
+   - Takviye saatlerinin dakikliği çağrı sıklığına bağlıdır (15 dakikalık adımlarla ayarlanan saatler için 15 dakika yeterlidir). Push yapılandırılmazsa su ve takviye hatırlatmaları yalnızca uygulama açıkken yerel bildirim olarak gösterilir; protein, eğilim, akşam ve özet bildirimleri gönderilmez.
 
 Başka bir Node.js barındırma ortamında `npm run build && npm start` yeterlidir; cron ucunu kendi zamanlayıcınızla çağırın.
 
