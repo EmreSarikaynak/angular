@@ -44,3 +44,29 @@ export function ramadanDefaultMeal(nowMin: number, iftar: string, sahur: string)
   if (untilSahur <= 150) return "breakfast";
   return sinceIftar <= 180 ? "dinner" : "night";
 }
+
+const fmt = (min: number) => {
+  const m = ((min % 1440) + 1440) % 1440;
+  return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+};
+const round5 = (n: number) => Math.round(n / 5) * 5;
+
+export interface RamadanSlot {
+  key: "iftar" | "snack" | "sahur";
+  time: string;
+  kcal: number;
+  protein_g: number;
+}
+
+/**
+ * Oruçlu gün için günlük hedefleri üç öğüne böler: iftar, iftardan ~2 saat sonra ara öğün ve sahur.
+ * Protein yeme penceresine yayılır (iftar %35, ara öğün %25, sahur %40); kalori %40 / %20 / %40.
+ * Sahur, imsaktan ~45 dakika önceye konur. Değerler hedeflerin bölünmesidir, tıbbi öneri değildir.
+ */
+export function ramadanProgram(kcalTarget: number, proteinTarget: number, iftar: string, sahur: string): RamadanSlot[] {
+  const kcal = [0.4, 0.2, 0.4];
+  const protein = [0.35, 0.25, 0.4];
+  const times = [toMin(iftar), toMin(iftar) + 120, toMin(sahur) - 45];
+  const keys = ["iftar", "snack", "sahur"] as const;
+  return keys.map((key, i) => ({ key, time: fmt(times[i]), kcal: round5(kcalTarget * kcal[i]), protein_g: round5(proteinTarget * protein[i]) }));
+}

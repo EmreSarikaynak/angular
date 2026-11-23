@@ -3,6 +3,7 @@ import { mealLabel } from "@/lib/bkn/ramadan";
 import { useState } from "react";
 import { CalendarDays, Check, Copy, Plus, ShoppingCart, Sparkles } from "lucide-react";
 import { useApp } from "@/components/app-provider";
+import { RamadanProgram } from "@/components/ramadan-program";
 import { Button, Card, Empty, Field, Input, PageHeader, Segmented, Skeleton, cx } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
 import { useMealPlans } from "@/lib/data/hooks";
@@ -34,7 +35,7 @@ export default function PlanPage() {
     setBusy(true);
     setError(null);
     try {
-      const res = await api<{ result: MealPlanData }>("/api/ai/meal-plan", { body: { lang, note: note.trim() || undefined } });
+      const res = await api<{ result: MealPlanData }>("/api/ai/meal-plan", { body: { lang, note: note.trim() || undefined, ramadan: profile?.ramadan_mode || undefined } });
       await upsertRow("meal_plans", { id: uuid(), entry_date: today, plan: res.result, checked: [] });
       void refreshConfig();
       setDay(1);
@@ -83,6 +84,7 @@ export default function PlanPage() {
   return (
     <div className="mx-auto max-w-3xl">
       <PageHeader title={t("Haftalık öğün planı")} subtitle={t("Hedeflerinize ve tercihlerinize göre 7 gün")} />
+      <RamadanProgram />
 
       <Card className="mb-4 space-y-3">
         <Field label={t("Bu hafta için isteğiniz (isteğe bağlı)")}>

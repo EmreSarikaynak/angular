@@ -18,14 +18,53 @@ interface ServiceAccount {
 
 let cached: ServiceAccount | null | undefined;
 
+/**
+ * Ortam değişkenindeki servis hesabı metnini okur. Yapıştırma sırasında sık görülen bozulmalara toleranslıdır:
+ * çevreleyen tırnaklar, özel anahtarın içindeki gerçek satır sonları ve base64 olarak kodlanmış JSON.
+ */
+export function parseServiceAccount(raw: string | undefined): ServiceAccount | null {
+  let text = (raw ?? "").trim();
+  if (!text) return null;
+  if (!text.startsWith("{") && !text.startsWith('"')) {
+    try {
+      text = Buffer.from(text, "base64").toString("utf8").trim();
+    } catch {
+      return null;
+    }
+  }
+  const attempts: string[] = [text];
+  // Dize içindeki gerçek satır sonlarını \n kaçışına çevir (JSON'da geçersizdirler).
+  let fixed = "";
+  let inString = false;
+  let escaped = false;
+  for (const ch of text) {
+    if (inString && ch === "\n") fixed += "\\n";
+    else if (inString && ch === "\r") continue;
+    else fixed += ch;
+    if (escaped) escaped = false;
+    else if (ch === "\\") escaped = inString;
+    else if (ch === '"') inString = !inString;
+  }
+  attempts.push(fixed);
+  for (const a of attempts) {
+    try {
+      let v: unknown = JSON.parse(a);
+      if (typeof v === "string") v = JSON.parse(v); // tamamı tırnak içine alınmış JSON
+      const acc = v as ServiceAccount;
+      if (acc?.project_id && acc.client_email && acc.private_key) {
+        // Anahtar, kaçışsız yazılmışsa satır sonları "\\n" olarak kalmış olabilir.
+        return { ...acc, private_key: acc.private_key.replace(/\\n/g, "\n") };
+      }
+    } catch {
+      /* sıradaki denemeye geç */
+    }
+  }
+  return null;
+}
+
 function account(): ServiceAccount | null {
   if (cached !== undefined) return cached;
-  try {
-    const parsed = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT ?? "") as ServiceAccount;
-    cached = parsed.project_id && parsed.client_email && parsed.private_key ? parsed : null;
-  } catch {
-    cached = null;
-  }
+  cached = parseServiceAccount(process.env.FIREBASE_SERVICE_ACCOUNT);
   return cached;
 }
 
