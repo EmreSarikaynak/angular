@@ -15,6 +15,7 @@ export default function PrivacyPage() {
         t("Profil bilgileri: doğum tarihi, cinsiyet, boy, kilo, hedefler, alerjiler ve beslenme tercihleri."),
         t("Sağlık ve yaşam kayıtları: öğünler, içecekler, su, aktiviteler, adım, vücut ölçümleri, uyku, ruh hali ve notlar."),
         t("Yemek fotoğrafları (saklamayı açık bıraktıysanız)."),
+        t("Mobil uygulamada, izin verirseniz telefonunuzun sağlık deposundan (Apple Sağlık veya Health Connect; saatinizin verileri dahil) adım, mesafe, aktif kalori, egzersiz, uyku, antrenman ve kilo bilgileri yalnızca okunur. Bu veriler reklam, pazarlama veya üçüncü taraflarla paylaşım için kullanılmaz; izni istediğiniz zaman sistem ayarlarından kapatabilirsiniz."),
       ],
     ],
     [
