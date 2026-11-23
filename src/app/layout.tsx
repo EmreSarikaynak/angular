@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: "BKNY", statusBarStyle: "default" },
   icons: { icon: [{ url: "/icons/icon-192.png", sizes: "192x192" }], apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }] },
   robots: { index: false, follow: false },
+  // Google Search Console alan adı doğrulaması.
+  verification: { google: "mCjLwpDFsR6D9WzDgUGC5EBYsT11QKO4hXuhYQsy4js" },
 };
 
 export const viewport: Viewport = {
