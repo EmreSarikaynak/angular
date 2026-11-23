@@ -16,7 +16,7 @@ interface MessagingPlugin {
   requestPermissions(): Promise<{ receive: "prompt" | "prompt-with-rationale" | "granted" | "denied" }>;
   getToken(): Promise<{ token: string }>;
   deleteToken(): Promise<void>;
-  createChannel(options: { id: string; name: string; description?: string; importance: 1 | 2 | 3 | 4 | 5 }): Promise<void>;
+  createChannel(options: { id: string; name: string; description?: string; importance: 1 | 2 | 3 | 4 | 5; visibility?: -1 | 0 | 1; vibration?: boolean; lights?: boolean; lightColor?: string }): Promise<void>;
   addListener(event: "tokenReceived", fn: (e: { token: string }) => void): Promise<Handle>;
   addListener(event: "notificationActionPerformed", fn: (e: { notification?: { data?: unknown } }) => void): Promise<Handle>;
 }
@@ -37,7 +37,9 @@ async function register(token: string) {
 async function ensureChannel() {
   if (Capacitor.getPlatform() !== "android") return;
   // Android 8+: "Hatırlatmalar" bildirim kanalı (sunucu gönderimindeki channel_id ile aynı).
-  await Messaging.createChannel({ id: "bkn_reminders", name: "Hatırlatmalar", description: "Su, takviye ve hedef hatırlatmaları", importance: 4 }).catch(() => {});
+  // Kanal ayarları kanal oluşturulduktan sonra değişmez; bu yüzden ayar değişince yeni kimlik (v2) kullanılır.
+  // Önem 5: sesli, titreşimli, ekranın üstünde açılan (heads-up) bildirim.
+  await Messaging.createChannel({ id: "bkn_reminders_v2", name: "Hatırlatmalar", description: "Su, takviye ve hedef hatırlatmaları", importance: 5, visibility: 1, vibration: true, lights: true, lightColor: "#1F9D76" }).catch(() => {});
 }
 
 /** İzin ister, belirteci alıp sunucuya kaydeder. */

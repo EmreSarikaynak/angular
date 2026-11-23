@@ -673,7 +673,7 @@ await test("hatırlatma FCM ile gider: JWT imzası doğrulanır, geçersiz belir
     assert.match(h.title, /💧/);
     assert.match(h.body, /ml/);
     assert.equal(h.url, "/water");
-    assert.equal(h.android.channel_id, "bkn_reminders");
+    assert.equal(h.android.channel_id, "bkn_reminders_v2");
     assert.equal(h.apns, true);
   }
   assert.deepEqual((await tokensOf(C.id)).map((t) => t.token).sort(), [GOOD, GOOD2].sort(), "geçersiz (UNREGISTERED) belirteç silinmeli");
