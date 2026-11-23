@@ -1,5 +1,7 @@
 "use client";
 
+import { isNative } from "@/lib/native";
+
 interface Recognition {
   lang: string;
   continuous: boolean;
@@ -18,6 +20,9 @@ function ctor(): (new () => Recognition) | null {
 }
 
 export function speechSupported(): boolean {
+  // Yerel uygulamanın WebView'inde tarayıcı konuşma tanıma güvenilir değildir (mikrofon/konuşma
+  // izni istenmeden ekran donabilir). Orada klavyenin kendi dikte (mikrofon) düğmesi kullanılır.
+  if (isNative()) return false;
   return !!ctor();
 }
 
