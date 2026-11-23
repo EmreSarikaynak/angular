@@ -183,7 +183,7 @@ export default function FridgePage() {
     const d = daysLeft(item, today);
     if (status === "unknown" || d == null) return null;
     if (status === "expired") return <span className="inline-flex items-center gap-1 text-xs font-medium text-danger"><TriangleAlert size={12} />{t("Süresi geçmiş olabilir")}</span>;
-    const text = d === 0 ? t("Bugün son gün") : t("{n} gün kaldı", { n: d });
+    const text = d === 0 ? t("Bugün son gün") : d === 1 ? t("1 gün kaldı") : t("{n} gün kaldı", { n: d });
     return <span className={cx("inline-flex items-center gap-1 text-xs font-medium", status === "soon" ? "text-warn" : "text-muted")}>{status === "soon" && <Clock size={12} />}{text}</span>;
   };
 

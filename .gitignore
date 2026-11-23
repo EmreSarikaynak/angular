@@ -50,3 +50,8 @@ tests/e2e/screenshots/
 
 # Capacitor iOS: cap sync bu makineye özel (mutlak yollu) bağlantıyı yeniden üretir
 ios/App/CapApp-SPM/symlinks/
+
+# Mağaza görselleri (büyük dosyalar; betikle yeniden üretilir)
+store/screenshots/tr/
+store/screenshots/en/
+store/dist/
