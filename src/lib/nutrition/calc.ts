@@ -44,9 +44,17 @@ export function round5(n: number): number {
  * Günlük hedefler.
  * - Enerji: BMR × hareketlilik katsayısı (TDEE), hedefe göre haftalık ~7700 kcal/kg açık/fazla.
  * - Güvenlik tabanı: kadınlarda 1200, erkeklerde 1500 kcal'in altına ve BMR'nin %80'inin altına inilmez.
- * - Protein: hedefe göre 1.4–1.8 g/kg, yağ: enerjinin %28'i, kalan: karbonhidrat.
+ * - Protein: kilo verirken/alırken 1.6, korurken 1.2 g/kg. Obez kişilerde gerçek kilo yerine ayarlanmış kilo
+ *   (ideal + fazlanın %25'i) kullanılır; enerjinin %30'unu ve günde 150 g'ı geçmez. Yağ: enerjinin %28'i, kalan: karbonhidrat.
  * - Su: ~33 ml/kg (1500–4000 ml arası), 50 ml'ye yuvarlanır.
  */
+/** Protein hesabında kullanılan kilo: VKİ 27'ye kadar gerçek kilo, üstünde ideal kilo + fazlanın %25'i. */
+export function proteinReferenceWeight(weightKg: number, heightCm: number): number {
+  const m = heightCm / 100;
+  const ideal = 22 * m * m;
+  return weightKg / (m * m) > 27 ? ideal + 0.25 * (weightKg - ideal) : weightKg;
+}
+
 export function calculateTargets(input: TargetInput): Targets {
   const bmr = bmrMifflin(input.sex, input.weight_kg, input.height_cm, input.age);
   const tdee = bmr * ACTIVITY_FACTORS[input.activity_level];
@@ -61,10 +69,10 @@ export function calculateTargets(input: TargetInput): Targets {
   if (input.goal === "lose") kcal = Math.max(kcal, Math.min(floor, tdee));
   kcal = round5(kcal);
 
-  const proteinPerKg = input.goal === "lose" ? 1.8 : input.goal === "gain" ? 1.7 : 1.4;
-  let protein = Math.round(proteinPerKg * input.weight_kg);
-  // Protein enerjinin %35'ini geçmesin.
-  protein = Math.min(protein, Math.round((kcal * 0.35) / 4));
+  const proteinPerKg = input.goal === "lose" || input.goal === "gain" ? 1.6 : 1.2;
+  let protein = Math.round(proteinPerKg * proteinReferenceWeight(input.weight_kg, input.height_cm));
+  // Protein enerjinin %30'unu ve günde 150 g'ı geçmesin (yüksek kilolarda rakamların şişmemesi için).
+  protein = Math.min(protein, Math.round((kcal * 0.3) / 4), 150);
   const fat = Math.round((kcal * 0.28) / 9);
   const carbs = Math.max(0, Math.round((kcal - protein * 4 - fat * 9) / 4));
   const water = Math.min(4000, Math.max(1500, Math.round((input.weight_kg * 33) / 50) * 50));

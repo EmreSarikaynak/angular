@@ -15,7 +15,7 @@ describe("hedef hesaplama", () => {
     const t = calculateTargets({ sex: "male", age: 30, height_cm: 180, weight_kg: 80, activity_level: "moderate", goal: "lose", weekly_rate_kg: 0.5 });
     expect(t.tdee).toBe(2759);
     expect(t.kcal_target).toBe(2210);
-    expect(t.protein_target_g).toBe(144);
+    expect(t.protein_target_g).toBe(128);
     const fromMacros = t.protein_target_g * 4 + t.carbs_target_g * 4 + t.fat_target_g * 9;
     expect(Math.abs(fromMacros - t.kcal_target)).toBeLessThan(10);
     expect(t.water_target_ml).toBe(2650);
@@ -111,5 +111,21 @@ describe("referans besin tablosu", () => {
     const n = nutrientsFromReference(referenceFood("chicken_breast_grilled")!, 150);
     expect(n).toMatchObject({ kcal: 248, protein_g: 46.5, fat_g: 5.4 });
     expect(referenceFood("yok")).toBeUndefined();
+  });
+});
+
+describe("protein hedefi makul kalır", () => {
+  const base = { sex: "male" as const, age: 35, height_cm: 175, activity_level: "moderate" as const, weekly_rate_kg: 0.5 };
+  it("yüksek kilolarda ayarlanmış kilo kullanılır ve 150 g'ı geçmez", () => {
+    const t = calculateTargets({ ...base, weight_kg: 150, goal: "lose" });
+    expect(t.protein_target_g).toBeLessThanOrEqual(150);
+    expect(t.protein_target_g).toBeLessThan(1.6 * 150 * 0.7); // gerçek kiloyla hesaplanandan belirgin düşük
+    expect(t.protein_target_g * 4).toBeLessThanOrEqual(t.kcal_target * 0.3 + 4);
+  });
+  it("korumada 1.2 g/kg, normal kilolarda gerçek kilo", () => {
+    expect(calculateTargets({ ...base, weight_kg: 70, goal: "maintain" }).protein_target_g).toBe(84);
+  });
+  it("hiçbir profilde 150 g'ı aşmaz", () => {
+    for (const w of [60, 90, 120, 160, 200]) for (const goal of ["lose", "maintain", "gain"] as const) expect(calculateTargets({ ...base, weight_kg: w, goal }).protein_target_g).toBeLessThanOrEqual(150);
   });
 });

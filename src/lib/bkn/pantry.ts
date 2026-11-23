@@ -1,5 +1,6 @@
 import { addDays } from "../dates";
-import type { PantryItem, PantryLocation } from "../types";
+import type { PantryCategory, PantryItem, PantryLocation } from "../types";
+import { mentionsAlcohol } from "./alcohol";
 
 export type PantryStatus = "expired" | "soon" | "ok" | "unknown";
 
@@ -44,8 +45,17 @@ export const normalizeName = (s: string) => s.toLocaleLowerCase("tr").replace(/\
 
 export interface ScannedItem {
   name: string;
+  category?: PantryCategory;
   expires_on: string | null;
   shelf_days: number | null;
+  volume_ml?: number | null;
+  abv?: number | null;
+  kcal?: number | null;
+}
+
+/** Yemek önerisinde kullanılabilir mi? Alkollü ürünler ve takviyeler ASLA kullanılmaz. */
+export function suggestable(item: Pick<PantryItem, "name" | "category">): boolean {
+  return item.category !== "alcohol" && item.category !== "supplement" && !mentionsAlcohol(item.name);
 }
 
 /**
@@ -67,7 +77,19 @@ export function mergeScan(existing: readonly PantryItem[], scanned: readonly Sca
       if (s.expires_on && have.expiry_source === "estimate") update.push({ id: have.id, expires_on: s.expires_on, shelf_days: have.shelf_days, expiry_source: "label" });
       continue;
     }
-    add.push({ id: newId(), name: s.name.trim().slice(0, 80), location, added_on: today, expires_on: s.expires_on, shelf_days: s.expires_on ? null : s.shelf_days, expiry_source: s.expires_on ? "label" : "estimate" });
+    add.push({
+      id: newId(),
+      name: s.name.trim().slice(0, 80),
+      location,
+      added_on: today,
+      expires_on: s.expires_on,
+      shelf_days: s.expires_on ? null : s.shelf_days,
+      expiry_source: s.expires_on ? "label" : "estimate",
+      category: s.category ?? "food",
+      volume_ml: s.volume_ml ?? null,
+      abv: s.abv ?? null,
+      kcal: s.kcal ?? null,
+    });
   }
   return { add, update };
 }

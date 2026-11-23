@@ -297,6 +297,7 @@ export interface ShareLink {
 }
 
 export type PantryLocation = "fridge" | "freezer" | "pantry";
+export type PantryCategory = "food" | "drink" | "alcohol" | "supplement";
 export interface PantryItem {
   id: string;
   user_id?: string;
@@ -306,6 +307,10 @@ export interface PantryItem {
   expires_on: string | null;
   shelf_days: number | null;
   expiry_source: "label" | "estimate" | "user";
+  category?: PantryCategory;
+  volume_ml?: number | null;
+  abv?: number | null;
+  kcal?: number | null;
   created_at?: string;
 }
 

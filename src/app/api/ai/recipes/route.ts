@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { runStructured } from "@/lib/ai/run";
+import { sanitizeServing } from "@/lib/ai/nutrition-sanity";
+import { mentionsAlcohol } from "@/lib/bkn/alcohol";
 import { authenticate, json, userClient } from "@/lib/supabase/server";
 
 export const maxDuration = 60;
@@ -29,7 +31,10 @@ const result = z.object({
     )
     .min(1)
     .max(4),
-});
+}).transform((r) => ({
+  // Uçuk besin değerleri sınırlanır; alkol içeren öneri asla gösterilmez.
+  recipes: r.recipes.filter((x) => !mentionsAlcohol([x.name, x.steps, ...x.ingredients].join(" "))).map(sanitizeServing),
+}));
 
 const SCHEMA = {
   type: "OBJECT",
@@ -73,7 +78,7 @@ export async function POST(req: Request) {
 Rules: 3 recipes, one serving each, familiar Turkish home cooking or simple international dishes, ingredients available in a regular Turkish supermarket, at most 30 minutes.
 Nutrient values are per serving and must be realistic and consistent (4/4/9 kcal per g).
 STRICTLY exclude every ingredient the user is allergic to and respect the diet preferences.
-Never give medical advice and never recommend supplements or medication. "why" is one short sentence on why it fits the goal.`,
+NEVER suggest alcohol in any form (no alcoholic drinks, no cooking with wine, beer or spirits). Never give medical advice and never recommend supplements or medication. "why" is one short sentence on why it fits the goal.`,
     parts: [
       {
         text: `Goal: recipes that are ${FOCUS[input.focus]}.
