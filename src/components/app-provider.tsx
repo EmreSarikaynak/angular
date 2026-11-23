@@ -15,6 +15,7 @@ export interface RuntimeConfig {
   announcement: string;
   is_admin: boolean;
   push_available: boolean;
+  web_push_available: boolean;
   fcm_available: boolean;
 }
 
