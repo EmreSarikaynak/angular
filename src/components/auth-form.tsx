@@ -145,7 +145,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
         )}
       </form>
       <p className="mt-4 text-center text-xs text-muted">
-        <Link href="/tanitim" className="underline">
+        <Link href="/" className="underline">
           {t("BKNY nedir?")}
         </Link>
       </p>
