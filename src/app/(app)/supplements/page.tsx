@@ -2,6 +2,7 @@
 import { Suspense, useState } from "react";
 import { Check, Pencil, Pill, Plus, Trash2, X } from "lucide-react";
 import { useApp } from "@/components/app-provider";
+import { TimePicker15 } from "@/components/time-picker";
 import { DateNav, useDateParam } from "@/components/date-nav";
 import { Bar, Button, Card, Empty, Field, Input, NumberInput, PageHeader, Sheet, Skeleton, Switch, cx } from "@/components/ui";
 import { useSupplementLogs, useSupplements } from "@/lib/data/hooks";
@@ -182,7 +183,7 @@ function SupplementsInner() {
               <div className="space-y-2">
                 {editing.times.map((time, i) => (
                   <div key={i} className="flex gap-2">
-                    <Input type="time" value={time} aria-label={t("Saat {n}", { n: i + 1 })} onChange={(e) => setEditing({ ...editing, times: editing.times.map((x, j) => (j === i ? e.target.value : x)) })} />
+                    <TimePicker15 label={t("Saat {n}", { n: i + 1 })} value={time} onChange={(v) => setEditing({ ...editing, times: editing.times.map((x, j) => (j === i ? v : x)) })} />
                     {editing.times.length > 1 && (
                       <button type="button" aria-label={t("Saati kaldır")} onClick={() => setEditing({ ...editing, times: editing.times.filter((_, j) => j !== i) })} className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-surface-2 text-muted">
                         <X size={16} />

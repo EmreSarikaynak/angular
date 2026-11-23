@@ -12,6 +12,8 @@ import { ageFrom, toDateKey } from "@/lib/dates";
 import { download } from "@/lib/export";
 import { ACTIVITY_LEVEL_LABELS, ALLERGY_OPTIONS, DIET_OPTIONS, GOAL_LABELS, label } from "@/lib/i18n/labels";
 import { isNative } from "@/lib/native";
+import { TimePicker15 } from "@/components/time-picker";
+import { formatHHMM, toMinutes } from "@/lib/bkn/schedule";
 import { calculateTargets } from "@/lib/nutrition/calc";
 import { supabase } from "@/lib/supabase/client";
 import { disableNotifications, enableNotifications, unsupportedText } from "@/lib/push";
@@ -149,9 +151,6 @@ export default function ProfilePage() {
       toast(t("Kaydedilemedi."), "error");
     }
   }
-  const hours = Array.from({ length: 24 }, (_, h) => (
-    <option key={h} value={h}>{`${String(h).padStart(2, "0")}:00`}</option>
-  ));
   const toggleRow = (title: string, sub: string, checked: boolean, onChange: (v: boolean) => void) => (
     <div className="flex items-center justify-between gap-3">
       <div>
@@ -318,7 +317,7 @@ export default function ProfilePage() {
           <div className="grid grid-cols-3 gap-2">
             <Field label={t("Aralık")}>
               <Select value={profile.reminder_interval_min} onChange={(e) => notify({ reminder_interval_min: Number(e.target.value) })}>
-                {[30, 60, 90, 120, 180, 240].map((m) => (
+                {[15, 30, 45, 60, 90, 120, 180, 240].map((m) => (
                   <option key={m} value={m}>
                     {m < 60 ? `${m} ${t("dk")}` : `${m / 60} ${t("saat")}`}
                   </option>
@@ -326,14 +325,10 @@ export default function ProfilePage() {
               </Select>
             </Field>
             <Field label={t("Başlangıç")}>
-              <Select value={profile.reminder_start_hour} onChange={(e) => notify({ reminder_start_hour: Number(e.target.value) })}>
-                {hours}
-              </Select>
+              <TimePicker15 label={t("Başlangıç")} value={formatHHMM(toMinutes(profile.reminder_start_hour, profile.reminder_start_minute ?? 0))} onChange={(v) => notify({ reminder_start_hour: Number(v.slice(0, 2)), reminder_start_minute: Number(v.slice(3, 5)) })} />
             </Field>
             <Field label={t("Bitiş")}>
-              <Select value={profile.reminder_end_hour} onChange={(e) => notify({ reminder_end_hour: Number(e.target.value) })}>
-                {hours}
-              </Select>
+              <TimePicker15 label={t("Bitiş")} value={formatHHMM(toMinutes(profile.reminder_end_hour, profile.reminder_end_minute ?? 0))} onChange={(v) => notify({ reminder_end_hour: Number(v.slice(0, 2)), reminder_end_minute: Number(v.slice(3, 5)) })} />
             </Field>
           </div>
         )}
@@ -352,18 +347,14 @@ export default function ProfilePage() {
         {toggleRow(t("Protein hatırlatması"), t("Gün içinde protein hedefinin gerisindeyseniz tarif önerisiyle."), profile.notify_protein, (v) => notify({ notify_protein: v }, v))}
         {profile.notify_protein && (
           <Field label={t("Kontrol saati")}>
-            <Select value={profile.protein_check_hour} onChange={(e) => notify({ protein_check_hour: Number(e.target.value) })}>
-              {hours}
-            </Select>
+            <TimePicker15 label={t("Kontrol saati")} value={formatHHMM(toMinutes(profile.protein_check_hour, profile.protein_check_minute ?? 0))} onChange={(v) => notify({ protein_check_hour: Number(v.slice(0, 2)), protein_check_minute: Number(v.slice(3, 5)) })} />
           </Field>
         )}
         {toggleRow(t("Eğilim uyarıları"), t("Son 2–3 günde bir değer hedefin belirgin üstünde ya da altındaysa öneriyle; aynı konuda en çok 3 günde bir."), profile.notify_insights, (v) => notify({ notify_insights: v }, v))}
         {toggleRow(t("Akşam kapanışı"), t("Her akşam “Bugün kendin için ne yaptın?” sorusuyla günün kısa özeti."), profile.notify_evening, (v) => notify({ notify_evening: v }, v))}
         {profile.notify_evening && (
           <Field label={t("Kapanış saati")}>
-            <Select value={profile.evening_hour} onChange={(e) => notify({ evening_hour: Number(e.target.value) })}>
-              {hours}
-            </Select>
+            <TimePicker15 label={t("Kapanış saati")} value={formatHHMM(toMinutes(profile.evening_hour, profile.evening_minute ?? 0))} onChange={(v) => notify({ evening_hour: Number(v.slice(0, 2)), evening_minute: Number(v.slice(3, 5)) })} />
           </Field>
         )}
         {toggleRow(t("Performans özeti"), t("Her pazartesi haftalık, her ayın ilk günü aylık özet hazır olduğunda."), profile.notify_summary, (v) => notify({ notify_summary: v }, v))}

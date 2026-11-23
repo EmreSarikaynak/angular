@@ -8,6 +8,7 @@ import { proteinGap, trendInsights, type InsightKey } from "./insights";
 import { eveningNotice, insightNotice, proteinNotice, stockNotice, summaryNotice, supplementNotice, waterNotice, type Notice } from "./messages";
 import { LOW_STOCK_DAYS, stockDaysLeft } from "./fasting";
 import { inEatingWindow } from "./ramadan";
+import { inDailyWindow, inWindowFrom, toMinutes } from "./schedule";
 import { fcmConfigured, sendFcm } from "./fcm";
 import { pickRecipes } from "./recipes";
 
@@ -90,11 +91,9 @@ export async function runReminders(now = new Date()) {
     // Ramazan modunda su ve beslenme hatırlatmaları yalnızca iftar–sahur arasında gönderilir.
     const inWindow = p.ramadan_mode
       ? inEatingWindow(t.minutes, p.iftar_time, p.sahur_time)
-      : p.reminder_start_hour <= p.reminder_end_hour
-        ? t.hour >= p.reminder_start_hour && t.hour < p.reminder_end_hour
-        : t.hour >= p.reminder_start_hour || t.hour < p.reminder_end_hour;
+      : inDailyWindow(t.minutes, toMinutes(p.reminder_start_hour, p.reminder_start_minute ?? 0), toMinutes(p.reminder_end_hour, p.reminder_end_minute ?? 0));
     // Ramazan modunda protein kontrolü iftardan bir saat sonra yapılır.
-    const proteinHour = p.ramadan_mode ? (Number(p.iftar_time.slice(0, 2)) + 1) % 24 : p.protein_check_hour;
+    const proteinStart = p.ramadan_mode ? (Number(p.iftar_time.slice(0, 2)) * 60 + Number(p.iftar_time.slice(3, 5)) + 60) % 1440 : toMinutes(p.protein_check_hour, p.protein_check_minute ?? 0);
 
     try {
       // ── Takviyeler ────────────────────────────────────────────────────────
@@ -117,7 +116,7 @@ export async function runReminders(now = new Date()) {
       }
 
       // ── Akşam kapanışı: günün kısa özeti ──────────────────────────────────
-      if (p.notify_evening && t.hour === p.evening_hour && (await claim(p.id, "evening", t.date))) {
+      if (p.notify_evening && inWindowFrom(t.minutes, toMinutes(p.evening_hour, p.evening_minute ?? 0), 60) && (await claim(p.id, "evening", t.date))) {
         const [{ data: food }, { data: water }, { data: supps }, { data: logs }] = await Promise.all([
           db.from("food_entries").select("meal, protein_g").eq("user_id", p.id).eq("entry_date", t.date),
           db.from("water_logs").select("amount_ml").eq("user_id", p.id).eq("entry_date", t.date),
@@ -172,7 +171,7 @@ export async function runReminders(now = new Date()) {
       }
 
       // ── Protein açığı ─────────────────────────────────────────────────────
-      if (p.notify_protein && p.protein_target_g && t.hour >= proteinHour && t.hour < proteinHour + 3) {
+      if (p.notify_protein && p.protein_target_g && inWindowFrom(t.minutes, proteinStart, 180)) {
         const { data: food } = await db.from("food_entries").select("protein_g, kcal").eq("user_id", p.id).eq("entry_date", t.date);
         const protein = (food ?? []).reduce((s, f) => s + Number(f.protein_g), 0);
         const kcal = (food ?? []).reduce((s, f) => s + Number(f.kcal), 0);

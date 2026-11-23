@@ -43,14 +43,18 @@ export interface Profile {
   reminder_interval_min: number;
   reminder_start_hour: number;
   reminder_end_hour: number;
+  reminder_start_minute: number;
+  reminder_end_minute: number;
   notify_supplements: boolean;
   supplement_nag_min: number;
   notify_protein: boolean;
   protein_check_hour: number;
+  protein_check_minute: number;
   notify_insights: boolean;
   notify_summary: boolean;
   notify_evening: boolean;
   evening_hour: number;
+  evening_minute: number;
   fasting_target_hours: number;
   ramadan_mode: boolean;
   iftar_time: string;

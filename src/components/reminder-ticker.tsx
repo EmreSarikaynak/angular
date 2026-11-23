@@ -1,6 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { isNative } from "@/lib/native";
+import { inDailyWindow, toMinutes } from "@/lib/bkn/schedule";
 import { useApp } from "./app-provider";
 import { showLocalNotification } from "@/lib/push";
 import { fetchAll, fetchRange } from "@/lib/data/store";
@@ -20,8 +21,8 @@ export function ReminderTicker() {
   const water = local && !!profile?.reminder_enabled;
   const supps = local && !!profile?.notify_supplements;
   const interval = profile?.reminder_interval_min ?? 120;
-  const start = profile?.reminder_start_hour ?? 9;
-  const end = profile?.reminder_end_hour ?? 21;
+  const start = toMinutes(profile?.reminder_start_hour ?? 9, profile?.reminder_start_minute ?? 0);
+  const end = toMinutes(profile?.reminder_end_hour ?? 21, profile?.reminder_end_minute ?? 0);
   const target = profile?.water_target_ml ?? 2000;
   const nag = profile?.supplement_nag_min ?? 30;
 
@@ -49,7 +50,7 @@ export function ReminderTicker() {
           await showLocalNotification(n.title, n.body);
         }
       }
-      if (water && now.getHours() >= start && now.getHours() < end) {
+      if (water && inDailyWindow(now.getHours() * 60 + now.getMinutes(), start, end)) {
         const last = Number(localStorage.getItem("bt:last-reminder") ?? 0);
         if (!last) return localStorage.setItem("bt:last-reminder", String(Date.now()));
         if (Date.now() - last < interval * 60_000) return;
