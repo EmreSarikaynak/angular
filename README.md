@@ -103,7 +103,11 @@ Yönetim paneli: `/admin`. Panel kişisel sağlık kayıtlarını göstermez.
 1. Depoyu Vercel'e aktarın (uygulama deponun kökündedir; Root Directory ayarına gerek yoktur). Vercel varsayılan dalı (`master`) dağıtır: uygulamanın bulunduğu dalı ya `master`'a birleştirin ya da Settings › Git › Production Branch olarak seçin.
 2. Yukarıdaki ortam değişkenlerini Production ortamına ekleyin.
 3. Dağıtın, ardından Supabase'de Site URL'yi yayın adresiyle güncelleyin.
-4. **Hatırlatmalar (su, takviye, protein, eğilim, özet):** `vercel.json` içindeki cron 10 dakikada bir `/api/cron/reminders` ucunu çağırır; takviye saatlerinin dakikliği bu sıklığa bağlıdır (Vercel, `CRON_SECRET` değerini `Authorization: Bearer` başlığıyla kendisi gönderir). Vercel Hobby planı cron'u günde bir kezle sınırlar; sık hatırlatma için Pro plan ya da harici bir zamanlayıcı (ör. Supabase `pg_cron` + `pg_net`, cron-job.org) kullanın. Push yapılandırılmazsa su ve takviye hatırlatmaları yalnızca uygulama açıkken yerel bildirim olarak gösterilir; protein, eğilim ve özet bildirimleri gönderilmez.
+4. **Hatırlatmalar (su, takviye, protein, eğilim, akşam kapanışı, özet):** `/api/cron/reminders` ucu düzenli çağrılmalıdır. Vercel Hobby planı günde birden sık cron'a izin vermediği için depoda `vercel.json` cron tanımı **yoktur**; ücretsiz bir dış zamanlayıcı kullanın:
+   - Vercel'de `CRON_SECRET` (uzun rastgele bir metin) ve bildirim anahtarlarını ekleyin: `npx web-push generate-vapid-keys` ile üretilen `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` ve `VAPID_SUBJECT` (`mailto:siz@ornek.com`). Ardından yeniden dağıtın.
+   - [cron-job.org](https://cron-job.org) (ücretsiz) üzerinde 5 dakikada bir çalışan bir iş oluşturun. URL: `https://<adresiniz>/api/cron/reminders`, yöntem GET, başlık: `Authorization: Bearer <CRON_SECRET>`.
+   - Alternatif: Supabase `pg_cron` + `pg_net`, GitHub Actions `schedule` (zamanlama gecikebilir) ya da Vercel Pro planında `vercel.json` içine `"crons": [{ "path": "/api/cron/reminders", "schedule": "*/10 * * * *" }]` eklemek.
+   - Takviye saatlerinin dakikliği çağrı sıklığına bağlıdır (öneri: 5–10 dakika). Push yapılandırılmazsa su ve takviye hatırlatmaları yalnızca uygulama açıkken yerel bildirim olarak gösterilir; protein, eğilim, akşam ve özet bildirimleri gönderilmez.
 
 Başka bir Node.js barındırma ortamında `npm run build && npm start` yeterlidir; cron ucunu kendi zamanlayıcınızla çağırın.
 
