@@ -120,8 +120,25 @@ export async function sendFcm(deviceToken: string, msg: FcmMessage): Promise<Fcm
           token: deviceToken,
           notification: { title: msg.title, body: msg.body },
           data: { url: msg.url },
-          android: { priority: "HIGH", ttl: "3600s", notification: { ...(msg.tag ? { tag: msg.tag } : {}), channel_id: "bkn_reminders" } },
-          apns: { headers: { "apns-priority": "10", "apns-expiration": String(Math.floor(Date.now() / 1000) + 3600) }, payload: { aps: { sound: "default" } } },
+          android: {
+            priority: "HIGH",
+            ttl: "3600s",
+            notification: {
+              ...(msg.tag ? { tag: msg.tag } : {}),
+              channel_id: "bkn_reminders_v2",
+              // Sesli, titreşimli, ekranın üstünde açılan bildirim; kilit ekranında içerik görünür.
+              sound: "default",
+              default_vibrate_timings: true,
+              default_light_settings: true,
+              notification_priority: "PRIORITY_MAX",
+              visibility: "PUBLIC",
+              color: "#1F9D76",
+            },
+          },
+          apns: {
+            headers: { "apns-priority": "10", "apns-expiration": String(Math.floor(Date.now() / 1000) + 3600) },
+            payload: { aps: { sound: "default", "interruption-level": "active", ...(msg.tag ? { "thread-id": msg.tag } : {}) } },
+          },
         },
       }),
       signal: AbortSignal.timeout(10_000),

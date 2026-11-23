@@ -82,6 +82,10 @@ self.addEventListener("push", (event) => {
       badge: "/icons/badge-72.png",
       tag: data.tag || "bkn",
       renotify: true,
+      silent: false,
+      vibrate: [200, 100, 200],
+      timestamp: Date.now(),
+      lang: "tr",
       data: { url: data.url },
     }),
   );
