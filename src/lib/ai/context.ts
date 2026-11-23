@@ -98,6 +98,7 @@ export async function buildAssistantContext(db: SupabaseClient, today: string) {
           target_weight_kg: p.target_weight_kg,
           goal: p.goal,
           activity_level: p.activity_level,
+          ramadan_fasting: p.ramadan_mode ? { iftar_time: p.iftar_time, sahur_ends: p.sahur_time } : false,
           allergies: p.allergies,
           diet_preferences: p.diet_preferences,
           daily_targets: {

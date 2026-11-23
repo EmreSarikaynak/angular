@@ -55,6 +55,7 @@ export interface Profile {
   ramadan_mode: boolean;
   iftar_time: string;
   sahur_time: string;
+  ramadan_answered: string | null;
   onboarded_at: string | null;
   created_at?: string;
   updated_at?: string;
