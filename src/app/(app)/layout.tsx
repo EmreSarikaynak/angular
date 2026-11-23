@@ -8,6 +8,7 @@ import { supabaseConfigured } from "@/lib/supabase/client";
 import { cx } from "@/components/ui";
 import { Logo } from "@/components/logo";
 import { ReminderTicker } from "@/components/reminder-ticker";
+import { NativePush } from "@/components/native-push";
 
 function Splash() {
   return (
@@ -92,6 +93,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="lg:flex">
       <ReminderTicker />
+      <NativePush />
       <aside className="no-print sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-0.5 overflow-y-auto border-r border-border bg-surface p-4 lg:flex">
         <div className="mb-4 flex items-center gap-2 px-2">
           <Logo size={38} />

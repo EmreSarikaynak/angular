@@ -143,8 +143,22 @@ Simülatörde kontrol edin: kamera/galeri izni ve fotoğraf analizi, barkod okum
 - **Mağaza sayfası için:** gizlilik politikası adresi (`https://<alanadı>/privacy`), ekran görüntüleri, açıklama, yaş derecelendirmesi, Play'de "Veri güvenliği" ve "Sağlık uygulamaları" beyanı, Apple'da "App Privacy" ve inceleme için bir test hesabı. Hesap silme uygulama içinde mevcuttur (Profil › Hesabımı sil).
 - Apple, yalnızca siteyi saran uygulamaları reddedebilir (Guideline 4.2); kamera, barkod, çevrimdışı kayıt ve yerel bildirim bu riski azaltır.
 
+### Mobil bildirimler (Firebase Cloud Messaging)
+Tek bir hat hem Android'e hem iOS'a gider: iOS'ta bildirimi Apple'ın servisi (APNs) taşır, FCM onun önünde durur. Sunucu tarafında ek paket yoktur; `src/lib/bkn/fcm.ts` Google'ın REST arayüzünü kullanır ve mevcut hatırlatma motoru (`/api/cron/reminders`) web ve mobil cihazlara aynı anda gönderir. Cihaz belirteçleri `device_tokens` tablosunda tutulur; çıkışta ve bildirim kapatılınca silinir, geçersiz belirteçler gönderimde otomatik temizlenir.
+
+1. **Firebase projesi:** [console.firebase.google.com](https://console.firebase.google.com) › yeni proje (Analytics gerekmez).
+2. **Android uygulaması:** Project settings › Add app › Android, paket adı `tr.com.bkny.app`. İndirilen `google-services.json` dosyasını `android/app/` içine koyup commit'leyin (anahtar değil, istemci yapılandırmasıdır).
+3. **iOS uygulaması:** Add app › iOS, paket kimliği `tr.com.bkny.app`. İndirilen `GoogleService-Info.plist` dosyasını Xcode'da `App` klasörüne sürükleyin (Copy items if needed, "App" target'ı işaretli) ve commit'leyin.
+4. **APNs anahtarı (iOS):** [developer.apple.com](https://developer.apple.com/account) › Certificates, Identifiers & Profiles › Keys › **+** › "Apple Push Notifications service (APNs)" › `.p8` dosyasını indirin (yalnızca bir kez indirilir; Key ID ve Team ID'yi not edin). Firebase › Project settings › Cloud Messaging › Apple app configuration › APNs Authentication Key'e yükleyin.
+5. **Sunucu anahtarı:** Firebase › Project settings › Service accounts › Generate new private key. İnen JSON'un **tamamını** Vercel'de `FIREBASE_SERVICE_ACCOUNT` değişkenine yapıştırın (gizlidir, depoya koymayın) ve yeniden dağıtın.
+6. **Zamanlayıcı:** yukarıdaki "Hatırlatmalar" adımındaki `CRON_SECRET` ve cron-job.org çağrısını kurun.
+7. **Xcode:** App target › Signing & Capabilities'te *Push Notifications* ve *Background Modes › Remote notifications* görünmelidir (projede hazırdır; yoksa **+ Capability** ile ekleyin). Team'inizi seçin.
+8. `npm run cap:sync`, sonra uygulamayı yeniden derleyin.
+
+Deneme: **Android emülatöründe** (Google Play görüntülü) ve **gerçek iPhone'da** Profil › Bildirimler › "Bu cihazda bildirimleri aç"; sonra `curl -H "Authorization: Bearer $CRON_SECRET" https://<adres>/api/cron/reminders`. iOS simülatörü FCM belirteci alamayabilir; iOS bildirimlerini gerçek cihazda deneyin. Su hatırlatması için profilde su hatırlatmasının açık ve saat aralığının içinde olması gerekir.
+
 ### Bilinen sınırlar (ilk sürüm)
-- **Bildirimler:** Web Push mağaza uygulamasının içinde çalışmaz; uygulama içinde bildirim ayarı "sonraki sürümde" mesajı verir. Yerel bildirim için gerekenler: Firebase projesi (Android) ve APNs anahtarı (iOS), `@capacitor/push-notifications`, cihaz belirteçlerini saklayan bir tablo ve sunucuda FCM ile gönderim.
+- **Bildirimler:** mobil uygulama bildirimleri Firebase Cloud Messaging (FCM) ile çalışır; kurulum aşağıdaki "Mobil bildirimler" bölümündedir. Kurulmadan bildirim ayarı çalışmaz (uygulama içinde "güncel sürüm gerekir" ya da izin sonrası sessizce kayıt olur, gönderim yapılmaz).
 - **Sesle ekleme:** tarayıcı konuşma tanıması uygulama içindeki web görünümlerinde yoktur; düğme gizlenir ve klavyedeki mikrofon önerilir.
 - Bu kabuk bu depoda otomatik olarak simülatörde sınanmadı; güvenli alanlar ve klavye davranışı ilk çalıştırmada gözden geçirilmelidir.
 

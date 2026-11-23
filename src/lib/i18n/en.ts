@@ -1103,5 +1103,6 @@ export const EN: Record<string, string> = {
   "Diyetisyeninize bağlandınız.": "You're connected to your dietitian.",
   "Bağlan": "Connect",
   "{name} size not bıraktı": "{name} left you a note",
-  "Uygulama bildirimleri bir sonraki sürümde eklenecek.": "App notifications will be added in a later version.",
+  "Bildirimler için uygulamanın güncel sürümü gerekir.": "Notifications need the latest version of the app.",
+  "Mobil uygulama bildirimleri Google Firebase Cloud Messaging ve Apple Bildirim Servisi üzerinden iletilir; bildirim metni ve cihaz belirteciniz bu hizmetlerden geçer. Bildirimleri Profil bölümünden kapatabilirsiniz.": "Mobile app notifications are delivered through Google Firebase Cloud Messaging and the Apple Push Notification service; the notification text and your device token pass through these services. You can turn notifications off in Profile.",
 };

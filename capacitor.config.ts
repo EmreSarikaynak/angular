@@ -1,3 +1,4 @@
+/// <reference types="@capacitor-firebase/messaging" />
 import type { CapacitorConfig } from "@capacitor/cli";
 
 /**
@@ -32,7 +33,14 @@ const config: CapacitorConfig = {
   android: {
     allowMixedContent: false,
   },
+  experimental: {
+    ios: {
+      // Firebase eklentisinin Swift Package Manager paket kimliği çakışmasını önler.
+      spm: { packageOptions: { "@capacitor-firebase/messaging": { symlink: true } } },
+    },
+  },
   plugins: {
+    FirebaseMessaging: { presentationOptions: ["alert", "badge", "sound"] },
     SplashScreen: { launchShowDuration: 1200, launchAutoHide: true, backgroundColor: "#1f9d76", showSpinner: false },
     StatusBar: { style: "DEFAULT", overlaysWebView: false },
     Keyboard: { resize: "body", resizeOnFullScreen: true },

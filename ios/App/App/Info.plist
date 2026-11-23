@@ -28,6 +28,10 @@
 	<string>BKN, galerinizden seçtiğiniz yemek fotoğrafını analiz etmek için fotoğraflarınıza erişir.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

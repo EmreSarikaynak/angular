@@ -10,7 +10,7 @@
     "test": "vitest run",
     "typecheck": "next typegen && tsc --noEmit",
     "test:integration": "node --env-file=.env.local tests/integration/run.mjs",
-    "test:e2e": "node --env-file=.env.local tests/e2e/run.cjs && node --env-file=.env.local tests/e2e/offline.cjs && node --env-file=.env.local tests/e2e/dietitian.cjs",
+    "test:e2e": "node --env-file=.env.local tests/e2e/run.cjs && node --env-file=.env.local tests/e2e/offline.cjs && node --env-file=.env.local tests/e2e/dietitian.cjs && node --env-file=.env.local tests/e2e/native.cjs",
     "mock:gemini": "node scripts/mock-gemini.mjs",
     "i18n:check": "node scripts/i18n-extract.mjs",
     "cap:assets": "capacitor-assets generate --iconBackgroundColor '#1f9d76' --iconBackgroundColorDark '#1f9d76' --splashBackgroundColor '#1f9d76' --splashBackgroundColorDark '#0f1513'",
@@ -22,6 +22,7 @@
     "cap:doctor": "cap doctor"
   },
   "dependencies": {
+    "@capacitor-firebase/messaging": "^8.6.0",
     "@capacitor/app": "^8.1.2",
     "@capacitor/core": "^8.6.2",
     "@capacitor/keyboard": "^8.0.6",

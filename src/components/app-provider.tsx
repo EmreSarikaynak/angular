@@ -4,6 +4,7 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase, supabaseConfigured } from "@/lib/supabase/client";
 import { clearLocalData, flush, pendingCount, setStoreUser, subscribe } from "@/lib/data/store";
 import { api } from "@/lib/api";
+import { nativePushDisable } from "@/lib/native-push";
 import { translate, type Vars } from "@/lib/i18n";
 import type { Lang, Profile, Theme } from "@/lib/types";
 
@@ -14,6 +15,7 @@ export interface RuntimeConfig {
   announcement: string;
   is_admin: boolean;
   push_available: boolean;
+  fcm_available: boolean;
 }
 
 interface Toast {
@@ -206,6 +208,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
 
   const signOut = useCallback(async () => {
+    // Mobil uygulamada bu cihazın bildirim belirtecini oturum kapanmadan önce sunucudan sil.
+    await nativePushDisable().catch(() => {});
     await supabase().auth.signOut();
     clearLocalData();
   }, []);

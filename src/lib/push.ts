@@ -1,12 +1,13 @@
 "use client";
 import { isNative } from "./native";
+import { nativePushDisable, nativePushEnable } from "./native-push";
 import { supabase } from "./supabase/client";
 
 const VAPID = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
 
 export function notificationsSupported(): boolean {
-  // Web Push, mağaza uygulamasının içindeki web görünümünde çalışmaz; yerel bildirim sonraki sürümde eklenecek.
-  if (isNative()) return false;
+  // Mağaza uygulamasında Web Push yerine yerel (FCM) bildirimler kullanılır.
+  if (isNative()) return true;
   return typeof window !== "undefined" && "Notification" in window && "serviceWorker" in navigator;
 }
 
@@ -24,6 +25,7 @@ function toKey(base64: string): Uint8Array<ArrayBuffer> {
  */
 export async function enableNotifications(): Promise<"push" | "local" | "denied" | "unsupported"> {
   if (!notificationsSupported()) return "unsupported";
+  if (isNative()) return nativePushEnable();
   const permission = await Notification.requestPermission();
   if (permission !== "granted") return "denied";
   if (!VAPID || !("PushManager" in window)) return "local";
@@ -43,6 +45,7 @@ export async function enableNotifications(): Promise<"push" | "local" | "denied"
 }
 
 export async function disableNotifications(): Promise<void> {
+  if (isNative()) return nativePushDisable();
   try {
     const reg = await navigator.serviceWorker.getRegistration();
     const sub = await reg?.pushManager.getSubscription();
@@ -65,5 +68,5 @@ export async function showLocalNotification(title: string, body: string) {
 
 /** Bildirimler desteklenmediğinde kullanıcıya gösterilecek metin. */
 export function unsupportedText(t: (s: string) => string): string {
-  return isNative() ? t("Uygulama bildirimleri bir sonraki sürümde eklenecek.") : t("Bu cihaz veya tarayıcı bildirimleri desteklemiyor. iPhone'da önce uygulamayı ana ekrana ekleyin.");
+  return isNative() ? t("Bildirimler için uygulamanın güncel sürümü gerekir.") : t("Bu cihaz veya tarayıcı bildirimleri desteklemiyor. iPhone'da önce uygulamayı ana ekrana ekleyin.");
 }
