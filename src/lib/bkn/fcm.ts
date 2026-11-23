@@ -1,5 +1,6 @@
 import "server-only";
 import { createSign } from "node:crypto";
+import { logError } from "../supabase/server";
 
 /**
  * Firebase Cloud Messaging (HTTP v1) ile mobil bildirim gönderimi.
@@ -130,8 +131,12 @@ export async function sendFcm(deviceToken: string, msg: FcmMessage): Promise<Fcm
     const text = await res.text().catch(() => "");
     // Silinmiş uygulama / süresi dolmuş belirteç: yeniden denemenin anlamı yok.
     if (res.status === 404 || /UNREGISTERED|registration-token-not-registered|INVALID_ARGUMENT/.test(text)) return "unregistered";
+    // Teşhis için nedeni kaydet (belirteç ya da kullanıcı bilgisi içermez). Örn. iOS için APNs anahtarı yüklenmemişse
+    // THIRD_PARTY_AUTH_ERROR döner.
+    await logError("push.fcm", `FCM ${res.status}`, { body: text.slice(0, 300) });
     return "failed";
-  } catch {
+  } catch (e) {
+    await logError("push.fcm", (e as Error).message ?? "fcm_error", null);
     return "failed";
   }
 }
