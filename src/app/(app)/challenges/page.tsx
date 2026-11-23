@@ -66,7 +66,7 @@ export default function ChallengesPage() {
   }
 
   async function share(c: Challenge) {
-    const text = t("BKN'de “{title}” meydan okumama katıl! Kod: {code}", { title: c.title, code: c.join_code });
+    const text = t("BKNY'de “{title}” meydan okumama katıl! Kod: {code}", { title: c.title, code: c.join_code });
     try {
       if (navigator.share) await navigator.share({ text });
       else {

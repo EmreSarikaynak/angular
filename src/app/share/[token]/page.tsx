@@ -44,7 +44,7 @@ export default function SharedReportPage({ params }: PageProps<"/share/[token]">
       <header className="flex items-center gap-3">
         <Logo size={44} />
         <div className="min-w-0">
-          <h1 className="truncate text-xl font-bold tracking-tight">{t("{name} · paylaşılan rapor", { name: data.first_name ?? "BKN" })}</h1>
+          <h1 className="truncate text-xl font-bold tracking-tight">{t("{name} · paylaşılan rapor", { name: data.first_name ?? "BKNY" })}</h1>
           <p className="truncate text-sm text-muted">
             {formatShort(data.from, lang)} – {formatShort(data.to, lang)} · {t("Salt okunur")} · {t("Bitiş")}: {data.expires_at ? new Date(data.expires_at).toLocaleDateString(lang === "en" ? "en-GB" : "tr-TR") : ""}
           </p>
@@ -52,7 +52,7 @@ export default function SharedReportPage({ params }: PageProps<"/share/[token]">
       </header>
 
       <SharedReportView data={data} lang={lang} />
-      <p className="pb-6 text-center text-xs text-muted">{t("Bu rapor kullanıcının kendi kayıtlarına ve tahminlere dayanır. Kullanıcı bu bağlantıyı dilediği zaman iptal edebilir.")} · BKN</p>
+      <p className="pb-6 text-center text-xs text-muted">{t("Bu rapor kullanıcının kendi kayıtlarına ve tahminlere dayanır. Kullanıcı bu bağlantıyı dilediği zaman iptal edebilir.")} · BKNY</p>
     </main>
   );
 }

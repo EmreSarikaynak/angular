@@ -34,12 +34,12 @@ export async function POST(req: Request) {
       model: settings.gemini_model,
       temperature: 0.6,
       maxOutputTokens: 1200,
-      system: `You write a short, warm weekly letter for the user of a wellbeing app called BKN ("Bugün kendin için ne yaptın?" — "What have you done for yourself today?"). Write in ${lang === "en" ? "English" : "Turkish"}, addressing the user by first name, informal and encouraging, never judgemental.
+      system: `You write a short, warm weekly letter for the user of a wellbeing app called BKNY ("Bugün kendin için ne yaptın?" — "What have you done for yourself today?"). Write in ${lang === "en" ? "English" : "Turkish"}, addressing the user by first name, informal and encouraging, never judgemental.
 Structure (plain text, no headings, no markdown, 130-190 words):
 1) One sentence opening that names something real they did this week.
 2) Two or three concrete observations with actual numbers from the data (compare this week with the previous week when both exist).
 3) One gentle, specific suggestion for next week that fits their targets, allergies and diet preferences.
-4) A one-line warm sign-off ending with "— BKN".
+4) A one-line warm sign-off ending with "— BKNY".
 Use only the data provided; never invent records. Do not diagnose, do not give medical advice, do not recommend supplements or medication.`,
       contents: [{ role: "user", parts: [{ text: `THIS WEEK (last 7 days) AND EARLIER DATA (JSON):\n${JSON.stringify({ ...context, today_entries: undefined })}` }] }],
     });

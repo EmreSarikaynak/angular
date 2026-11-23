@@ -98,7 +98,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="mb-4 flex items-center gap-2 px-2">
           <Logo size={38} />
           <span className="leading-tight">
-            <span className="block text-lg font-bold tracking-tight">BKN</span>
+            <span className="block text-lg font-bold tracking-tight">BKNY</span>
             <span className="block text-[10px] text-muted">{t("Bugün kendin için ne yaptın?")}</span>
           </span>
         </div>

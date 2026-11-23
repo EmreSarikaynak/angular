@@ -4,11 +4,11 @@ import { AppProvider } from "@/components/app-provider";
 import { ServiceWorker } from "@/components/service-worker";
 
 export const metadata: Metadata = {
-  title: { default: "BKN — Bugün kendin için ne yaptın?", template: "%s · BKN" },
-  description: "BKN: Bugün kendin için ne yaptın? Yapay zekâ destekli beslenme, su, takviye, spor ve sağlık takibi.",
-  applicationName: "BKN",
+  title: { default: "BKNY — Bugün kendin için ne yaptın?", template: "%s · BKNY" },
+  description: "BKNY: Bugün kendin için ne yaptın? Yapay zekâ destekli beslenme, su, takviye, spor ve sağlık takibi.",
+  applicationName: "BKNY",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, title: "BKN", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "BKNY", statusBarStyle: "default" },
   icons: { icon: [{ url: "/icons/icon-192.png", sizes: "192x192" }], apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }] },
   robots: { index: false, follow: false },
 };

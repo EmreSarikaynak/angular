@@ -51,7 +51,7 @@ export async function POST(req: Request) {
 
   return runStructured(req, {
     kind: "meal_plan",
-    system: `You are a meal planner for a nutrition tracking app called BKN. Answer in ${lang === "en" ? "English" : "Turkish"}. Return ONLY JSON matching the schema.
+    system: `You are a meal planner for a nutrition tracking app called BKNY. Answer in ${lang === "en" ? "English" : "Turkish"}. Return ONLY JSON matching the schema.
 Plan exactly 7 days (day 1..7). Each day has breakfast, lunch, dinner and one snack.
 Each meal "name" is a short description with portions (e.g. "150 g ızgara tavuk, 150 g bulgur pilavı, salata").
 Daily totals must be within 5% of the calorie target and reach at least 90% of the protein target. Nutrients are per meal and consistent (4/4/9 kcal per g).

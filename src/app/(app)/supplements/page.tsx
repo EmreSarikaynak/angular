@@ -71,7 +71,7 @@ function SupplementsInner() {
     <div className="mx-auto max-w-2xl">
       <PageHeader
         title={t("Takviyeler")}
-        subtitle={t("Saatini ve dozunu siz belirleyin, BKN hatırlatsın.")}
+        subtitle={t("Saatini ve dozunu siz belirleyin, BKNY hatırlatsın.")}
         action={
           <Button size="sm" onClick={() => setEditing(blank())}>
             <Plus size={16} />
@@ -167,7 +167,7 @@ function SupplementsInner() {
           {!profile?.notify_supplements && <p className="mt-3 rounded-xl bg-warn/10 px-3 py-2 text-xs text-warn">{t("Takviye bildirimleri kapalı. Profil › Bildirimler bölümünden açabilirsiniz.")}</p>}
         </>
       )}
-      <p className="mt-4 text-xs text-muted">{t("BKN takviye veya doz önermez; yalnızca sizin girdiğiniz planı hatırlatır. Takviye kullanımı için hekiminize veya eczacınıza danışın.")}</p>
+      <p className="mt-4 text-xs text-muted">{t("BKNY takviye veya doz önermez; yalnızca sizin girdiğiniz planı hatırlatır. Takviye kullanımı için hekiminize veya eczacınıza danışın.")}</p>
 
       <Sheet open={!!editing} onClose={() => setEditing(null)} title={editing && list.some((s) => s.id === editing.id) ? t("Takviyeyi düzenle") : t("Takviye ekle")}>
         {editing && (

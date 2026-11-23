@@ -4,7 +4,7 @@ const { chromium } = require("playwright");
 const path = require("node:path");
 const out = path.join(__dirname, "..", "resources");
 const G = "#1f9d76";
-const mark = (scale, ring = true) => `<g transform="translate(512 512) scale(${scale}) translate(-256 -256)">${ring ? `<circle cx="256" cy="256" r="178" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="30"/><path d="M256 78 a178 178 0 1 1 -169.3 123" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round"/>` : ""}<text x="256" y="298" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif" font-weight="800" font-size="118" letter-spacing="-2" fill="#fff">BKN</text></g>`;
+const mark = (scale, ring = true) => `<g transform="translate(512 512) scale(${scale}) translate(-256 -256)">${ring ? `<circle cx="256" cy="256" r="178" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="30"/><path d="M256 78 a178 178 0 1 1 -169.3 123" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round"/>` : ""}<text x="256" y="298" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif" font-weight="800" font-size="92" letter-spacing="-2" fill="#fff">BKNY</text></g>`;
 const svg = (w, h, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${body}</svg>`;
 (async () => {
   const b = await chromium.launch();

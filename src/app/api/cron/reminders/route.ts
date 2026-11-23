@@ -5,7 +5,7 @@ import { fcmConfigured } from "@/lib/bkn/fcm";
 export const maxDuration = 60;
 
 /**
- * BKN hatırlatmaları: su, takviye, protein açığı, eğilim uyarıları ve performans özeti.
+ * BKNY hatırlatmaları: su, takviye, protein açığı, eğilim uyarıları ve performans özeti.
  * Zamanlayıcı (Vercel Cron vb.) düzenli çağırır:  Authorization: Bearer <CRON_SECRET>
  * Takviye saatlerinin dakikliği çağrı sıklığına bağlıdır (öneri: 5–15 dakikada bir).
  */

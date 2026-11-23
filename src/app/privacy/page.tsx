@@ -56,7 +56,7 @@ export default function PrivacyPage() {
   return (
     <main className="mx-auto max-w-2xl px-5 py-8">
       <Link href="/" className="text-sm font-medium text-primary">
-        ← BKN
+        ← BKNY
       </Link>
       <h1 className="mt-3 text-2xl font-bold tracking-tight">{t("Gizlilik ve KVKK aydınlatma metni")}</h1>
       {(CONTROLLER || CONTACT) && (

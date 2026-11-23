@@ -67,10 +67,10 @@ export default function PerformancePage() {
       title: t("Performans özeti"),
       tagline: t("Bugün kendin için ne yaptın?"),
       subtitle: `${[profile?.first_name, profile?.last_name].filter(Boolean).join(" ")} · ${formatDate(end, lang, { day: "numeric", month: "long", year: "numeric" })}`,
-      footer: t("Değerler kullanıcı kayıtlarına ve tahminlere dayanır; tıbbi değerlendirme yerine geçmez. · BKN"),
+      footer: t("Değerler kullanıcı kayıtlarına ve tahminlere dayanır; tıbbi değerlendirme yerine geçmez. · BKNY"),
       columns: summaries.map((s) => names[s.key]),
       scores: summaries.map((s) => s.bknScore),
-      scoreLabel: t("BKN skoru"),
+      scoreLabel: t("BKNY skoru"),
       rows: [
         row(t("Kayıt girilen gün"), (s) => `${s.loggedDays} / ${s.days}`),
         row(t("Ortalama kalori"), (s) => v(s.avgKcal, " kcal")),
@@ -116,7 +116,7 @@ export default function PerformancePage() {
       ) : (
         <div className="space-y-4">
           <Card>
-            <p className="text-sm font-semibold">{t("BKN skoru")}</p>
+            <p className="text-sm font-semibold">{t("BKNY skoru")}</p>
             <p className="text-xs text-muted">{t("Öğün, protein, su, hareket, takviye ve uyku hedeflerinizi ne ölçüde tamamladığınızın 100 üzerinden ortalaması.")}</p>
             <div className="mt-4 grid grid-cols-5 gap-1">
               {summaries.map((s) => (

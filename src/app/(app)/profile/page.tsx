@@ -311,7 +311,7 @@ export default function ProfilePage() {
 
       <Card className="space-y-4">
         <h2 className="font-semibold">{t("Bildirimler")}</h2>
-        <p className="text-xs text-muted">{t("BKN; su, takviye ve hedeflerinizi motive edici mesajlarla hatırlatır. Sıklığı buradan ayarlayabilirsiniz.")}</p>
+        <p className="text-xs text-muted">{t("BKNY; su, takviye ve hedeflerinizi motive edici mesajlarla hatırlatır. Sıklığı buradan ayarlayabilirsiniz.")}</p>
         {toggleRow(t("Su hatırlatmaları"), t("Hedefe ulaşana kadar belirlediğiniz aralıkla."), profile.reminder_enabled, (v) => notify({ reminder_enabled: v }, v))}
         {profile.reminder_enabled && (
           <div className="grid grid-cols-3 gap-2">

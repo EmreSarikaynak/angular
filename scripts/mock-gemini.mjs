@@ -69,7 +69,7 @@ createServer((req, res) => {
       return res.end("boom");
     }
     const structured = !!json.generationConfig?.responseSchema;
-    const out = structured ? analysis(text, hasImage) : /THIS WEEK \(last 7 days\)/.test(text) ? `Merhaba ${(JSON.parse(text.split("(JSON):\n")[1]).profile ?? {}).first_name ?? ""}, bu hafta ${JSON.parse(text.split("(JSON):\n")[1]).last_14_days.length} gün kayıt girdin. Böyle devam!\n\n— BKN` : /USER DATA/.test(text) ? `Bugün kayıtlarınıza göre ${(JSON.parse(text.split("USER DATA (JSON):\n")[1].split("\n")[0]).today_entries ?? []).reduce((s, e) => s + e.kcal, 0)} kcal aldınız.` : "OK";
+    const out = structured ? analysis(text, hasImage) : /THIS WEEK \(last 7 days\)/.test(text) ? `Merhaba ${(JSON.parse(text.split("(JSON):\n")[1]).profile ?? {}).first_name ?? ""}, bu hafta ${JSON.parse(text.split("(JSON):\n")[1]).last_14_days.length} gün kayıt girdin. Böyle devam!\n\n— BKNY` : /USER DATA/.test(text) ? `Bugün kayıtlarınıza göre ${(JSON.parse(text.split("USER DATA (JSON):\n")[1].split("\n")[0]).today_entries ?? []).reduce((s, e) => s + e.kcal, 0)} kcal aldınız.` : "OK";
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ candidates: [{ content: { parts: [{ text: out }] }, finishReason: "STOP" }], usageMetadata: { promptTokenCount: 1200, candidatesTokenCount: 300 } }));
   });

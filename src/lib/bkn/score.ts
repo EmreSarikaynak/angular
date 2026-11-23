@@ -20,7 +20,7 @@ export function supplementSlots(supplements: Supplement[], logs: SupplementLog[]
 }
 
 /**
- * "Bugün kendin için ne yaptın?" — günün öz bakım kontrol listesi ve 0–100 arası BKN skoru.
+ * "Bugün kendin için ne yaptın?" — günün öz bakım kontrol listesi ve 0–100 arası BKNY skoru.
  * Yalnızca kullanıcının takip ettiği alanlar sayılır (takviyesi olmayan ya da uyku girmeyen
  * kullanıcının skoru bu yüzden düşmez).
  */

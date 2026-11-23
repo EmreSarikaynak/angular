@@ -77,7 +77,7 @@ describe("tarifler", () => {
   });
 });
 
-describe("BKN skoru ve takviyeler", () => {
+describe("BKNY skoru ve takviyeler", () => {
   const supps = [{ id: "s1", name: "D vitamini", dose: "1000 IU", times: ["21:00", "09:00"], active: true }, { id: "s2", name: "Pasif", dose: null, times: ["10:00"], active: false }] as Supplement[];
   const logs = [{ id: "l1", supplement_id: "s1", entry_date: "2026-03-01", time_slot: "09:00", taken_at: "" }] as SupplementLog[];
   it("günün dozları saat sırasıyla, pasifler hariç", () => {

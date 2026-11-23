@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>BKN</string>
+        <string>BKNY</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -23,9 +23,9 @@
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>NSCameraUsageDescription</key>
-	<string>BKN, yemeğinizin fotoğrafını çekip besin değerlerini hesaplamak ve barkod okumak için kamerayı kullanır.</string>
+	<string>BKNY, yemeğinizin fotoğrafını çekip besin değerlerini hesaplamak ve barkod okumak için kamerayı kullanır.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>BKN, galerinizden seçtiğiniz yemek fotoğrafını analiz etmek için fotoğraflarınıza erişir.</string>
+	<string>BKNY, galerinizden seçtiğiniz yemek fotoğrafını analiz etmek için fotoğraflarınıza erişir.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<!-- Yalnızca bildirim için Firebase kullanılır; Analytics verisi toplanmaz. -->

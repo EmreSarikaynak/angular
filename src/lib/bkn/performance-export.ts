@@ -9,7 +9,7 @@ export interface PerfTable {
   columns: string[];
   /** İlk hücre satır adı, sonrakiler dönem değerleri. */
   rows: string[][];
-  /** Dönemlerin BKN skorları (0–100) — üstteki halkalar için. */
+  /** Dönemlerin BKNY skorları (0–100) — üstteki halkalar için. */
   scores: (number | null)[];
   scoreLabel: string;
 }
@@ -57,9 +57,9 @@ export async function performancePng(t: PerfTable): Promise<Blob> {
   ctx.arc(pad + 54, pad + 54, 38, -Math.PI / 2, Math.PI * 1.1);
   ctx.stroke();
   ctx.fillStyle = "#fff";
-  ctx.font = font(27, 800);
+  ctx.font = font(21, 800);
   ctx.textAlign = "center";
-  ctx.fillText("BKN", pad + 54, pad + 64);
+  ctx.fillText("BKNY", pad + 54, pad + 64);
 
   ctx.textAlign = "left";
   ctx.fillStyle = "#17211d";
@@ -149,8 +149,8 @@ export async function performancePdf(t: PerfTable): Promise<Blob> {
   doc.roundedRect(40, 32, 44, 44, 10, 10, "F");
   doc.setFont("DejaVu", "bold");
   doc.setTextColor(255);
-  doc.setFontSize(13);
-  doc.text("BKN", 62, 59, { align: "center" });
+  doc.setFontSize(10);
+  doc.text("BKNY", 62, 59, { align: "center" });
   doc.setTextColor(0);
   doc.setFontSize(18);
   doc.text(t.title, 96, 50);

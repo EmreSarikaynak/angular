@@ -21,7 +21,7 @@ export interface Recipe {
 }
 
 /**
- * BKN tarif kitaplığı: evde kolay yapılan, Türk mutfağına yakın tarifler.
+ * BKNY tarif kitaplığı: evde kolay yapılan, Türk mutfağına yakın tarifler.
  * Besin değerleri referans tablodaki malzemelerden hesaplanmış yaklaşık porsiyon değerleridir.
  */
 export const RECIPES: Recipe[] = [
