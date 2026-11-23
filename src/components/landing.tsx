@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Camera, CalendarDays, Droplets, Pill, Refrigerator, Share2, Target, Wifi } from "lucide-react";
+import { InstallButtons } from "@/components/install-buttons";
 import { Logo } from "@/components/logo";
 import { SITE_URL } from "@/lib/site";
 
@@ -18,6 +20,9 @@ type Copy = {
   privacyLink: string;
   other: { href: string; label: string };
   jsonLd: { description: string };
+  install: { title: string; text: string };
+  gallery: string[];
+  galleryTitle: string;
 };
 
 export const COPY: Record<"tr" | "en", Copy> = {
@@ -50,6 +55,9 @@ export const COPY: Record<"tr" | "en", Copy> = {
     privacyLink: "Gizlilik ve KVKK",
     other: { href: "/en", label: "English" },
     jsonLd: { description: "Yapay zekâ destekli, Türkçe beslenme ve yaşam takip uygulaması: fotoğrafla yemek analizi, su, takviye, uyku, hareket ve hedef takibi." },
+    install: { title: "Telefonuna ekle", text: "BKNY'yi ana ekrana ekle, uygulama gibi tek dokunuşla aç. Mağazadan indirmen gerekmez." },
+    galleryTitle: "Uygulamadan görünümler",
+    gallery: ["Günlük hedefler ve ilerleme özeti", "Fotoğraf, yazı ve barkodla kayıt ekleme", "Buzdolabından yemeğe: envanter ve öneriler", "Haftalık ve aylık istatistikler", "Beslenme asistanı sohbeti"],
   },
   en: {
     lang: "en",
@@ -80,10 +88,16 @@ export const COPY: Record<"tr" | "en", Copy> = {
     privacyLink: "Privacy notice",
     other: { href: "/", label: "Türkçe" },
     jsonLd: { description: "AI-assisted nutrition and wellbeing tracker: photo meal analysis, water, supplements, sleep, activity and goal tracking, in Turkish and English." },
+    install: { title: "Add it to your phone", text: "Add BKNY to your home screen and open it like an app in one tap. No store download needed." },
+    galleryTitle: "A look inside the app",
+    gallery: ["Daily goals and progress summary", "Logging with photo, text and barcode", "Fridge to meal: inventory and ideas", "Weekly and monthly statistics", "Nutrition assistant chat"],
   },
 };
 
-/** Herkese açık, sunucuda üretilen tanıtım sayfası (arama motorları için içerik). */
+const FEATURE_ICONS = [Camera, Droplets, Pill, Target, Refrigerator, CalendarDays, Share2, Wifi];
+const GALLERY = ["home", "add", "fridge", "stats", "assistant"];
+
+/** Herkese açık, sunucuda üretilen tanıtım sayfası (arama motorları için içerik). Mobil öncelikli. */
 export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
   const c = COPY[lang];
   const url = `${SITE_URL}${path ?? (lang === "tr" ? "/tanitim" : "/en")}`;
@@ -100,48 +114,80 @@ export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
     publisher: { "@type": "Organization", name: "Secesta Software" },
   };
   return (
-    <div className="mx-auto max-w-3xl px-5 py-10" lang={c.lang}>
+    <div lang={c.lang} className="pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:pb-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <header className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Logo size={44} />
-          <span className="text-xl font-bold tracking-tight">BKNY</span>
+      <header className="sticky top-0 z-30 border-b border-border bg-bg/90 pt-[env(safe-area-inset-top)] backdrop-blur">
+        <div className="mx-auto flex h-14 max-w-3xl items-center justify-between gap-3 px-5">
+          <div className="flex items-center gap-2.5">
+            <Logo size={34} />
+            <span className="text-lg font-bold tracking-tight">BKNY</span>
+          </div>
+          <nav className="flex items-center gap-2 text-sm font-medium">
+            <Link href={c.other.href} hrefLang={c.other.label === "English" ? "en" : "tr"} className="px-2 py-2 text-muted">
+              {c.other.label}
+            </Link>
+            <Link href="/login" className="inline-flex h-9 items-center rounded-full bg-primary-soft px-4 text-primary">
+              {c.login}
+            </Link>
+          </nav>
         </div>
-        <nav className="flex items-center gap-4 text-sm font-medium">
-          <Link href={c.other.href} hrefLang={c.other.label === "English" ? "en" : "tr"} className="text-muted underline">
-            {c.other.label}
-          </Link>
-          <Link href="/login" className="text-primary">
-            {c.login}
-          </Link>
-        </nav>
       </header>
 
-      <main>
-        <section className="py-12 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{c.h1}</h1>
-          <p className="mx-auto mt-4 max-w-2xl text-base text-muted">{c.lead}</p>
-          <div className="mt-7 flex flex-wrap justify-center gap-3">
-            <Link href="/register" className="inline-flex h-12 items-center rounded-xl bg-primary px-6 font-semibold text-white">
+      <main className="mx-auto max-w-3xl px-5">
+        <section className="pb-8 pt-8 text-center sm:pt-12">
+          <h1 className="text-balance text-[1.75rem] font-extrabold leading-tight tracking-tight sm:text-4xl">{c.h1}</h1>
+          <p className="mx-auto mt-3 max-w-xl text-[15px] leading-relaxed text-muted sm:text-base">{c.lead}</p>
+          <div className="mx-auto mt-6 flex max-w-sm flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center">
+            <Link href="/register" className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-6 font-semibold text-white shadow-sm active:scale-[.98]">
               {c.cta}
             </Link>
-            <Link href="/login" className="inline-flex h-12 items-center rounded-xl bg-surface-2 px-6 font-semibold">
+            <Link href="/login" className="inline-flex h-12 items-center justify-center rounded-xl bg-surface-2 px-6 font-semibold active:scale-[.98]">
               {c.login}
             </Link>
           </div>
         </section>
 
-        <section aria-labelledby="features">
+        <section aria-labelledby="gallery" className="-mx-5">
+          <h2 id="gallery" className="sr-only">
+            {c.galleryTitle}
+          </h2>
+          <ul className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {GALLERY.map((k, i) => (
+              <li key={k} className="w-[58%] max-w-[240px] shrink-0 snap-center first:ml-0 sm:w-[30%]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`/landing/${lang}-${k}.webp`} width={480} height={1040} alt={c.gallery[i]} loading={i < 2 ? "eager" : "lazy"} decoding="async" className="h-auto w-full rounded-3xl border border-border shadow-md" />
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section aria-labelledby="install" className="mt-8 rounded-3xl border border-border bg-surface p-5">
+          <h2 id="install" className="text-xl font-bold tracking-tight">
+            {c.install.title}
+          </h2>
+          <p className="mt-1 text-sm text-muted">{c.install.text}</p>
+          <InstallButtons lang={lang} className="mt-4" />
+        </section>
+
+        <section aria-labelledby="features" className="mt-12">
           <h2 id="features" className="text-2xl font-bold tracking-tight">
             {c.featuresTitle}
           </h2>
           <ul className="mt-5 grid gap-3 sm:grid-cols-2">
-            {c.features.map((f) => (
-              <li key={f.title} className="rounded-2xl border border-border bg-surface p-4">
-                <h3 className="font-semibold">{f.title}</h3>
-                <p className="mt-1 text-sm text-muted">{f.text}</p>
-              </li>
-            ))}
+            {c.features.map((f, i) => {
+              const Icon = FEATURE_ICONS[i % FEATURE_ICONS.length];
+              return (
+                <li key={f.title} className="flex gap-3 rounded-2xl border border-border bg-surface p-4">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
+                    <Icon size={20} aria-hidden />
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold leading-snug">{f.title}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-muted">{f.text}</p>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </section>
 
@@ -151,10 +197,12 @@ export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
           </h2>
           <ol className="mt-5 grid gap-3 sm:grid-cols-3">
             {c.steps.map((s, i) => (
-              <li key={s.title} className="rounded-2xl border border-border bg-surface p-4">
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary">{i + 1}</span>
-                <h3 className="mt-2 font-semibold">{s.title}</h3>
-                <p className="mt-1 text-sm text-muted">{s.text}</p>
+              <li key={s.title} className="flex gap-3 rounded-2xl border border-border bg-surface p-4 sm:block">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary">{i + 1}</span>
+                <div className="sm:mt-2">
+                  <h3 className="font-semibold">{s.title}</h3>
+                  <p className="mt-1 text-sm text-muted">{s.text}</p>
+                </div>
               </li>
             ))}
           </ol>
@@ -164,12 +212,12 @@ export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
           <h2 id="privacy" className="text-2xl font-bold tracking-tight">
             {c.privacyTitle}
           </h2>
-          <p className="mt-3 text-sm text-muted">{c.privacy}</p>
-          <p className="mt-3 rounded-xl bg-warn/10 px-4 py-3 text-sm text-warn">{c.disclaimer}</p>
+          <p className="mt-3 text-sm leading-relaxed text-muted">{c.privacy}</p>
+          <p className="mt-3 rounded-xl bg-warn/10 px-4 py-3 text-sm leading-relaxed text-warn">{c.disclaimer}</p>
         </section>
       </main>
 
-      <footer className="mt-12 border-t border-border pt-6 text-sm text-muted">
+      <footer className="mx-auto mt-12 max-w-3xl border-t border-border px-5 pt-6 text-sm text-muted">
         <nav className="flex flex-wrap gap-x-5 gap-y-2">
           <Link href="/privacy" className="underline">
             {c.privacyLink}
@@ -183,6 +231,13 @@ export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
         </nav>
         <p className="mt-3">© 2026 Secesta Software</p>
       </footer>
+
+      {/* Mobilde ekranın altında sabit başlama çubuğu */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface/95 px-5 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur sm:hidden">
+        <Link href="/register" className="flex h-12 items-center justify-center rounded-xl bg-primary font-semibold text-white active:scale-[.98]">
+          {c.cta}
+        </Link>
+      </div>
     </div>
   );
 }

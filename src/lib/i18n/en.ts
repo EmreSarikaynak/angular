@@ -1200,4 +1200,7 @@ export const EN: Record<string, string> = {
   "Önerilerde kullanılmaz": "Never used in suggestions",
   "1 gün kaldı": "1 day left",
   "BKNY nedir?": "What is BKNY?",
+  "BKNY'yi ana ekranına ekle": "Add BKNY to your home screen",
+  "Uygulama gibi tek dokunuşla aç.": "Open it like an app with one tap.",
+  "Kapat": "Close",
 };

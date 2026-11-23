@@ -14,6 +14,7 @@ import { numberFmt } from "@/lib/i18n";
 import { ACTIVITY_LABELS, label } from "@/lib/i18n/labels";
 import { setPendingPhoto } from "@/lib/image";
 import { BknToday } from "@/components/bkn-today";
+import { InstallHint } from "@/components/install-hint";
 import { DietitianNoteCard } from "@/components/my-dietitian";
 import { MEALS } from "@/lib/types";
 
@@ -57,6 +58,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-4">
+      <InstallHint />
       <input
         id="bt-home-camera"
         type="file"
