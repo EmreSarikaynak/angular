@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg: #f6f8f7;
+  --surface: #ffffff;
+  --surface-2: #eef2f0;
+  --border: #e1e7e4;
+  --text: #17211d;
+  --muted: #65736d;
+  --primary: #1f9d76;
+  --primary-soft: #e3f4ee;
+  --danger: #d9534f;
+  --warn: #c9861a;
+  --protein: #e0607e;
+  --carbs: #e0a23b;
+  --fat: #8b7fd6;
+  --water: #3b9ede;
+  --burn: #ef7d4d;
+}
+
+.dark {
+  --bg: #0f1513;
+  --surface: #18201d;
+  --surface-2: #212b27;
+  --border: #2b3732;
+  --text: #e9efec;
+  --muted: #93a39c;
+  --primary: #3fc497;
+  --primary-soft: #1c3a30;
+  --danger: #ef6f6a;
+  --warn: #e3a94a;
+  --protein: #f0859d;
+  --carbs: #ecb659;
+  --fat: #a69cf0;
+  --water: #5cb4ee;
+  --burn: #f59468;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-danger: var(--danger);
+  --color-warn: var(--warn);
+  --color-protein: var(--protein);
+  --color-carbs: var(--carbs);
+  --color-fat: var(--fat);
+  --color-water: var(--water);
+  --color-burn: var(--burn);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+html {
+  color-scheme: light;
+  -webkit-text-size-adjust: 100%;
+}
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+/* iOS'ta odaklanınca yakınlaştırmayı önlemek için form alanları en az 16px. */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+}
