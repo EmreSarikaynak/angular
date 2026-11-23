@@ -55,3 +55,10 @@ ios/App/CapApp-SPM/symlinks/
 store/screenshots/tr/
 store/screenshots/en/
 store/dist/
+
+# Android imzalama (ASLA commit etmeyin)
+android/keystore.properties
+android/*.jks
+android/*.keystore
+*.jks
+*.keystore

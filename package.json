@@ -16,6 +16,7 @@
     "cap:assets": "capacitor-assets generate --iconBackgroundColor '#1f9d76' --iconBackgroundColorDark '#1f9d76' --splashBackgroundColor '#1f9d76' --splashBackgroundColorDark '#0f1513'",
     "cap:sync": "cap sync",
     "cap:ios": "cap sync ios && cap open ios",
+    "cap:android:bundle": "cap sync android && cd android && ./gradlew bundleRelease",
     "cap:android": "cap sync android && cap open android",
     "cap:run:ios": "cap run ios",
     "cap:run:android": "cap run android",

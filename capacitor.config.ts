@@ -11,7 +11,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
  *   iOS:     CAP_SERVER_URL=http://localhost:3000 npx cap sync ios
  *   Android: CAP_SERVER_URL=http://10.0.2.2:3000 npx cap sync android   (emülatörde 10.0.2.2 = bilgisayarınız)
  */
-const serverUrl = process.env.CAP_SERVER_URL || "https://bkn-black.vercel.app";
+const serverUrl = process.env.CAP_SERVER_URL || "https://bkny.com.tr";
 const cleartext = serverUrl.startsWith("http://");
 
 const config: CapacitorConfig = {
