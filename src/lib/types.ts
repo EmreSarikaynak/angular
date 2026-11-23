@@ -56,6 +56,7 @@ export interface Profile {
   iftar_time: string;
   sahur_time: string;
   ramadan_answered: string | null;
+  ui_prefs?: Record<string, { order: string[]; hidden: string[] }>;
   onboarded_at: string | null;
   created_at?: string;
   updated_at?: string;

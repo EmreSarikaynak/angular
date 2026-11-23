@@ -1123,4 +1123,9 @@ export const EN: Record<string, string> = {
   "Evet dersen öğünler Sahur ve İftar olur; protein ve kalori hedefin iftar, ara öğün ve sahura bölünür, hatırlatmalar yalnızca iftar ile sahur arasında gelir.": "If yes, meals become Suhoor and Iftar, your protein and calorie targets are split across iftar, an evening snack and suhoor, and reminders arrive only between iftar and suhoor.",
   "Evet, tutuyorum": "Yes, I'm fasting",
   "Sağlık durumun oruca uygun değilse (hamilelik, kronik hastalık, ilaç kullanımı) hekimine danış.": "If your health is not suited to fasting (pregnancy, chronic illness, medication), ask your doctor.",
+  "Seçenekleri düzenle": "Edit options",
+  "Kayıt yöntemleri": "Ways to log",
+  "Sırayı değiştirmek için tutacağı tutup sürükleyin. Kullanmadığınız seçenekleri anahtarla pasife alın; istediğiniz zaman geri açabilirsiniz.": "Hold the handle and drag to reorder. Switch off the options you don't use; you can turn them back on any time.",
+  "Göster": "Show",
+  "Varsayılana dön": "Reset to default",
 };

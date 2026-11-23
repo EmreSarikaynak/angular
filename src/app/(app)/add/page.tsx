@@ -1,10 +1,12 @@
 "use client";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Fragment, Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Activity, ArrowLeft, Barcode, CalendarDays, CalendarHeart, Camera, ChefHat, CircleDot, Droplets, GlassWater, Image as ImageIcon, Lightbulb, Mail, MessageCircle, Mic, Moon, PenLine, Pill, Ruler, ScanText, Square, Star, Timer, Trash2, Trophy, Type, Users, UtensilsCrossed } from "lucide-react";
+import { Activity, ArrowLeft, SlidersHorizontal, Barcode, CalendarDays, CalendarHeart, Camera, ChefHat, CircleDot, Droplets, GlassWater, Image as ImageIcon, Lightbulb, Mail, MessageCircle, Mic, Moon, PenLine, Pill, Ruler, ScanText, Square, Star, Timer, Trash2, Trophy, Type, Users, UtensilsCrossed } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { BarcodeScanner } from "@/components/barcode-scanner";
+import { CustomizeSheet, useUiPrefs } from "@/components/customize";
+import { visibleItems } from "@/lib/layout-prefs";
 import { Review } from "@/components/review";
 import { blankItem } from "@/components/item-fields";
 import { Button, Card, Empty, Field, Input, NumberInput, PageHeader, Skeleton, Textarea } from "@/components/ui";
@@ -46,6 +48,8 @@ function AddInner() {
   const mealParam = params.get("meal") as Meal | null;
   const meal = mealParam && MEALS.includes(mealParam) ? mealParam : undefined;
 
+  const [customizing, setCustomizing] = useState(false);
+  const { prefs } = useUiPrefs();
   const [mode, setMode] = useState<Mode>(paramMode && ["photo", "text", "barcode", "label", "favorites", "manual"].includes(paramMode) ? paramMode : "hub");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -409,42 +413,71 @@ function AddInner() {
     </Link>
   );
 
+  const tileItems = [
+    { id: "camera", label: t("Fotoğraf çek"), icon: <Camera size={18} />, el: tile(<Camera size={20} />, t("Fotoğraf çek"), t("Yemeği kameradan analiz et"), () => pick("photo", "camera"), !aiReady, true) },
+    { id: "gallery", label: t("Galeriden seç"), icon: <ImageIcon size={18} />, el: tile(<ImageIcon size={20} />, t("Galeriden seç"), t("Kayıtlı bir fotoğrafı yükle"), () => pick("photo", "gallery"), !aiReady) },
+    ...(canSpeak ? [{ id: "voice", label: t("Sesle ekle"), icon: <Mic size={18} />, el: tile(<Mic size={20} />, t("Sesle ekle"), t("Ne yediğinizi söyleyin"), () => { setMode("text"); toggleVoice(); }, !aiReady) }] : []),
+    { id: "text", label: t("Yazarak ekle"), icon: <Type size={18} />, el: tile(<Type size={20} />, t("Yazarak ekle"), t("“2 yumurta, 1 dilim ekmek”"), () => setMode("text"), !aiReady) },
+    { id: "barcode", label: t("Barkod okut"), icon: <Barcode size={18} />, el: tile(<Barcode size={20} />, t("Barkod okut"), t("Paketli ürünler"), () => { setScanning(true); setMode("barcode"); }, !online) },
+    { id: "label", label: t("Besin etiketi"), icon: <ScanText size={18} />, el: tile(<ScanText size={20} />, t("Besin etiketi"), t("Etiket fotoğrafını oku"), () => setMode("label"), !aiReady) },
+    { id: "favorites", label: t("Favoriler"), icon: <Star size={18} />, el: tile(<Star size={20} />, t("Favoriler"), t("Sık yedikleriniz"), () => setMode("favorites")) },
+    { id: "recipes", label: t("Tariflerim"), icon: <ChefHat size={18} />, el: tile(<ChefHat size={20} />, t("Tariflerim"), t("Kendi ev yemekleriniz"), () => router.push("/recipes")) },
+    { id: "eating-out", label: t("Dışarıda yemek"), icon: <UtensilsCrossed size={18} />, el: tile(<UtensilsCrossed size={20} />, t("Dışarıda yemek"), t("Menü fotoğrafından öneri"), () => router.push("/eating-out"), !aiReady) },
+    { id: "manual", label: t("Elle gir"), icon: <PenLine size={18} />, el: tile(<PenLine size={20} />, t("Elle gir"), t("Değerleri kendiniz yazın"), () => setDraft({ source: "manual", name: "", items: [blankItem()], analysis: null, image: null, version: 1 })) },
+  ];
+  const linkItems = [
+    { id: "water", label: t("Su"), icon: <Droplets size={18} />, href: `/water?date=${date}` },
+    { id: "drinks", label: t("İçecek"), icon: <GlassWater size={18} />, href: `/drinks?date=${date}` },
+    { id: "activity", label: t("Aktivite"), icon: <Activity size={18} />, href: `/activity?date=${date}` },
+    { id: "body", label: t("Kilo ve ölçüm"), icon: <Ruler size={18} />, href: "/body" },
+    { id: "wellbeing", label: t("Uyku ve durum"), icon: <Moon size={18} />, href: `/wellbeing?date=${date}` },
+    { id: "supplements", label: t("Takviyeler"), icon: <Pill size={18} />, href: `/supplements?date=${date}` },
+    { id: "rings", label: t("Sağlık halkaları"), icon: <CircleDot size={18} />, href: `/rings?date=${date}` },
+    { id: "fasting", label: t("Aralıklı oruç"), icon: <Timer size={18} />, href: "/fasting" },
+    { id: "coach", label: t("Öneriler"), icon: <Lightbulb size={18} />, href: "/coach" },
+    { id: "plan", label: t("Öğün planı"), icon: <CalendarDays size={18} />, href: "/plan" },
+    { id: "letter", label: t("Haftalık mektup"), icon: <Mail size={18} />, href: "/letter" },
+    { id: "challenges", label: t("Meydan okumalar"), icon: <Users size={18} />, href: "/challenges" },
+    { id: "cycle", label: t("Döngü takibi"), icon: <CalendarHeart size={18} />, href: "/cycle" },
+    { id: "performance", label: t("Performans"), icon: <Trophy size={18} />, href: "/performance" },
+    { id: "assistant", label: t("Asistan"), icon: <MessageCircle size={18} />, href: "/assistant" },
+  ];
+
   return (
     <div className="space-y-4">
       {fileInputs}
-      <PageHeader title={t("Kayıt ekle")} subtitle={date !== toDateKey() ? date : undefined} />
+      <PageHeader
+        title={t("Kayıt ekle")}
+        subtitle={date !== toDateKey() ? date : undefined}
+        action={
+          <Button size="sm" variant="secondary" onClick={() => setCustomizing(true)}>
+            <SlidersHorizontal size={16} />
+            {t("Düzenle")}
+          </Button>
+        }
+      />
       {aiNotice}
       {errorBox}
       <div className="grid grid-cols-2 gap-3">
-        {tile(<Camera size={20} />, t("Fotoğraf çek"), t("Yemeği kameradan analiz et"), () => pick("photo", "camera"), !aiReady, true)}
-        {tile(<ImageIcon size={20} />, t("Galeriden seç"), t("Kayıtlı bir fotoğrafı yükle"), () => pick("photo", "gallery"), !aiReady)}
-        {canSpeak && tile(<Mic size={20} />, t("Sesle ekle"), t("Ne yediğinizi söyleyin"), () => { setMode("text"); toggleVoice(); }, !aiReady)}
-        {tile(<Type size={20} />, t("Yazarak ekle"), t("“2 yumurta, 1 dilim ekmek”"), () => setMode("text"), !aiReady)}
-        {tile(<Barcode size={20} />, t("Barkod okut"), t("Paketli ürünler"), () => { setScanning(true); setMode("barcode"); }, !online)}
-        {tile(<ScanText size={20} />, t("Besin etiketi"), t("Etiket fotoğrafını oku"), () => setMode("label"), !aiReady)}
-        {tile(<Star size={20} />, t("Favoriler"), t("Sık yedikleriniz"), () => setMode("favorites"))}
-        {tile(<ChefHat size={20} />, t("Tariflerim"), t("Kendi ev yemekleriniz"), () => router.push("/recipes"))}
-        {tile(<UtensilsCrossed size={20} />, t("Dışarıda yemek"), t("Menü fotoğrafından öneri"), () => router.push("/eating-out"), !aiReady)}
-        {tile(<PenLine size={20} />, t("Elle gir"), t("Değerleri kendiniz yazın"), () => setDraft({ source: "manual", name: "", items: [blankItem()], analysis: null, image: null, version: 1 }))}
+        {visibleItems(tileItems, prefs["add.tiles"]).map((x) => (
+          <Fragment key={x.id}>{x.el}</Fragment>
+        ))}
       </div>
       <p className="pt-2 text-xs font-semibold uppercase tracking-wide text-muted">{t("Diğer kayıtlar ve bölümler")}</p>
       <div className="grid grid-cols-2 gap-3">
-        {link(`/water?date=${date}`, <Droplets size={18} />, t("Su"))}
-        {link(`/drinks?date=${date}`, <GlassWater size={18} />, t("İçecek"))}
-        {link(`/activity?date=${date}`, <Activity size={18} />, t("Aktivite"))}
-        {link("/body", <Ruler size={18} />, t("Kilo ve ölçüm"))}
-        {link(`/wellbeing?date=${date}`, <Moon size={18} />, t("Uyku ve durum"))}
-        {link(`/supplements?date=${date}`, <Pill size={18} />, t("Takviyeler"))}
-        {link(`/rings?date=${date}`, <CircleDot size={18} />, t("Sağlık halkaları"))}
-        {link("/fasting", <Timer size={18} />, t("Aralıklı oruç"))}
-        {link("/coach", <Lightbulb size={18} />, t("Öneriler"))}
-        {link("/plan", <CalendarDays size={18} />, t("Öğün planı"))}
-        {link("/letter", <Mail size={18} />, t("Haftalık mektup"))}
-        {link("/challenges", <Users size={18} />, t("Meydan okumalar"))}
-        {link("/cycle", <CalendarHeart size={18} />, t("Döngü takibi"))}
-        {link("/performance", <Trophy size={18} />, t("Performans"))}
-        {link("/assistant", <MessageCircle size={18} />, t("Asistan"))}
+        {visibleItems(linkItems, prefs["add.links"]).map((x) => (
+          <Fragment key={x.id}>{link(x.href, x.icon, x.label)}</Fragment>
+        ))}
       </div>
+      <CustomizeSheet
+        open={customizing}
+        onClose={() => setCustomizing(false)}
+        title={t("Seçenekleri düzenle")}
+        groups={[
+          { key: "add.tiles", title: t("Kayıt yöntemleri"), items: tileItems.map(({ id, label, icon }) => ({ id, label, icon })) },
+          { key: "add.links", title: t("Diğer kayıtlar ve bölümler"), items: linkItems.map(({ id, label, icon }) => ({ id, label, icon })) },
+        ]}
+      />
     </div>
   );
 }
