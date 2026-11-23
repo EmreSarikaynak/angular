@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">BKN</string>
+    <string name="title_activity_main">BKN</string>
+    <string name="package_name">tr.com.bkny.app</string>
+    <string name="custom_url_scheme">tr.com.bkny.app</string>
+</resources>

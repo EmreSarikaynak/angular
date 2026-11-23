@@ -13,7 +13,7 @@ import { download } from "@/lib/export";
 import { ACTIVITY_LEVEL_LABELS, ALLERGY_OPTIONS, DIET_OPTIONS, GOAL_LABELS, label } from "@/lib/i18n/labels";
 import { calculateTargets } from "@/lib/nutrition/calc";
 import { supabase } from "@/lib/supabase/client";
-import { disableNotifications, enableNotifications } from "@/lib/push";
+import { disableNotifications, enableNotifications, unsupportedText } from "@/lib/push";
 import type { ActivityLevel, Goal, Lang, Profile, Sex, Theme } from "@/lib/types";
 
 export default function ProfilePage() {
@@ -137,7 +137,7 @@ export default function ProfilePage() {
     try {
       if (turningOn) {
         const result = await enableNotifications();
-        if (result === "unsupported") return toast(t("Bu cihaz veya tarayıcı bildirimleri desteklemiyor. iPhone'da önce uygulamayı ana ekrana ekleyin."), "error");
+        if (result === "unsupported") return toast(unsupportedText(t), "error");
         if (result === "denied") return toast(t("Bildirim izni verilmedi. Tarayıcı ayarlarından izin verebilirsiniz."), "error");
         patch = { ...patch, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || profile?.timezone };
       }
@@ -371,7 +371,7 @@ export default function ProfilePage() {
           className="w-full"
           onClick={async () => {
             const result = await enableNotifications();
-            if (result === "unsupported") toast(t("Bu cihaz veya tarayıcı bildirimleri desteklemiyor. iPhone'da önce uygulamayı ana ekrana ekleyin."), "error");
+            if (result === "unsupported") toast(unsupportedText(t), "error");
             else if (result === "denied") toast(t("Bildirim izni verilmedi. Tarayıcı ayarlarından izin verebilirsiniz."), "error");
             else {
               await saveProfile({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || profile.timezone }).catch(() => {});
