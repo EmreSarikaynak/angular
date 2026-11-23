@@ -162,6 +162,30 @@ Deneme: **Android emülatöründe** (Google Play görüntülü) ve **gerçek iPh
 - **Sesle ekleme:** tarayıcı konuşma tanıması uygulama içindeki web görünümlerinde yoktur; düğme gizlenir ve klavyedeki mikrofon önerilir.
 - Bu kabuk bu depoda otomatik olarak simülatörde sınanmadı; güvenli alanlar ve klavye davranışı ilk çalıştırmada gözden geçirilmelidir.
 
+## Android: Google Play iç test sürümü
+
+Önkoşullar: Android Studio (SDK ile), JDK (Android Studio ile gelir), Google Play Console hesabı.
+
+1. **Yükleme anahtarı (upload key) oluşturun** (bir kez; dosyayı ve şifreyi güvenle saklayın, kaybederseniz Play desteğiyle sıfırlamanız gerekir):
+   ```bash
+   cd android
+   keytool -genkeypair -v -keystore upload-keystore.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000
+   ```
+2. `android/keystore.properties` dosyasını oluşturun (git'e **girmez**):
+   ```
+   storeFile=upload-keystore.jks
+   storePassword=<şifre>
+   keyAlias=upload
+   keyPassword=<şifre>
+   ```
+3. Paketi üretin (proje kökünde): `npm run cap:android:bundle`. Çıktı: `android/app/build/outputs/bundle/release/app-release.aab`.
+   Uygulama varsayılan olarak `https://bkny.com.tr` adresini yükler (`CAP_SERVER_URL` ile değiştirilebilir).
+4. Play Console → uygulamayı oluşturun (ad BKNY, Türkçe, uygulama, ücretsiz) → **Test et → Dahili test → Yeni sürüm oluştur** → AAB'yi yükleyin → **Play Uygulama İmzalama**'ya katılın → sürümü yayınlayın.
+5. **Test kullanıcıları** listesi oluşturup e-postaları ekleyin; Play'in verdiği **katılım bağlantısını** test kullanıcılarına gönderin, bağlantıdan sonra Play Store'dan indirirler.
+6. Sürümü güncellerken `android/app/build.gradle` içinde `versionCode` değerini artırın (her yüklemede benzersiz ve artan olmalı).
+
+Notlar: Firebase (FCM) için `android/app/google-services.json` depoda hazırdır; Play'in uygulamayı yeniden imzalaması FCM bildirimlerini etkilemez. Uygulama içerik olarak canlı siteyi gösterdiği için Google Play incelemesinde "yalnızca web sitesi sarmalayıcısı" olarak değerlendirilmemesi için yerel özellikler (kamera, bildirimler) ve açıklayıcı mağaza metni önemlidir.
+
 ## Mimari
 
 ```
