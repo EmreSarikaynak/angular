@@ -144,6 +144,11 @@ export function AuthForm({ mode }: { mode: Mode }) {
           </Link>
         )}
       </form>
+      <p className="mt-4 text-center text-xs text-muted">
+        <Link href="/tanitim" className="underline">
+          {t("BKNY nedir?")}
+        </Link>
+      </p>
       <p className="mt-4 text-center text-sm text-muted">
         {mode === "login" ? t("Hesabınız yok mu?") : t("Zaten hesabınız var mı?")}{" "}
         <Link href={mode === "login" ? "/register" : "/login"} className="font-semibold text-primary">
