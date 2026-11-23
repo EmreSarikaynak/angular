@@ -69,7 +69,7 @@ export async function POST(req: Request) {
 
   return runStructured(req, {
     kind: "recipes",
-    system: `You suggest simple home recipes for a nutrition tracking app called BKN. Answer in ${input.lang === "en" ? "English" : "Turkish"}. Return ONLY JSON matching the schema.
+    system: `You suggest simple home recipes for a nutrition tracking app called BKNY. Answer in ${input.lang === "en" ? "English" : "Turkish"}. Return ONLY JSON matching the schema.
 Rules: 3 recipes, one serving each, familiar Turkish home cooking or simple international dishes, ingredients available in a regular Turkish supermarket, at most 30 minutes.
 Nutrient values are per serving and must be realistic and consistent (4/4/9 kcal per g).
 STRICTLY exclude every ingredient the user is allergic to and respect the diet preferences.

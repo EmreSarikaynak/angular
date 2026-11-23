@@ -292,7 +292,7 @@ await test("hesabı sil: tüm veriler kalıcı olarak silinir", async () => {
 });
 
 
-console.log("BKN: takviyeler, halkalar, tarifler, hatırlatmalar");
+console.log("BKNY: takviyeler, halkalar, tarifler, hatırlatmalar");
 const C = await makeUser(`c${stamp}@example.com`);
 const D = await makeUser(`d${stamp}@example.com`);
 const { createECDH, randomBytes } = await import("node:crypto");
@@ -368,7 +368,7 @@ await test("hatırlatmalar: alınan takviye ve kapatılan bildirim gönderilmez;
   assert.equal((await cron()).supplement, 0);
 });
 
-console.log("BKN ekleri: oruç, plan, paylaşım, akşam kapanışı, stok");
+console.log("BKNY ekleri: oruç, plan, paylaşım, akşam kapanışı, stok");
 await test("oruç, plan ve paylaşım tabloları yalnızca sahibine açık", async () => {
   const now = local();
   assert.ifError((await C.db.from("fasting_sessions").insert({ entry_date: now.date, started_at: new Date(Date.now() - 3600e3).toISOString(), target_hours: 16 })).error);
@@ -453,7 +453,7 @@ await test("akşam kapanışı ve azalan stok bildirimi bir kez gönderilir", as
   assert.equal((await cron()).evening, 0, "kapalı akşam bildirimi gönderildi");
 });
 
-console.log("BKN: tarifler, mektup, meydan okuma, döngü, mikro besin, Ramazan, menü");
+console.log("BKNY: tarifler, mektup, meydan okuma, döngü, mikro besin, Ramazan, menü");
 await test("tarif, döngü ve mektup yalnızca sahibine açık; meydan okuma tabloları tarayıcıya kapalı", async () => {
   const now = local();
   assert.ifError((await C.db.from("user_recipes").insert({ name: "Kuru fasulye", servings: 4, ingredients: [{ name: "Fasulye", kcal: 1200 }] })).error);
@@ -541,7 +541,7 @@ await test("Ramazan modu: su hatırlatması yalnızca iftar–sahur arasında", 
   assert.equal((await cron()).water, 1, "yeme penceresinde su bildirimi gitmedi");
 });
 
-console.log("BKN: diyetisyen paneli");
+console.log("BKNY: diyetisyen paneli");
 const E = await makeUser(`e${stamp}@example.com`);
 await test("diyetisyen tabloları tarayıcıya kapalı; oturumsuz erişim 401", async () => {
   for (const t of ["dietitians", "dietitian_clients", "dietitian_notes"]) {

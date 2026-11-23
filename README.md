@@ -1,4 +1,4 @@
-# BKN — Bugün Kendin için Ne yaptın?
+# BKNY — Bugün Kendin için Ne yaptın?
 
 Yapay zekâ destekli beslenme, su, takviye, spor ve sağlık takip uygulaması. Mobil öncelikli, çevrimdışı çalışabilen bir PWA.
 
@@ -24,9 +24,9 @@ Yapay zekâ destekli beslenme, su, takviye, spor ve sağlık takip uygulaması. 
 | Takviyeler | Kullanıcının girdiği ad, doz ve saatler; günlük kontrol listesi; saati gelince ve alınmadıysa motive edici tekrar bildirimleri (uygulama doz önermez) |
 | Öneriler | Bugünkü protein açığı, son 3 günün eğilimi (fazla/eksik olan değer), buna uygun tarifler, alerji/tercih filtresi, Gemini ile kişisel tarif, tek dokunuşla günlüğe ekleme |
 | Sağlık halkaları | Akıllı saat/telefon ekran görüntüsünden (ya da elle) hareket, egzersiz, ayakta, adım; üç halkalı grafik günlüğe ve ana sayfaya yazılır |
-| Performans özeti | Haftalık, 3 haftalık, aylık, 3 aylık ve yıllık değerler tek tabloda; BKN skoru; PDF ve PNG indirme |
+| Performans özeti | Haftalık, 3 haftalık, aylık, 3 aylık ve yıllık değerler tek tabloda; BKNY skoru; PDF ve PNG indirme |
 | Bildirimler | Su, takviye, protein açığı, eğilim uyarısı, haftalık/aylık özet; tür bazında aç/kapat ve sıklık ayarı (Profil › Bildirimler) |
-| BKN skoru | "Bugün kendin için ne yaptın?" kartı: öğün, protein, su, hareket, takviye ve uyku üzerinden 0–100 |
+| BKNY skoru | "Bugün kendin için ne yaptın?" kartı: öğün, protein, su, hareket, takviye ve uyku üzerinden 0–100 |
 | Seri ve rozetler | Kesintisiz kayıt serisi, su serisi ve 12 rozet; ana sayfada seri göstergesi, Performans sayfasında rozetler |
 | Akşam kapanışı | Seçilen saatte "Bugün kendin için ne yaptın?" bildirimi ve günün kısa özeti |
 | Öğün planı | Hedef, alerji ve tercihlere göre Gemini ile 7 günlük plan; öğünü günlüğe ekleme; işaretlenebilir, paylaşılabilir alışveriş listesi |
@@ -188,7 +188,7 @@ src/
       config           kota, duyuru, YZ durumu
   lib/
     nutrition/         hedef hesabı, MET tablosu, içecek/alkol hesabı, referans besin tablosu
-    bkn/               tarif kitaplığı, eğilim analizi, BKN skoru, performans özeti, bildirim mesajları ve motoru
+    bkn/               tarif kitaplığı, eğilim analizi, BKNY skoru, performans özeti, bildirim mesajları ve motoru
     ai/                Gemini istemcisi, istemler, şemalar, son işleme, limit/önbellek/kullanım kaydı
     data/              çevrimdışı öncelikli veri katmanı (kuyruk + önbellek) ve kancalar
     i18n/              Türkçe kaynak metinler, İngilizce sözlük
@@ -211,7 +211,7 @@ public/sw.js           service worker
 - Asistana yalnızca ad, yaş, hedefler ve günlük özetler gönderilir; soyad, e-posta, doğum tarihi, fotoğraflar ve notlar gönderilmez.
 - Profil › Verilerim: JSON olarak indirme, fotoğrafları silme, hesabı kalıcı silme (`ON DELETE CASCADE`).
 - Paylaşım bağlantısındaki 256 bitlik belirtecin yalnızca SHA-256 özeti saklanır; bağlantı bir kez gösterilir, süresi dolunca ya da iptal edilince 404 döner. Soyad, e-posta, doğum tarihi, fotoğraflar, notlar ve sohbetler hiçbir zaman paylaşılmaz; öğün ayrıntıları, vücut ölçümleri ve uyku/ruh hali yalnızca kullanıcı seçerse eklenir.
-- Diyetisyen tablolarına tarayıcıdan erişim yoktur. Diyetisyen yalnızca etkin bağlantısı olan danışanın, danışanın izin verdiği bölümlerini görür; kapsamı yalnızca danışan değiştirebilir. Danışan paylaşımı bitirdiğinde erişim kesilir ve diyetisyenin o danışan hakkındaki notları silinir. BKN diyetisyenin unvanını doğrulamaz.
+- Diyetisyen tablolarına tarayıcıdan erişim yoktur. Diyetisyen yalnızca etkin bağlantısı olan danışanın, danışanın izin verdiği bölümlerini görür; kapsamı yalnızca danışan değiştirebilir. Danışan paylaşımı bitirdiğinde erişim kesilir ve diyetisyenin o danışan hakkındaki notları silinir. BKNY diyetisyenin unvanını doğrulamaz.
 - Meydan okuma tablolarına tarayıcıdan erişim yoktur; üyeler birbirinin yalnızca takma adını ve başardığı gün sayısını görür, ilerleme her üyenin kendi kayıtlarından sunucuda hesaplanır.
 - Döngü kayıtları yapay zekâya, paylaşım raporuna ve meydan okumalara gönderilmez. Sesle girişte ses tarayıcının kendi tanıma servisine gider; uygulama sunucusuna yalnızca metin ulaşır.
 - `/privacy` sayfası bir KVKK/GDPR aydınlatma metni **taslağıdır**; yayına almadan önce veri sorumlusu bilgilerinizi ekleyip hukuki incelemeden geçirin. Gemini API'nin veri işleme koşulları (ücretli katman, bölge) ve Supabase ile veri işleme sözleşmesi sizin sorumluluğunuzdadır.

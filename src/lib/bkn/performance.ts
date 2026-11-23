@@ -31,7 +31,7 @@ export interface PerfSummary {
   proteinAdherence: number | null;
   waterAdherence: number | null;
   supplementAdherence: number | null;
-  /** Kayıt girilen günlerin ortalama BKN skoru (0–100). */
+  /** Kayıt girilen günlerin ortalama BKNY skoru (0–100). */
   bknScore: number | null;
 }
 

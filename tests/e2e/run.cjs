@@ -224,7 +224,7 @@ const ok = (name) => console.log(`  ✓ ${String(++step).padStart(2, "0")} ${nam
   ok("uyku ve günlük durum kaydı");
 
 
-  // BKN-1. Takviyeler
+  // BKNY-1. Takviyeler
   await toastGone();
   await page.goto(APP + "/supplements");
   await page.getByText("Henüz takviye eklemediniz").waitFor();
@@ -246,7 +246,7 @@ const ok = (name) => console.log(`  ✓ ${String(++step).padStart(2, "0")} ${nam
   await shot("21-takviyeler");
   ok("takviye: ad/doz/saat ekleme, doğrulama, alındı işaretleme");
 
-  // BKN-2. Sağlık halkaları: ekran görüntüsünden okuma
+  // BKNY-2. Sağlık halkaları: ekran görüntüsünden okuma
   await toastGone();
   await page.goto(APP + "/rings");
   await page.getByText("Bu gün için halka kaydı yok").waitFor();
@@ -264,7 +264,7 @@ const ok = (name) => console.log(`  ✓ ${String(++step).padStart(2, "0")} ${nam
   await page.getByText("450/500").waitFor();
   ok("sağlık halkaları: ekran görüntüsü okundu, düzenlendi, halka grafiği günlüğe yazıldı");
 
-  // BKN-3. Öneriler ve tarifler
+  // BKNY-3. Öneriler ve tarifler
   await page.goto(APP + "/coach");
   await page.getByText("Bugünkü protein").waitFor();
   await page.getByText("Son 3 günün eğilimi").waitFor();
@@ -282,7 +282,7 @@ const ok = (name) => console.log(`  ✓ ${String(++step).padStart(2, "0")} ${nam
   await page.getByText("Günlüğe eklendi.").waitFor();
   ok("öneriler: protein durumu, eğilim, etiketli tarifler, kişisel tarif ve günlüğe ekleme");
 
-  // BKN-4. Performans özeti + PDF / PNG
+  // BKNY-4. Performans özeti + PDF / PNG
   await toastGone();
   await page.goto(APP + "/performance");
   await page.getByRole("columnheader", { name: "3 haftalık" }).waitFor();
@@ -297,7 +297,7 @@ const ok = (name) => console.log(`  ✓ ${String(++step).padStart(2, "0")} ${nam
   }
   ok("performans: 5 dönem bir arada, PDF ve PNG indirme");
 
-  // BKN-5. Bildirim ayarları
+  // BKNY-5. Bildirim ayarları
   await page.goto(APP + "/profile");
   await page.getByRole("heading", { name: "Bildirimler" }).waitFor();
   await page.getByLabel("Alınmayan takviye için tekrar sıklığı").selectOption("15");
@@ -547,7 +547,7 @@ const ok = (name) => console.log(`  ✓ ${String(++step).padStart(2, "0")} ${nam
   await page.getByText(re(Math.abs(remaining))).first().waitFor();
   await page.getByText(remaining < 0 ? "kcal fazla" : "kcal kaldı").waitFor();
   await page.getByText(/^67,2/).first().waitFor();
-  await page.getByRole("img", { name: /BKN skoru: \d+ / }).waitFor();
+  await page.getByRole("img", { name: /BKNY skoru: \d+ / }).waitFor();
   await page.getByText("Yakılan (saatinizden)").waitFor();
   await page.getByText(/^450/).first().waitFor();
   await page.getByRole("button", { name: "D vitamini alındı olarak işaretle" }).waitFor();

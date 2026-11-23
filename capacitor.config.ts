@@ -2,7 +2,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 /**
- * BKN yerel uygulama kabuğu (iOS ve Android).
+ * BKNY yerel uygulama kabuğu (iOS ve Android).
  *
  * Uygulama sunucudan yüklenir (server.url); böylece web sürümü güncellendiğinde mağaza güncellemesi
  * beklemeden herkes yeni sürümü görür. Adres ortam değişkeniyle değiştirilebilir:
@@ -16,7 +16,7 @@ const cleartext = serverUrl.startsWith("http://");
 
 const config: CapacitorConfig = {
   appId: "tr.com.bkny.app",
-  appName: "BKN",
+  appName: "BKNY",
   // server.url kullanıldığında bile bir webDir gerekir; bağlantı yokken gösterilen yedek sayfadır.
   webDir: "capacitor/www",
   server: {

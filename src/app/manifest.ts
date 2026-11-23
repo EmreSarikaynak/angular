@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "BKN — Bugün kendin için ne yaptın?",
-    short_name: "BKN — Bugün kendin için ne yaptın?",
+    name: "BKNY — Bugün kendin için ne yaptın?",
+    short_name: "BKNY — Bugün kendin için ne yaptın?",
     description: "Bugün kendin için ne yaptın? Beslenme, su, takviye, spor ve sağlık takibi.",
     start_url: "/",
     scope: "/",

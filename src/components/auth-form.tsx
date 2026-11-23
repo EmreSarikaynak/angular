@@ -92,7 +92,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
     <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center px-5 py-8">
       <div className="mb-8 text-center">
         <Logo size={64} className="mx-auto mb-3" />
-        <p className="text-2xl font-bold tracking-tight">BKN</p>
+        <p className="text-2xl font-bold tracking-tight">BKNY</p>
         <p className="mt-1 text-sm font-medium text-primary">{t("Bugün kendin için ne yaptın?")}</p>
         <p className="mt-1 text-xs text-muted">{t("Yapay zekâ destekli beslenme ve yaşam takibi")}</p>
       </div>

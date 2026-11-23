@@ -56,7 +56,7 @@ export function BknToday({ date, summary, data }: { date: string; summary: DaySu
     <div className="grid gap-4 lg:grid-cols-2">
       <Card>
         <div className="flex items-center gap-4">
-          <Ring value={score} max={100} size={84} stroke={9} overColor="var(--primary)" label={t("BKN skoru: {n} / 100", { n: score })}>
+          <Ring value={score} max={100} size={84} stroke={9} overColor="var(--primary)" label={t("BKNY skoru: {n} / 100", { n: score })}>
             <span className="text-xl font-bold">{score}</span>
           </Ring>
           <div className="min-w-0 flex-1">

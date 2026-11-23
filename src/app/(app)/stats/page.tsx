@@ -128,7 +128,7 @@ export default function StatsPage() {
       else {
         const pctText = (v: number | null) => (v == null ? "–" : `%${v}`);
         const blob = await reportPdf({
-          title: t("BKN Raporu"),
+          title: t("BKNY Raporu"),
           subtitle: `${[profile?.first_name, profile?.last_name].filter(Boolean).join(" ")} · ${periodTitle}`,
           generated: t("Oluşturulma: {d}", { d: new Date().toLocaleString(lang === "en" ? "en-GB" : "tr-TR") }),
           summary: [

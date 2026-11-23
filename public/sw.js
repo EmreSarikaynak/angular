@@ -1,4 +1,4 @@
-/* BKN service worker
+/* BKNY service worker
  * - Sayfa gezinmeleri: önce ağ, başarısızsa önbellekteki son sürüm (çevrimdışı açılış).
  * - Statik dosyalar (/_next/static, yazı tipleri, simgeler): önbellekten, arka planda tazelenir.
  * - /api/* ve Supabase istekleri ASLA önbelleklenmez (kişisel veri service worker'da tutulmaz).
@@ -71,7 +71,7 @@ self.addEventListener("fetch", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-  let data = { title: "BKN", body: "", url: "/", tag: "bkn" };
+  let data = { title: "BKNY", body: "", url: "/", tag: "bkn" };
   try {
     data = { ...data, ...event.data.json() };
   } catch (e) {}

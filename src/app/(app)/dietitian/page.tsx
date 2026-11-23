@@ -59,7 +59,7 @@ export default function DietitianPage() {
   }
 
   async function share(code: string) {
-    const text = t("BKN'de diyetisyeniniz olarak beni ekleyin. Profil › Diyetisyenimle paylaş bölümüne şu kodu girin: {code}", { code });
+    const text = t("BKNY'de diyetisyeniniz olarak beni ekleyin. Profil › Diyetisyenimle paylaş bölümüne şu kodu girin: {code}", { code });
     try {
       if (navigator.share) await navigator.share({ text });
       else {
@@ -92,7 +92,7 @@ export default function DietitianPage() {
           <Button size="lg" className="w-full" loading={busy} disabled={!online || name.trim().length < 2} onClick={enable}>
             {t("Paneli etkinleştir")}
           </Button>
-          <p className="text-xs text-muted">{t("Danışan verilerine erişirken mesleki gizlilik ve KVKK yükümlülükleri size aittir. BKN unvanınızı doğrulamaz.")}</p>
+          <p className="text-xs text-muted">{t("Danışan verilerine erişirken mesleki gizlilik ve KVKK yükümlülükleri size aittir. BKNY unvanınızı doğrulamaz.")}</p>
         </Card>
       </div>
     );
