@@ -2,15 +2,16 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AppProvider } from "@/components/app-provider";
 import { ServiceWorker } from "@/components/service-worker";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: { default: "BKNY — Bugün kendin için ne yaptın?", template: "%s · BKNY" },
   description: "BKNY: Bugün kendin için ne yaptın? Yapay zekâ destekli beslenme, su, takviye, spor ve sağlık takibi.",
   applicationName: "BKNY",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "BKNY", statusBarStyle: "default" },
   icons: { icon: [{ url: "/icons/icon-192.png", sizes: "192x192" }], apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }] },
-  robots: { index: false, follow: false },
   // Google Search Console alan adı doğrulaması.
   verification: { google: "mCjLwpDFsR6D9WzDgUGC5EBYsT11QKO4hXuhYQsy4js" },
 };

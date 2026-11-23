@@ -1199,4 +1199,5 @@ export const EN: Record<string, string> = {
   "Tarih girmezseniz süre takibi yapılmaz.": "Without a date, the time is not tracked.",
   "Önerilerde kullanılmaz": "Never used in suggestions",
   "1 gün kaldı": "1 day left",
+  "BKNY nedir?": "What is BKNY?",
 };
