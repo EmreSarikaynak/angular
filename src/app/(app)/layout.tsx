@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Activity, BarChart3, BookOpen, CalendarDays, CalendarHeart, ChefHat, CircleDot, CloudOff, Droplets, GlassWater, Home, Lightbulb, Mail, MessageCircle, Moon, Pill, Plus, RefreshCw, Ruler, Shield, Stethoscope, Timer, Trophy, User, Users, UtensilsCrossed } from "lucide-react";
+import { Activity, BarChart3, BookOpen, CalendarDays, CalendarHeart, ChefHat, CircleDot, CloudOff, Droplets, GlassWater, Home, Lightbulb, Mail, MessageCircle, Moon, Pill, Plus, Refrigerator, RefreshCw, Ruler, Shield, Stethoscope, Timer, Trophy, User, Users, UtensilsCrossed } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { supabaseConfigured } from "@/lib/supabase/client";
 import { cx } from "@/components/ui";
@@ -67,6 +67,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { href: "/coach", icon: Lightbulb, label: t("Öneriler") },
     { href: "/plan", icon: CalendarDays, label: t("Öğün planı") },
     { href: "/recipes", icon: ChefHat, label: t("Tariflerim") },
+    { href: "/fridge", icon: Refrigerator, label: t("Buzdolabından yemeğe") },
     { href: "/eating-out", icon: UtensilsCrossed, label: t("Dışarıda yemek") },
     { href: "/challenges", icon: Users, label: t("Meydan okumalar") },
     { href: "/cycle", icon: CalendarHeart, label: t("Döngü takibi") },

@@ -103,7 +103,21 @@ export function CustomizeSheet({ open, onClose, title, groups }: { open: boolean
   };
 
   return (
-    <Sheet open={open} onClose={onClose} title={title}>
+    <Sheet
+      open={open}
+      onClose={onClose}
+      title={title}
+      footer={
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={reset}>
+            {t("Varsayılana dön")}
+          </Button>
+          <Button className="flex-1" onClick={save}>
+            {t("Kaydet")}
+          </Button>
+        </div>
+      }
+    >
       <div className="space-y-5">
         <p className="text-sm text-muted">{t("Sırayı değiştirmek için tutacağı tutup sürükleyin. Kullanmadığınız seçenekleri anahtarla pasife alın; istediğiniz zaman geri açabilirsiniz.")}</p>
         {groups.map((g) => {
@@ -126,14 +140,6 @@ export function CustomizeSheet({ open, onClose, title, groups }: { open: boolean
             </section>
           );
         })}
-        <div className="flex gap-2 pt-1">
-          <Button variant="secondary" onClick={reset}>
-            {t("Varsayılana dön")}
-          </Button>
-          <Button className="flex-1" onClick={save}>
-            {t("Kaydet")}
-          </Button>
-        </div>
       </div>
     </Sheet>
   );

@@ -296,7 +296,35 @@ function DiaryInner() {
         </div>
       )}
 
-      <Sheet open={!!editing} onClose={() => setEditing(null)} title={t("Kaydı düzenle")}>
+      <Sheet
+        open={!!editing}
+        onClose={() => setEditing(null)}
+        title={t("Kaydı düzenle")}
+        footer={
+          editing && (
+            <div className="flex gap-2">
+              <Button variant="secondary" className="text-danger" onClick={() => remove(editing)}>
+                <Trash2 size={16} />
+                {t("Sil")}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setCopyDate(editing.entry_date === toDateKey() ? addDays(editing.entry_date, -1) : toDateKey());
+                  setCopying({ entries: [editing], title: editing.name });
+                  setEditing(null);
+                }}
+              >
+                <Copy size={16} />
+                {t("Kopyala")}
+              </Button>
+              <Button className="flex-1" loading={busy} onClick={saveEdit}>
+                {t("Kaydet")}
+              </Button>
+            </div>
+          )
+        }
+      >
         {editing && (
           <div className="space-y-3">
             {editing.photo_path && <Photo path={editing.photo_path} />}
@@ -317,26 +345,6 @@ function DiaryInner() {
               <Field label={t("Saat")}>
                 <Input type="time" value={timeOf(editing.consumed_at)} onChange={(e) => setEditing({ ...editing, consumed_at: timestampFor(editing.entry_date, e.target.value) })} />
               </Field>
-            </div>
-            <div className="flex gap-2 pt-1">
-              <Button variant="secondary" className="text-danger" onClick={() => remove(editing)}>
-                <Trash2 size={16} />
-                {t("Sil")}
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setCopyDate(editing.entry_date === toDateKey() ? addDays(editing.entry_date, -1) : toDateKey());
-                  setCopying({ entries: [editing], title: editing.name });
-                  setEditing(null);
-                }}
-              >
-                <Copy size={16} />
-                {t("Kopyala")}
-              </Button>
-              <Button className="flex-1" loading={busy} onClick={saveEdit}>
-                {t("Kaydet")}
-              </Button>
             </div>
           </div>
         )}
