@@ -1,6 +1,7 @@
 import { adminClient, authenticate, isAdmin, json, serverConfigured } from "@/lib/supabase/server";
 import { getSettings } from "@/lib/settings";
 import { geminiConfigured } from "@/lib/ai/gemini";
+import { fcmConfigured } from "@/lib/bkn/fcm";
 
 /** Oturum açmış kullanıcı için çalışma zamanı bilgileri: YZ durumu, kalan kota, duyuru. */
 export async function GET(req: Request) {
@@ -31,6 +32,7 @@ export async function GET(req: Request) {
     quota: { limit, used: count, remaining: Math.max(0, limit - count) },
     announcement: settings.announcement,
     is_admin: admin,
-    push_available: !!(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY),
+    push_available: !!(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) || fcmConfigured(),
+    fcm_available: fcmConfigured(),
   });
 }

@@ -625,6 +625,73 @@ await test("danışan paylaşımı bitirince erişim kesilir ve notlar silinir; 
   assert.equal((await call("/api/dietitian", C)).json.dietitians.length, 0);
 });
 await service.auth.admin.deleteUser(E.id);
+
+console.log("Mobil uygulama bildirimleri (FCM)");
+const GOOD = `GOODTOKEN-${stamp}-abcdefghijklmnop`;
+const GOOD2 = `GOODTOKEN2-${stamp}-abcdefghijklmnop`;
+const BAD = `BADTOKEN-${stamp}-abcdefghijklmnopq`;
+const tokensOf = async (uid) => (await service.from("device_tokens").select("token, platform").eq("user_id", uid)).data;
+await test("cihaz belirteci: oturum ister, doğrulanır, hesaplar arası devredilir, yalnızca sahibi siler", async () => {
+  assert.equal((await call("/api/devices", null, { token: GOOD, platform: "android" })).status, 401);
+  assert.equal((await call("/api/devices", C, { token: "kisa", platform: "android" })).status, 400);
+  assert.equal((await call("/api/devices", C, { token: GOOD, platform: "windows" })).status, 400);
+  assert.equal((await call("/api/devices", C, { token: GOOD, platform: "android" })).status, 200);
+  assert.equal((await call("/api/devices", C, { token: GOOD, platform: "android" })).status, 200);
+  assert.deepEqual(await tokensOf(C.id), [{ token: GOOD, platform: "android" }], "aynı belirteç iki kez kaydedildi");
+  // Aynı cihaz başka hesapla giriş yaptı: belirteç yeni hesaba geçer, eskisinden kalkar.
+  assert.equal((await call("/api/devices", D, { token: GOOD, platform: "android" })).status, 200);
+  assert.deepEqual([(await tokensOf(C.id)).length, (await tokensOf(D.id)).length], [0, 1]);
+  assert.equal((await call("/api/devices", C, { token: GOOD }, "DELETE")).status, 200, "başkasının belirtecini silme isteği hata vermemeli");
+  assert.equal((await tokensOf(D.id)).length, 1, "başkasının belirteci silindi");
+  assert.equal((await call("/api/devices", D, { token: GOOD }, "DELETE")).status, 200);
+  assert.equal((await tokensOf(D.id)).length, 0);
+  const direct = await C.db.from("device_tokens").select("*").limit(1);
+  assert.ok(direct.error || direct.data.length === 0, "belirteç tablosu tarayıcıdan okunabildi");
+  assert.equal((await call("/api/config", C)).json.fcm_available, true);
+});
+await test("cihaz sayısı kullanıcı başına 10 ile sınırlı", async () => {
+  for (let i = 0; i < 12; i++) await call("/api/devices", D, { token: `LIMITTOKEN-${stamp}-${String(i).padStart(2, "0")}-abcdefghij`, platform: "ios" });
+  assert.equal((await tokensOf(D.id)).length, 10);
+  await service.from("device_tokens").delete().eq("user_id", D.id);
+});
+await test("hatırlatma FCM ile gider: JWT imzası doğrulanır, geçersiz belirteç silinir, iki cihaza ulaşır", async () => {
+  await fetch("https://127.0.0.1:8789/__reset");
+  await service.from("notification_log").delete().eq("user_id", C.id);
+  await service.from("water_logs").delete().eq("user_id", C.id);
+  const now = local();
+  await service.from("push_subscriptions").delete().eq("user_id", C.id);
+  await service.from("profiles").update({ reminder_enabled: true, reminder_start_hour: now.hour, reminder_end_hour: (now.hour + 2) % 24, notify_protein: false, notify_supplements: false, notify_evening: false, notify_insights: false, notify_summary: false, ramadan_mode: false, last_reminder_at: null, water_target_ml: 2000, language: "tr" }).eq("id", C.id);
+  for (const [t, p] of [[GOOD, "android"], [GOOD2, "ios"], [BAD, "android"]]) assert.equal((await call("/api/devices", C, { token: t, platform: p })).status, 200);
+  const r = await cron();
+  assert.equal(r.ok, true, JSON.stringify(r));
+  assert.equal(r.water, 1, JSON.stringify(r));
+  const hits = await pushHits();
+  assert.equal(hits.filter((h) => h.kind === "oauth").length, 1, "erişim belirteci bir kez alınmalı (önbellek)");
+  const sent = hits.filter((h) => h.kind === "fcm");
+  assert.deepEqual(sent.map((h) => h.token).sort(), [GOOD, GOOD2].sort());
+  for (const h of sent) {
+    assert.match(h.title, /💧/);
+    assert.match(h.body, /ml/);
+    assert.equal(h.url, "/water");
+    assert.equal(h.android.channel_id, "bkn_reminders");
+    assert.equal(h.apns, true);
+  }
+  assert.deepEqual((await tokensOf(C.id)).map((t) => t.token).sort(), [GOOD, GOOD2].sort(), "geçersiz (UNREGISTERED) belirteç silinmeli");
+  // Aynı çağrı tekrarlanınca (su aralığı dolmadığı için) yeniden gönderilmez.
+  await fetch("https://127.0.0.1:8789/__reset");
+  assert.equal((await cron()).water, 0);
+  assert.equal((await pushHits()).filter((h) => h.kind === "fcm").length, 0);
+});
+await test("cihazı olmayan kullanıcıya FCM bildirimi sayılmaz; başkasının cihazına gitmez", async () => {
+  await service.from("device_tokens").delete().eq("user_id", C.id);
+  await call("/api/devices", D, { token: GOOD, platform: "android" });
+  await fetch("https://127.0.0.1:8789/__reset");
+  await service.from("profiles").update({ last_reminder_at: null }).eq("id", C.id);
+  const r = await cron();
+  assert.equal(r.water, 0, "cihazı olmayan kullanıcıya bildirim sayıldı");
+  assert.equal((await pushHits()).filter((h) => h.kind === "fcm").length, 0);
+  await service.from("device_tokens").delete().eq("user_id", D.id);
+});
 await service.auth.admin.deleteUser(C.id);
 await service.auth.admin.deleteUser(D.id);
 await service.auth.admin.deleteUser(B.id);

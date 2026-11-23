@@ -8,6 +8,7 @@ import { proteinGap, trendInsights, type InsightKey } from "./insights";
 import { eveningNotice, insightNotice, proteinNotice, stockNotice, summaryNotice, supplementNotice, waterNotice, type Notice } from "./messages";
 import { LOW_STOCK_DAYS, stockDaysLeft } from "./fasting";
 import { inEatingWindow } from "./ramadan";
+import { fcmConfigured, sendFcm } from "./fcm";
 import { pickRecipes } from "./recipes";
 
 export function localParts(tz: string, d = new Date()) {
@@ -37,14 +38,21 @@ type P = Profile & { last_reminder_at: string | null };
  */
 export async function runReminders(now = new Date()) {
   const db = adminClient();
-  setVapidDetails(process.env.VAPID_SUBJECT || "mailto:admin@example.com", process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!, process.env.VAPID_PRIVATE_KEY!);
+  const webPushOn = !!(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY);
+  const fcmOn = fcmConfigured();
+  if (webPushOn) setVapidDetails(process.env.VAPID_SUBJECT || "mailto:admin@example.com", process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!, process.env.VAPID_PRIVATE_KEY!);
   const counts = { users: 0, water: 0, supplement: 0, protein: 0, insight: 0, summary: 0, evening: 0, stock: 0, failed: 0 };
 
-  const { data: subs } = await db.from("push_subscriptions").select("id, user_id, endpoint, p256dh, auth").limit(20000);
+  // Web (tarayıcı/PWA) abonelikleri ve mobil uygulama cihaz belirteçleri.
+  const { data: subs } = webPushOn ? await db.from("push_subscriptions").select("id, user_id, endpoint, p256dh, auth").limit(20000) : { data: [] };
+  const { data: devices } = fcmOn ? await db.from("device_tokens").select("id, user_id, token").limit(20000) : { data: [] };
   const byUser = new Map<string, NonNullable<typeof subs>>();
   for (const s of subs ?? []) byUser.set(s.user_id, [...(byUser.get(s.user_id) ?? []), s]);
-  if (!byUser.size) return counts;
-  const { data: profiles } = await db.from("profiles").select("*").in("id", [...byUser.keys()]);
+  const devicesByUser = new Map<string, NonNullable<typeof devices>>();
+  for (const d of devices ?? []) devicesByUser.set(d.user_id, [...(devicesByUser.get(d.user_id) ?? []), d]);
+  const targets = new Set([...byUser.keys(), ...devicesByUser.keys()]);
+  if (!targets.size) return counts;
+  const { data: profiles } = await db.from("profiles").select("*").in("id", [...targets]);
 
   const push = async (userId: string, notice: Notice, tag: string) => {
     let delivered = false;
@@ -60,6 +68,12 @@ export async function runReminders(now = new Date()) {
           await logError("push", (e as Error).message, { status }, userId);
         }
       }
+    }
+    for (const d of devicesByUser.get(userId) ?? []) {
+      const result = await sendFcm(d.token, { title: notice.title, body: notice.body, url: notice.url, tag });
+      if (result === "sent") delivered = true;
+      else if (result === "unregistered") await db.from("device_tokens").delete().eq("id", d.id);
+      else counts.failed++;
     }
     return delivered;
   };

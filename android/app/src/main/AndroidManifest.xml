@@ -20,6 +20,10 @@
             </intent-filter>
         </activity>
 
+        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_bkn" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@color/bkn_green" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="bkn_reminders" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -33,6 +37,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Kamerası olmayan cihazlar da uygulamayı kurabilsin (fotoğraf yerine yazarak kayıt kullanılır). -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
