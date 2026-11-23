@@ -11,6 +11,7 @@ import { clearLocalData } from "@/lib/data/store";
 import { ageFrom, toDateKey } from "@/lib/dates";
 import { download } from "@/lib/export";
 import { ACTIVITY_LEVEL_LABELS, ALLERGY_OPTIONS, DIET_OPTIONS, GOAL_LABELS, label } from "@/lib/i18n/labels";
+import { HealthConnectCard } from "@/components/health-connect";
 import { isNative } from "@/lib/native";
 import { TimePicker15 } from "@/components/time-picker";
 import { formatHHMM, toMinutes } from "@/lib/bkn/schedule";
@@ -376,6 +377,8 @@ export default function ProfilePage() {
         </Button>
         <p className="text-xs text-muted">{(isNative() ? config?.fcm_available : config?.web_push_available) ? t("Bildirimler bu cihazda tarayıcı izni gerektirir. iPhone'da önce uygulamayı ana ekrana ekleyin.") : t("Sunucu bildirimleri yapılandırılmamış; hatırlatmalar yalnızca uygulama açıkken gösterilir.")}</p>
       </Card>
+
+      <HealthConnectCard />
 
       <Card className="space-y-3">
         {toggleRow(t("Ramazan modu"), t("Öğünler Sahur ve İftar olarak adlandırılır; su ve beslenme hatırlatmaları yalnızca iftar ile sahur arasında gönderilir."), profile.ramadan_mode, (v) => notify({ ramadan_mode: v }))}

@@ -26,6 +26,8 @@
 	<string>BKNY, yemeğinizin fotoğrafını çekip besin değerlerini hesaplamak ve barkod okumak için kamerayı kullanır.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>BKNY, galerinizden seçtiğiniz yemek fotoğrafını analiz etmek için fotoğraflarınıza erişir.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>BKNY, adım, hareket, egzersiz, uyku ve kilo verilerinizi Sağlık uygulamasından (Apple Watch dahil) yalnızca okuyarak günlük özetlerinize ekler. Verileriniz reklam için kullanılmaz.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<!-- Yalnızca bildirim için Firebase kullanılır; Analytics verisi toplanmaz. -->

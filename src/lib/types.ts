@@ -250,7 +250,7 @@ export interface HealthRing {
   stand_goal: number | null;
   steps: number | null;
   distance_km: number | null;
-  source: "manual" | "screenshot";
+  source: "manual" | "screenshot" | "device";
 }
 
 export interface FastingSession {

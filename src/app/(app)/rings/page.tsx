@@ -140,6 +140,7 @@ function RingsInner() {
               <ActivityRings ring={form} size={160} label={t("Sağlık halkaları")} />
               <div className="min-w-0 flex-1">
                 <RingLegend ring={form} labels={labels} />
+                {existing?.source === "device" && !dirty && <p className="mt-1 flex items-center gap-1 text-xs font-medium text-primary">{t("Saatten eşitlendi")}</p>}
                 {(form.steps != null || form.distance_km != null) && (
                   <p className="mt-2 text-xs text-muted">
                     {form.steps != null ? `${new Intl.NumberFormat(lang === "en" ? "en-GB" : "tr-TR").format(form.steps)} ${t("adım")}` : ""}
