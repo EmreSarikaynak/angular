@@ -1197,4 +1197,5 @@ export const EN: Record<string, string> = {
   "Boş bırakırsanız tahmini saklama süresi kullanılır.": "If left empty, the estimated storage time is used.",
   "Tarih girilmedi; tahmini saklama süresi: {n} gün.": "No date entered; estimated storage time: {n} days.",
   "Tarih girmezseniz süre takibi yapılmaz.": "Without a date, the time is not tracked.",
+  "Önerilerde kullanılmaz": "Never used in suggestions",
 };

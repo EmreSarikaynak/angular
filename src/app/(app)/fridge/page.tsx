@@ -4,7 +4,7 @@ import { Archive, Camera, Check, Clock, Image as ImageIcon, Plus, Refrigerator, 
 import { useApp } from "@/components/app-provider";
 import { Button, Card, Chip, Input, PageHeader, Sheet, Skeleton, Textarea, cx } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
-import { daysLeft, mergeScan, normalizeName, pantryStatus, sortByUrgency, type ScannedItem } from "@/lib/bkn/pantry";
+import { daysLeft, mergeScan, normalizeName, pantryStatus, sortByUrgency, suggestable, type ScannedItem } from "@/lib/bkn/pantry";
 import { mealLabel } from "@/lib/bkn/ramadan";
 import { usePantry } from "@/lib/data/hooks";
 import { deleteRow, upsertRow, uuid } from "@/lib/data/store";
@@ -50,8 +50,8 @@ export default function FridgePage() {
   const today = toDateKey();
   const items = sortByUrgency(pantry.data ?? [], today);
   const shown = items.filter((i) => filter === "all" || i.location === filter);
-  const usable = items.filter((i) => pantryStatus(i, today) !== "expired");
-  const soon = items.filter((i) => pantryStatus(i, today) === "soon");
+  const usable = items.filter((i) => suggestable(i) && pantryStatus(i, today) !== "expired");
+  const soon = items.filter((i) => suggestable(i) && pantryStatus(i, today) === "soon");
   const locLabel = { fridge: t("Buzdolabı"), freezer: t("Buzluk"), pantry: t("Dolap") };
   const typedList = typed
     .split(/[,\n;]+/)
@@ -137,9 +137,9 @@ export default function FridgePage() {
         body: {
           mode: "suggest",
           lang,
-          inventory: usable.slice(0, 40).map((i) => ({ name: i.name, location: i.location, days_left: daysLeft(i, today) })),
+          inventory: usable.slice(0, 40).map((i) => ({ name: i.name, location: i.location, category: i.category ?? "food", days_left: daysLeft(i, today) })),
           meal_kcal: profile?.kcal_target ? Math.round(profile.kcal_target * 0.3) : undefined,
-          meal_protein_g: profile?.protein_target_g ? Math.round(profile.protein_target_g * 0.3) : undefined,
+          meal_protein_g: profile?.protein_target_g ? Math.min(45, Math.max(15, Math.round(profile.protein_target_g * 0.3))) : undefined,
         },
       });
       void refreshConfig();
@@ -163,6 +163,20 @@ export default function FridgePage() {
       toast(t("Kaydedilemedi."), "error");
     }
   }
+
+  const catLine = (c: { category?: PantryItem["category"]; kcal?: number | null; volume_ml?: number | null }) => {
+    const size = c.volume_ml ? ` (${c.volume_ml} ml)` : "";
+    if (c.category === "alcohol")
+      return (
+        <span className="block text-xs font-medium text-danger">
+          {t("Alkollü")}
+          {c.kcal != null && ` · ≈${c.kcal} kcal${size}`} · {t("Önerilerde kullanılmaz")}
+        </span>
+      );
+    if (c.category === "drink") return <span className="block text-xs text-muted">{t("İçecek")}{c.kcal != null && ` · ≈${c.kcal} kcal${size}`}</span>;
+    if (c.category === "supplement") return <span className="block text-xs text-muted">{t("Takviye")} · {t("Önerilerde kullanılmaz")}</span>;
+    return null;
+  };
 
   const badge = (item: PantryItem) => {
     const status = pantryStatus(item, today);
@@ -224,6 +238,7 @@ export default function FridgePage() {
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium">{i.name}</span>
+                      {catLine(i)}
                       {badge(i)}
                     </span>
                   </button>
@@ -313,7 +328,10 @@ export default function FridgePage() {
           <ul className="space-y-2">
             {scanned.map((s, i) => (
               <li key={i} className="flex items-center gap-2">
-                <Input value={s.name} maxLength={80} aria-label={t("Ürün adı")} onChange={(e) => setScanned((cur) => cur && cur.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} />
+                <div className="min-w-0 flex-1">
+                  <Input value={s.name} maxLength={80} aria-label={t("Ürün adı")} onChange={(e) => setScanned((cur) => cur && cur.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} />
+                  {catLine(s)}
+                </div>
                 <span className="w-20 shrink-0 text-right text-xs text-muted">{s.expires_on ? s.expires_on.split("-").reverse().join(".") : s.shelf_days != null ? t("~{n} gün", { n: s.shelf_days }) : "–"}</span>
                 <button type="button" aria-label={t("{name} ürününü çıkar", { name: s.name })} onClick={() => setScanned((cur) => cur && cur.filter((_, j) => j !== i))} className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-muted hover:text-danger">
                   <X size={16} />
