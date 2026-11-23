@@ -1,0 +1,28 @@
+{
+  "screens": [
+    { "id": "home", "path": "/",
+      "tr": ["Bugün kendin için ne yaptın?", "Kalori, protein ve su hedeflerin tek bakışta"],
+      "en": ["What did you do for yourself?", "Calories, protein and water at a glance"] },
+    { "id": "add", "path": "/add",
+      "tr": ["Fotoğraf, yazı, barkod", "Yemeğini dilediğin yolla ekle"],
+      "en": ["Photo, text, barcode", "Log your meal any way you like"] },
+    { "id": "diary", "path": "/diary",
+      "tr": ["Öğünlerin ve besin değerlerin", "Yapay zekâ tahmini, senin düzenlemenle"],
+      "en": ["Your meals and nutrition", "AI estimates, edited by you"] },
+    { "id": "fridge", "path": "/fridge",
+      "tr": ["Buzdolabından yemeğe", "Süresi yaklaşanlara öncelik veren öneriler"],
+      "en": ["Fridge to meal", "Ideas that use what expires first"] },
+    { "id": "supplements", "path": "/supplements",
+      "tr": ["Takviye hatırlatmaları", "Doz ve saatleri sen belirle, BKNY hatırlatsın"],
+      "en": ["Supplement reminders", "You set doses and times, BKNY reminds you"] },
+    { "id": "stats", "path": "/stats",
+      "tr": ["Haftalık ve aylık istatistikler", "Eğilimlerini ve hedef uyumunu gör"],
+      "en": ["Weekly and monthly stats", "See your trends and goal progress"] },
+    { "id": "performance", "path": "/performance",
+      "tr": ["Performans özeti ve rozetler", "PDF veya PNG olarak paylaş"],
+      "en": ["Performance and badges", "Share as PDF or PNG"] },
+    { "id": "assistant", "path": "/assistant",
+      "tr": ["Beslenme asistanın", "Kendi kayıtlarına göre sorularını yanıtlar"],
+      "en": ["Your nutrition assistant", "Answers based on your own logs"] }
+  ]
+}

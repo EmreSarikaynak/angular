@@ -1,0 +1,34 @@
+{
+  "tr": {
+    "ios": {
+      "name": "BKNY: Beslenme ve Sağlık",
+      "subtitle": "Bugün kendin için ne yaptın?",
+      "promo": "Yemeğinin fotoğrafını çek, yapay zekâ besin değerini hesaplasın. Su, takviye, uyku, hareket ve hedeflerini tek yerden, Türkçe takip et.",
+      "keywords": "kalori,beslenme,diyet,protein,su,takviye,yemek,sağlık,sayaç,makro,barkod,tarif,oruç,uyku,adım,kilo",
+      "whatsNew": "İlk sürüm: fotoğrafla yemek analizi, su ve takviye hatırlatmaları, performans özetleri, buzdolabından yemeğe ve daha fazlası."
+    },
+    "play": {
+      "title": "BKNY: Beslenme ve Sağlık",
+      "short": "Fotoğrafla kalori ve protein takibi, su, takviye ve hedef hatırlatmaları.",
+      "whatsNew": "İlk sürüm."
+    },
+    "description": "BKNY, \"Bugün kendin için ne yaptın?\" sorusunun cevabını her gün birkaç dokunuşla görmeni sağlayan, Türkçe ve yapay zekâ destekli bir beslenme ve yaşam takip uygulamasıdır.\n\nYEMEĞİNİ ANLAT, GERİSİNİ BKNY HESAPLASIN\n• Tabağının fotoğrafını çek, besin değerleri (kalori, protein, karbonhidrat, yağ, şeker, lif, tuz) tahmin edilsin.\n• \"2 yumurta, 1 dilim ekmek\" yaz ya da barkodu ve besin etiketini okut.\n• Tahminleri sen düzenle: porsiyonu, gramajı, öğünü ve saati değiştir.\n\nSU, İÇECEK VE ALKOL\n• Günlük su hedefi ve hatırlatmalar.\n• Kahve, çay, gazlı içecek ve alkollü içeceklerin kalorisi ve kafeini hesaba katılır.\n\nTAKVİYELER\n• Kendi doz ve saatlerini sen girersin; BKNY yalnızca hatırlatır, takviye veya doz önermez.\n• Aldığını işaretle, stok azalınca uyarı al.\n\nHEDEFLER VE İLERLEME\n• Boy, kilo, hareket düzeyi ve hedefine göre günlük kalori, protein ve su hedefi.\n• Aktivite, adım, uyku ve ruh hali kayıtları; sağlık halkası ekran görüntülerinden okuma.\n• Haftalık, aylık ve yıllık performans özetleri; PDF ve PNG olarak paylaş.\n\nEVDEKİLERLE YEMEK\n• Buzdolabı, buzluk ve dolabının fotoğrafını çek; ürünler envanterine eklensin.\n• Son tüketim tarihi yaklaşan ürünlere öncelik veren yemek önerileri al.\n• Alerjilerin ve beslenme tercihlerin her zaman dikkate alınır.\n\nDAHA FAZLASI\n• Haftalık öğün planı ve alışveriş listesi.\n• Aralıklı oruç ve Ramazan modu (sahur, iftar ve oruçlu gün için öğün dağılımı).\n• Seri ve rozetler, haftalık mektup, arkadaşlarla meydan okuma.\n• Diyetisyeninle, istediğin bölümleri seçerek paylaşım.\n• Çevrimdışıyken de kayıt girebilirsin; bağlantı gelince eşitlenir (yapay zekâ analizi için bağlantı gerekir).\n• Açık ve koyu tema, Türkçe ve İngilizce.\n\nGİZLİLİK VE KONTROL\nVerilerin sana aittir: istediğin an dışa aktarabilir ya da hesabını ve tüm verilerini uygulama içinden silebilirsin. Veriler şifreli bağlantıyla iletilir; reklam veya izleme yoktur.\n\nÖNEMLİ NOT\nBKNY bir tıbbi cihaz değildir ve tıbbi tavsiye vermez. Besin değerleri yapay zekâ tahminidir ve hata içerebilir. Sağlık durumun, ilaç veya takviye kullanımın, hamileliğin ya da yeme bozukluğun varsa beslenme ve oruç konusunda hekimine veya diyetisyenine danış.",
+    "reviewNotes": "BKNY is a nutrition and wellbeing tracker. Sign in is required. A demo account is provided in the review fields. To try AI features: Add > Type, enter \"2 eggs and a slice of bread\". Photo features use the camera or photo library; push notifications are optional (Profile > Notifications). The app does not provide medical advice; nutrient values are AI estimates and the app says so. Data export and account deletion are available under Profile."
+  },
+  "en": {
+    "ios": {
+      "name": "BKNY: Nutrition & Wellbeing",
+      "subtitle": "What did you do for yourself?",
+      "promo": "Snap your meal and let AI estimate its nutrition. Track water, supplements, sleep, activity and goals in one place, in Turkish or English.",
+      "keywords": "calorie,nutrition,diet,protein,water,supplement,meal,health,macro,barcode,recipe,fasting,sleep,steps",
+      "whatsNew": "First release: photo meal analysis, water and supplement reminders, performance summaries, fridge-to-meal ideas and more."
+    },
+    "play": {
+      "title": "BKNY: Nutrition & Wellbeing",
+      "short": "Photo-based calorie and protein tracking, water, supplement and goal reminders.",
+      "whatsNew": "First release."
+    },
+    "description": "BKNY is an AI-assisted nutrition and wellbeing tracker, in Turkish and English, that answers the question \"What did you do for yourself today?\" in a few taps.\n\nDESCRIBE YOUR MEAL, BKNY DOES THE MATH\n• Take a photo of your plate and get an estimate of calories, protein, carbs, fat, sugar, fibre and salt.\n• Type \"2 eggs and a slice of bread\", or scan a barcode or a nutrition label.\n• Edit any estimate: portion, grams, meal and time.\n\nWATER, DRINKS AND ALCOHOL\n• A daily water goal with reminders.\n• Calories and caffeine from coffee, tea, soft drinks and alcoholic drinks are counted.\n\nSUPPLEMENTS\n• You enter your own doses and times; BKNY only reminds you and never recommends supplements or doses.\n• Mark what you took and get a heads-up when stock runs low.\n\nGOALS AND PROGRESS\n• Daily calorie, protein and water goals based on your height, weight, activity level and goal.\n• Log activity, steps, sleep and mood; read activity rings from screenshots.\n• Weekly, monthly and yearly performance summaries you can share as PDF or PNG.\n\nCOOK WITH WHAT YOU HAVE\n• Photograph your fridge, freezer and pantry to build an inventory.\n• Get meal ideas that prioritise items close to their use-by date.\n• Your allergies and dietary preferences are always respected.\n\nAND MORE\n• Weekly meal plan and shopping list.\n• Intermittent fasting and a Ramadan mode (suhoor, iftar and a meal split for fasting days).\n• Streaks and badges, a weekly letter, friendly challenges.\n• Share selected sections with your dietitian.\n• Log entries offline and they sync when you reconnect (AI analysis needs a connection).\n• Light and dark themes.\n\nPRIVACY AND CONTROL\nYour data is yours: export it any time, or delete your account and all data from within the app. Data travels over encrypted connections; there are no ads and no tracking.\n\nIMPORTANT\nBKNY is not a medical device and does not give medical advice. Nutrient values are AI estimates and may contain errors. If you have a health condition, take medication or supplements, are pregnant or have an eating disorder, talk to your doctor or dietitian about nutrition and fasting.",
+    "reviewNotes": "BKNY is a nutrition and wellbeing tracker. Sign in is required. A demo account is provided in the review fields. To try AI features: Add > Type, enter \"2 eggs and a slice of bread\". Photo features use the camera or photo library; push notifications are optional (Profile > Notifications). The app does not provide medical advice; nutrient values are AI estimates and the app says so. Data export and account deletion are available under Profile."
+  }
+}
