@@ -319,8 +319,9 @@ function DiaryInner() {
               </Field>
             </div>
             <div className="flex gap-2 pt-1">
-              <Button variant="secondary" onClick={() => remove(editing)} aria-label={t("Sil")}>
+              <Button variant="secondary" className="text-danger" onClick={() => remove(editing)}>
                 <Trash2 size={16} />
+                {t("Sil")}
               </Button>
               <Button
                 variant="secondary"
