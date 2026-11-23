@@ -152,7 +152,8 @@ export function Segmented<T extends string>({ value, onChange, options, classNam
 }
 
 /** Alttan açılan sayfa (mobil) / ortalanmış pencere (masaüstü). */
-export function Sheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
+/** Alttan açılan panel. `footer` verilirse içerik kayarken altta sabit kalır (ör. Kaydet düğmeleri). */
+export function Sheet({ open, onClose, title, children, footer }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode; footer?: React.ReactNode }) {
   const id = useId();
   useEffect(() => {
     if (!open) return;
@@ -169,16 +170,19 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-labelledby={id}>
       <div className="absolute inset-0 bg-black/45" onClick={onClose} aria-hidden />
-      <div className="pb-safe relative max-h-[92dvh] w-full overflow-y-auto rounded-t-3xl bg-surface p-5 shadow-xl sm:max-w-lg sm:rounded-3xl">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 id={id} className="text-lg font-semibold">
-            {title}
-          </h2>
-          <button type="button" onClick={onClose} aria-label="Kapat" className="grid h-9 w-9 place-items-center rounded-full bg-surface-2 text-muted">
-            <X size={18} />
-          </button>
+      <div className="relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-surface shadow-xl sm:max-w-lg sm:rounded-3xl">
+        <div className={cx("min-h-0 flex-1 overflow-y-auto p-5", !footer && "pb-safe")}>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 id={id} className="text-lg font-semibold">
+              {title}
+            </h2>
+            <button type="button" onClick={onClose} aria-label="Kapat" className="grid h-9 w-9 place-items-center rounded-full bg-surface-2 text-muted">
+              <X size={18} />
+            </button>
+          </div>
+          {children}
         </div>
-        {children}
+        {footer && <div className="shrink-0 border-t border-border bg-surface px-5 pt-3 pb-[max(0.75rem,var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px)))]">{footer}</div>}
       </div>
     </div>
   );

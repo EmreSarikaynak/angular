@@ -2,7 +2,7 @@
 import { Fragment, Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Activity, ArrowLeft, SlidersHorizontal, Barcode, CalendarDays, CalendarHeart, Camera, ChefHat, CircleDot, Droplets, GlassWater, Image as ImageIcon, Lightbulb, Mail, MessageCircle, Mic, Moon, PenLine, Pill, Ruler, ScanText, Square, Star, Timer, Trash2, Trophy, Type, Users, UtensilsCrossed } from "lucide-react";
+import { Activity, ArrowLeft, Refrigerator, SlidersHorizontal, Barcode, CalendarDays, CalendarHeart, Camera, ChefHat, CircleDot, Droplets, GlassWater, Image as ImageIcon, Lightbulb, Mail, MessageCircle, Mic, Moon, PenLine, Pill, Ruler, ScanText, Square, Star, Timer, Trash2, Trophy, Type, Users, UtensilsCrossed } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { BarcodeScanner } from "@/components/barcode-scanner";
 import { CustomizeSheet, useUiPrefs } from "@/components/customize";
@@ -423,6 +423,7 @@ function AddInner() {
     { id: "favorites", label: t("Favoriler"), icon: <Star size={18} />, el: tile(<Star size={20} />, t("Favoriler"), t("Sık yedikleriniz"), () => setMode("favorites")) },
     { id: "recipes", label: t("Tariflerim"), icon: <ChefHat size={18} />, el: tile(<ChefHat size={20} />, t("Tariflerim"), t("Kendi ev yemekleriniz"), () => router.push("/recipes")) },
     { id: "eating-out", label: t("Dışarıda yemek"), icon: <UtensilsCrossed size={18} />, el: tile(<UtensilsCrossed size={20} />, t("Dışarıda yemek"), t("Menü fotoğrafından öneri"), () => router.push("/eating-out"), !aiReady) },
+    { id: "fridge", label: t("Buzdolabından yemeğe"), icon: <Refrigerator size={18} />, el: tile(<Refrigerator size={20} />, t("Buzdolabından yemeğe"), t("Malzemeleri çek, yemek öner"), () => router.push("/fridge"), !aiReady) },
     { id: "manual", label: t("Elle gir"), icon: <PenLine size={18} />, el: tile(<PenLine size={20} />, t("Elle gir"), t("Değerleri kendiniz yazın"), () => setDraft({ source: "manual", name: "", items: [blankItem()], analysis: null, image: null, version: 1 })) },
   ];
   const linkItems = [
