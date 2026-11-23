@@ -6,6 +6,7 @@ import { Activity, ArrowLeft, Refrigerator, SlidersHorizontal, Barcode, Calendar
 import { useApp } from "@/components/app-provider";
 import { BarcodeScanner } from "@/components/barcode-scanner";
 import { CustomizeSheet, useUiPrefs } from "@/components/customize";
+import { cycleAvailable } from "@/lib/bkn/cycle";
 import { visibleItems } from "@/lib/layout-prefs";
 import { Review } from "@/components/review";
 import { blankItem } from "@/components/item-fields";
@@ -40,7 +41,7 @@ interface Product {
 const EXAMPLES = ["2 haşlanmış yumurta", "150 gram tavuk göğsü", "1 kase mercimek çorbası", "2 dilim ekmek", "1 bardak ayran", "1 porsiyon Adana kebap"];
 
 function AddInner() {
-  const { t, lang, online, config, refreshConfig, toast } = useApp();
+  const { t, lang, online, config, refreshConfig, toast, profile } = useApp();
   const router = useRouter();
   const params = useSearchParams();
   const paramMode = params.get("mode") as Mode | null;
@@ -439,7 +440,7 @@ function AddInner() {
     { id: "plan", label: t("Öğün planı"), icon: <CalendarDays size={18} />, href: "/plan" },
     { id: "letter", label: t("Haftalık mektup"), icon: <Mail size={18} />, href: "/letter" },
     { id: "challenges", label: t("Meydan okumalar"), icon: <Users size={18} />, href: "/challenges" },
-    { id: "cycle", label: t("Döngü takibi"), icon: <CalendarHeart size={18} />, href: "/cycle" },
+    ...(cycleAvailable(profile?.sex) ? [{ id: "cycle", label: t("Döngü takibi"), icon: <CalendarHeart size={18} />, href: "/cycle" }] : []),
     { id: "performance", label: t("Performans"), icon: <Trophy size={18} />, href: "/performance" },
     { id: "assistant", label: t("Asistan"), icon: <MessageCircle size={18} />, href: "/assistant" },
   ];

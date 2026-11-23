@@ -1203,4 +1203,6 @@ export const EN: Record<string, string> = {
   "BKNY'yi ana ekranına ekle": "Add BKNY to your home screen",
   "Uygulama gibi tek dokunuşla aç.": "Open it like an app with one tap.",
   "Kapat": "Close",
+  "Bu bölüm profilinizde kullanılmıyor": "This section is not used with your profile",
+  "Ana sayfaya dön": "Back to home",
 };

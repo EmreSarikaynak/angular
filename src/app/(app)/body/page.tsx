@@ -5,7 +5,7 @@ import { useApp } from "@/components/app-provider";
 import { LineSeries } from "@/components/charts";
 import { Button, Card, Chip, Empty, Field, Input, NumberInput, PageHeader, Skeleton, Stat } from "@/components/ui";
 import { useBody, useCycleLogs } from "@/lib/data/hooks";
-import { cycleInfo } from "@/lib/bkn/cycle";
+import { cycleAvailable, cycleInfo } from "@/lib/bkn/cycle";
 import { deleteRow, upsertRow, uuid } from "@/lib/data/store";
 import { formatShort, toDateKey } from "@/lib/dates";
 import { numberFmt } from "@/lib/i18n";
@@ -17,7 +17,8 @@ type Metric = "weight_kg" | "waist_cm" | "hip_cm" | "chest_cm" | "body_fat_pct" 
 export default function BodyPage() {
   const { t, lang, profile, saveProfile, toast } = useApp();
   const body = useBody();
-  const cycle = cycleInfo(useCycleLogs().data ?? [], toDateKey());
+  const cycleLogs = useCycleLogs().data;
+  const cycle = cycleAvailable(profile?.sex) ? cycleInfo(cycleLogs ?? [], toDateKey()) : null;
   const [date, setDate] = useState(toDateKey());
   const [weight, setWeight] = useState<number | null>(null);
   const [waist, setWaist] = useState<number | null>(null);
