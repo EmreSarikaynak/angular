@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Camera, CalendarDays, Droplets, Pill, Refrigerator, Share2, Target, Wifi } from "lucide-react";
+import { Activity, Camera, CalendarDays, ChevronDown, Droplets, Pill, Refrigerator, ScanBarcode, Share2, Target, Wifi } from "lucide-react";
 import { InstallButtons } from "@/components/install-buttons";
 import { Logo } from "@/components/logo";
 import { SITE_URL } from "@/lib/site";
@@ -23,6 +23,11 @@ type Copy = {
   install: { title: string; text: string };
   gallery: string[];
   galleryTitle: string;
+  badges: string[];
+  faqTitle: string;
+  faq: { q: string; a: string }[];
+  finalTitle: string;
+  finalText: string;
 };
 
 export const COPY: Record<"tr" | "en", Copy> = {
@@ -41,6 +46,8 @@ export const COPY: Record<"tr" | "en", Copy> = {
       { title: "Buzdolabından yemeğe", text: "Buzdolabı, buzluk ve dolabının fotoğrafından ürünlerini çıkarır, son tüketim tarihi yaklaşanlara öncelik veren, alerjilerine ve tercihlerine uygun yemek önerileri sunar." },
       { title: "Plan, oruç ve Ramazan", text: "Haftalık öğün planı ve alışveriş listesi, aralıklı oruç takibi, Ramazan'da sahur ve iftara göre öğün dağılımı." },
       { title: "Özetler ve paylaşım", text: "Haftalık, aylık ve yıllık performans özetleri; PDF veya PNG olarak paylaşma. İstersen seçtiğin bölümleri diyetisyeninle paylaşırsın." },
+      { title: "Ürün notları", text: "Barkod okut ya da içindekiler yazısının fotoğrafını çek; palm yağı, eklenmiş şeker, tatlandırıcı, alerjen gibi içerikler ve yüksek/düşük besin değerleri, kaynaklı ve tarafsız notlarla gösterilsin." },
+      { title: "Saat ve sağlık uygulaması", text: "Mobil uygulamada, izin verirsen Apple Sağlık veya Health Connect'ten adım, uyku ve antrenmanların yalnızca okunur; elle girmene gerek kalmaz." },
       { title: "Her yerde, çevrimdışı da", text: "Telefonda ana ekrana ekleyerek uygulama gibi kullan. Çevrimdışıyken girdiğin kayıtlar bağlantı gelince eşitlenir. Türkçe ve İngilizce, açık ve koyu tema." },
     ],
     stepsTitle: "Nasıl çalışır?",
@@ -58,6 +65,17 @@ export const COPY: Record<"tr" | "en", Copy> = {
     install: { title: "Telefonuna ekle", text: "BKNY'yi ana ekrana ekle, uygulama gibi tek dokunuşla aç. Mağazadan indirmen gerekmez." },
     galleryTitle: "Uygulamadan görünümler",
     gallery: ["Günlük hedefler ve ilerleme özeti", "Fotoğraf, yazı ve barkodla kayıt ekleme", "Buzdolabından yemeğe: envanter ve öneriler", "Haftalık ve aylık istatistikler", "Beslenme asistanı sohbeti"],
+    badges: ["Ücretsiz", "Reklamsız", "Türkçe ve İngilizce", "Çevrimdışı çalışır"],
+    faqTitle: "Sık sorulan sorular",
+    faq: [
+      { q: "BKNY ücretsiz mi?", a: "Evet, şu an ücretsizdir. Hesap oluşturup tüm özellikleri kullanabilirsin." },
+      { q: "Besin değerleri ne kadar doğru?", a: "Fotoğraf ve metinden yapılan değerler yapay zekâ tahminidir; her kalemi düzenleyebilirsin. Barkod ve etiket okuma, ambalajdaki değerlere dayanır." },
+      { q: "Verilerimi silebilir miyim?", a: "Evet. Verilerini istediğin an dışa aktarabilir, hesabını ve tüm verilerini uygulama içinden silebilirsin." },
+      { q: "Akıllı saatimle çalışır mı?", a: "Mobil uygulamada, izin verirsen Apple Sağlık veya Health Connect'e yansıyan adım, uyku ve antrenman verilerin okunur. Veriler reklam ya da üçüncü taraflarla paylaşılmaz." },
+      { q: "Tıbbi tavsiye veriyor mu?", a: "Hayır. BKNY bir tıbbi cihaz değildir; sağlık durumunla ilgili kararlar için hekimine veya diyetisyenine danış." },
+    ],
+    finalTitle: "Bugün kendin için ilk adımı at",
+    finalText: "Hesabını bir dakikada oluştur, ilk öğününü kaydet.",
   },
   en: {
     lang: "en",
@@ -74,6 +92,8 @@ export const COPY: Record<"tr" | "en", Copy> = {
       { title: "Fridge to meal", text: "Photograph your fridge, freezer and pantry to build an inventory, then get meal ideas that prioritise items close to their use-by date and respect your allergies and preferences." },
       { title: "Planning, fasting and Ramadan", text: "A weekly meal plan and shopping list, intermittent fasting tracking, and a Ramadan mode that splits your day into suhoor and iftar." },
       { title: "Summaries and sharing", text: "Weekly, monthly and yearly performance summaries you can share as PDF or PNG. Share selected sections with your dietitian if you wish." },
+      { title: "Product notes", text: "Scan a barcode or photograph the ingredients list to see ingredients such as palm oil, added sugar, sweeteners and allergens, and high or low nutrient values, as neutral, sourced notes." },
+      { title: "Watch and health app", text: "In the mobile app, if you allow it, steps, sleep and workouts are read from Apple Health or Health Connect, so you don't have to type them in." },
       { title: "Anywhere, even offline", text: "Add it to your phone's home screen to use it like an app. Entries made offline sync when you reconnect. Turkish and English, light and dark themes." },
     ],
     stepsTitle: "How it works",
@@ -91,10 +111,21 @@ export const COPY: Record<"tr" | "en", Copy> = {
     install: { title: "Add it to your phone", text: "Add BKNY to your home screen and open it like an app in one tap. No store download needed." },
     galleryTitle: "A look inside the app",
     gallery: ["Daily goals and progress summary", "Logging with photo, text and barcode", "Fridge to meal: inventory and ideas", "Weekly and monthly statistics", "Nutrition assistant chat"],
+    badges: ["Free", "No ads", "Turkish and English", "Works offline"],
+    faqTitle: "Frequently asked questions",
+    faq: [
+      { q: "Is BKNY free?", a: "Yes, it is free at the moment. Create an account and use every feature." },
+      { q: "How accurate are the nutrient values?", a: "Values from photos and text are AI estimates, and you can edit every item. Barcode and label scans rely on the values printed on the package." },
+      { q: "Can I delete my data?", a: "Yes. Export your data any time, or delete your account and all data from within the app." },
+      { q: "Does it work with my smartwatch?", a: "In the mobile app, if you allow it, steps, sleep and workouts that appear in Apple Health or Health Connect are read. The data is not shared with advertisers or third parties." },
+      { q: "Does it give medical advice?", a: "No. BKNY is not a medical device; for decisions about your health talk to your doctor or dietitian." },
+    ],
+    finalTitle: "Take the first step for yourself today",
+    finalText: "Create your account in a minute and log your first meal.",
   },
 };
 
-const FEATURE_ICONS = [Camera, Droplets, Pill, Target, Refrigerator, CalendarDays, Share2, Wifi];
+const FEATURE_ICONS = [Camera, Droplets, Pill, Target, Refrigerator, CalendarDays, Share2, ScanBarcode, Activity, Wifi];
 const GALLERY = ["home", "add", "fridge", "stats", "assistant"];
 
 /** Herkese açık, sunucuda üretilen tanıtım sayfası (arama motorları için içerik). Mobil öncelikli. */
@@ -113,11 +144,17 @@ export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
     offers: { "@type": "Offer", price: "0", priceCurrency: "TRY" },
     publisher: { "@type": "Organization", name: "Secesta Software" },
   };
+  const faqLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: c.faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+  };
   return (
     <div lang={c.lang} className="pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:pb-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
       <header className="sticky top-0 z-30 border-b border-border bg-bg/90 pt-[env(safe-area-inset-top)] backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-3xl items-center justify-between gap-3 px-5">
+        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-5">
           <div className="flex items-center gap-2.5">
             <Logo size={34} />
             <span className="text-lg font-bold tracking-tight">BKNY</span>
@@ -133,27 +170,41 @@ export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-5">
-        <section className="pb-8 pt-8 text-center sm:pt-12">
-          <h1 className="text-balance text-[1.75rem] font-extrabold leading-tight tracking-tight sm:text-4xl">{c.h1}</h1>
-          <p className="mx-auto mt-3 max-w-xl text-[15px] leading-relaxed text-muted sm:text-base">{c.lead}</p>
-          <div className="mx-auto mt-6 flex max-w-sm flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center">
-            <Link href="/register" className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-6 font-semibold text-white shadow-sm active:scale-[.98]">
-              {c.cta}
-            </Link>
-            <Link href="/login" className="inline-flex h-12 items-center justify-center rounded-xl bg-surface-2 px-6 font-semibold active:scale-[.98]">
-              {c.login}
-            </Link>
+      <main className="mx-auto max-w-5xl px-5">
+        <section className="relative grid items-center gap-8 pb-8 pt-8 sm:pt-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12 lg:pb-14 lg:pt-16">
+          <div aria-hidden className="pointer-events-none absolute -top-10 left-1/2 -z-10 h-72 w-[120%] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl lg:left-3/4 lg:h-96 lg:w-[60%]" />
+          <div className="text-center lg:text-left">
+            <h1 className="text-balance text-[1.9rem] font-extrabold leading-[1.15] tracking-tight sm:text-5xl">{c.h1}</h1>
+            <p className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-muted sm:text-lg lg:mx-0">{c.lead}</p>
+            <div className="mx-auto mt-6 flex max-w-sm flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center lg:justify-start">
+              <Link href="/register" className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-7 font-semibold text-white shadow-md shadow-primary/25 active:scale-[.98]">
+                {c.cta}
+              </Link>
+              <Link href="/login" className="inline-flex h-12 items-center justify-center rounded-xl bg-surface-2 px-7 font-semibold active:scale-[.98]">
+                {c.login}
+              </Link>
+            </div>
+            <ul className="mt-5 flex flex-wrap justify-center gap-2 lg:justify-start">
+              {c.badges.map((b) => (
+                <li key={b} className="rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted">
+                  {b}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="mx-auto hidden w-[260px] lg:block">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={`/landing/${lang}-home.webp`} width={480} height={1040} alt={c.gallery[0]} className="h-auto w-full rounded-[2rem] border border-border shadow-2xl" />
           </div>
         </section>
 
-        <section aria-labelledby="gallery" className="-mx-5">
+        <section aria-labelledby="gallery" className="-mx-5 lg:mx-0">
           <h2 id="gallery" className="sr-only">
             {c.galleryTitle}
           </h2>
-          <ul className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <ul className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-3 lg:justify-center lg:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {GALLERY.map((k, i) => (
-              <li key={k} className="w-[58%] max-w-[240px] shrink-0 snap-center first:ml-0 sm:w-[30%]">
+              <li key={k} className="w-[58%] max-w-[240px] shrink-0 snap-center first:ml-0 sm:w-[30%] lg:w-[18%]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={`/landing/${lang}-${k}.webp`} width={480} height={1040} alt={c.gallery[i]} loading={i < 2 ? "eager" : "lazy"} decoding="async" className="h-auto w-full rounded-3xl border border-border shadow-md" />
               </li>
@@ -173,11 +224,11 @@ export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
           <h2 id="features" className="text-2xl font-bold tracking-tight">
             {c.featuresTitle}
           </h2>
-          <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+          <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {c.features.map((f, i) => {
               const Icon = FEATURE_ICONS[i % FEATURE_ICONS.length];
               return (
-                <li key={f.title} className="flex gap-3 rounded-2xl border border-border bg-surface p-4">
+                <li key={f.title} className="flex gap-3 rounded-2xl border border-border bg-surface p-4 transition-shadow hover:shadow-md">
                   <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
                     <Icon size={20} aria-hidden />
                   </span>
@@ -215,9 +266,33 @@ export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
           <p className="mt-3 text-sm leading-relaxed text-muted">{c.privacy}</p>
           <p className="mt-3 rounded-xl bg-warn/10 px-4 py-3 text-sm leading-relaxed text-warn">{c.disclaimer}</p>
         </section>
+        <section aria-labelledby="faq" className="mt-12">
+          <h2 id="faq" className="text-2xl font-bold tracking-tight">
+            {c.faqTitle}
+          </h2>
+          <div className="mt-5 divide-y divide-border rounded-2xl border border-border bg-surface">
+            {c.faq.map((f) => (
+              <details key={f.q} className="group px-4 py-3">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-semibold [&::-webkit-details-marker]:hidden">
+                  {f.q}
+                  <ChevronDown size={18} aria-hidden className="shrink-0 text-muted transition-transform group-open:rotate-180" />
+                </summary>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-12 rounded-3xl bg-primary px-6 py-10 text-center text-white">
+          <h2 className="text-balance text-2xl font-extrabold tracking-tight sm:text-3xl">{c.finalTitle}</h2>
+          <p className="mt-2 text-sm opacity-90 sm:text-base">{c.finalText}</p>
+          <Link href="/register" className="mt-5 inline-flex h-12 items-center justify-center rounded-xl bg-white px-7 font-semibold text-primary active:scale-[.98]">
+            {c.cta}
+          </Link>
+        </section>
       </main>
 
-      <footer className="mx-auto mt-12 max-w-3xl border-t border-border px-5 pt-6 text-sm text-muted">
+      <footer className="mx-auto mt-12 max-w-5xl border-t border-border px-5 pt-6 text-sm text-muted">
         <nav className="flex flex-wrap gap-x-5 gap-y-2">
           <Link href="/privacy" className="underline">
             {c.privacyLink}
