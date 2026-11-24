@@ -18,6 +18,7 @@
     "cap:ios": "cap sync ios && cap open ios",
     "cap:android:bundle": "cap sync android && cd android && ./gradlew bundleRelease",
     "cap:android": "cap sync android && cap open android",
+    "cap:ios:release": "./scripts/ios-release.sh",
     "cap:run:ios": "cap run ios",
     "cap:run:android": "cap run android",
     "cap:doctor": "cap doctor"

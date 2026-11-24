@@ -41,3 +41,11 @@ Sürüm sayfasında build'i seç, **Aboneliklerin** sürümle birlikte incelemey
 - **3.1.1 / 3.1.2:** abonelik yalnızca uygulama içi satın alma (StoreKit) ile satılır; metinde fiyat, süre, otomatik yenileme, iptal ve gizlilik/koşullar bağlantıları var (Premium ekranı + mağaza açıklaması).
 - **5.1.3 (sağlık verisi):** HealthKit yalnızca okunur; reklam ya da üçüncü taraflarla paylaşılmaz (gizlilik metninde yazılı).
 - **5.1.1(v):** uygulama içinden hesap silme var.
+
+## Tek komutla arşivle ve yükle
+Xcode'da tıklamak yerine proje kökünde:
+```bash
+git pull && npm install
+./scripts/ios-release.sh        # ya da: npm run cap:ios:release
+```
+Betik `cap sync ios` çalıştırır, Release arşivi alır (`-allowProvisioningUpdates` ile imza/profil otomatik), App Store Connect'e yükler. Build numarası varsayılan olarak zaman damgasıdır (her yüklemede artar); elle vermek için `BUILD=7 ./scripts/ios-release.sh`. Önkoşul: Xcode → Settings → Accounts'ta Apple Developer hesabın ekli olmalı. Team ID varsayılanı `2FJ93AW33K`, değiştirmek için `TEAM_ID=... ./scripts/ios-release.sh`.
