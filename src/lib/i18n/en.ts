@@ -1233,4 +1233,9 @@ export const EN: Record<string, string> = {
   "Apple Sağlık hangi izinleri verdiğinizi uygulamalara göstermez; veri gelmiyorsa Ayarlar › Sağlık › Veri Erişimi bölümünde BKNY'yi kontrol edin.": "Apple Health does not tell apps which permissions you granted; if no data arrives, check BKNY under Settings › Health › Data Access.",
   "Saatten eşitlendi": "Synced from your watch",
   "Mobil uygulamada, izin verirseniz telefonunuzun sağlık deposundan (Apple Sağlık veya Health Connect; saatinizin verileri dahil) adım, mesafe, aktif kalori, egzersiz, uyku, antrenman ve kilo bilgileri yalnızca okunur. Bu veriler reklam, pazarlama veya üçüncü taraflarla paylaşım için kullanılmaz; izni istediğiniz zaman sistem ayarlarından kapatabilirsiniz.": "In the mobile app, if you allow it, steps, distance, active calories, exercise, sleep, workouts and weight are only read from your phone's health store (Apple Health or Health Connect, including your watch's data). This data is not used for advertising, marketing or sharing with third parties; you can turn the permission off in your system settings at any time.",
+  "Saat verilerini bağla": "Connect your watch data",
+  "Şimdi değil": "Not now",
+  "Bağla": "Connect",
+  "Adım, uyku, halka ve antrenmanların otomatik eklensin mi?": "Add your steps, sleep, rings and workouts automatically?",
+  "BKNY, saatinizin telefona yazdığı verileri yalnızca okur ve günlüğünüze ekler. Reklam için kullanılmaz. Sonraki adımda telefonun izin penceresi açılır; istediğiniz zaman Profil'den kapatabilirsiniz.": "BKNY only reads what your watch writes to the phone and adds it to your log. It is not used for advertising. Next, your phone's permission dialog opens; you can turn it off any time in Profile.",
 };

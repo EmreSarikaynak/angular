@@ -12,6 +12,7 @@ import { ReminderTicker } from "@/components/reminder-ticker";
 import { NativePush } from "@/components/native-push";
 import { RamadanPrompt } from "@/components/ramadan-prompt";
 import { HealthAutoSync } from "@/components/health-auto-sync";
+import { HealthPrompt } from "@/components/health-prompt";
 
 function Splash() {
   return (
@@ -100,6 +101,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <NativePush />
       <RamadanPrompt />
       <HealthAutoSync />
+      <HealthPrompt />
       <aside className="no-print sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-0.5 overflow-y-auto border-r border-border bg-surface p-4 lg:flex">
         <div className="mb-4 flex items-center gap-2 px-2">
           <Logo size={38} />
