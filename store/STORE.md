@@ -251,3 +251,10 @@ Hazır görseller `bkny-store-assets.zip` içindedir: `tr/` ve `en/` klasörleri
 - [ ] Demo hesap hazır, inceleme notları yapıştırıldı
 - [ ] APNs anahtarı Firebase'e yüklendi, bildirimler gerçek cihazda denendi
 - [ ] Sürüm numarası ve derleme numarası güncellendi; TestFlight / iç test ile denendi
+
+## Abonelik: ek cevaplar (BKNY Premium)
+- **Google Play → Veri güvenliği:** "Satın alma geçmişi" (Financial info → Purchase history) toplanır; amaç: uygulama işlevi (abonelik doğrulama); üçüncü tarafla paylaşım: RevenueCat (hizmet sağlayıcı). Kart bilgileri toplanmaz.
+- **App Store → Uygulama Gizliliği:** "Satın Alımlar (Purchases)" → kullanıcıya bağlı, amaç: uygulama işlevselliği; izleme için kullanılmaz.
+- **Apple:** abonelik açıklaması ve gizlilik/koşullar bağlantıları açıklamada yer almalı (hazır). İnceleme notlarında Sandbox ile test edilebileceği belirtilir.
+- **Google Play:** dijital içerik satışı yalnızca Play Faturalandırma ile yapılır; uygulama içinde başka ödeme yöntemi yoktur (web'de abonelik satılmaz, yalnızca mobil uygulamada).
+- Kurulum ayrıntıları: `store/BILLING.md`.

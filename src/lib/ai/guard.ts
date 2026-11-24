@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { adminClient, authenticate, json, type AuthContext } from "../supabase/server";
 import { getSettings, type AppSettings } from "../settings";
 import { geminiConfigured } from "./gemini";
+import { isPremium } from "../billing/entitlement";
 
 export interface Quota {
   limit: number;
@@ -50,7 +51,8 @@ export async function guardAi(req: Request, kind: string): Promise<GuardResult> 
       .gte("created_at", dayStart.toISOString()),
   ]);
 
-  const limit = lim?.daily_ai_limit ?? settings.default_daily_ai_limit;
+  const premium = await isPremium(auth.user.id);
+  const limit = lim?.daily_ai_limit ?? (premium ? settings.premium_daily_ai_limit : settings.default_daily_ai_limit);
   const used = day.count ?? 0;
 
   if ((minute.count ?? 0) >= settings.per_minute_limit) {
@@ -58,7 +60,7 @@ export async function guardAi(req: Request, kind: string): Promise<GuardResult> 
     return { ok: false, response: json({ error: "rate_limited" }, 429, { "Retry-After": "60" }) };
   }
   if (used >= limit) {
-    return { ok: false, response: json({ error: "daily_limit", limit, used }, 429) };
+    return { ok: false, response: json({ error: "daily_limit", limit, used, premium }, 429) };
   }
   return { ok: true, auth, settings, quota: { limit, used, remaining: Math.max(0, limit - used) } };
 }

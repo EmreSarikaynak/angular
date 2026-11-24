@@ -34,6 +34,7 @@ interface Settings {
   gemini_model: string;
   gemini_temperature: number;
   default_daily_ai_limit: number;
+  premium_daily_ai_limit: number;
   per_minute_limit: number;
   price_input_per_m: number;
   price_output_per_m: number;
@@ -320,6 +321,9 @@ export default function AdminPage() {
                 <div className="grid gap-3 sm:grid-cols-3">
                   <Field label={t("Günlük sorgu limiti (kullanıcı başına)")}>
                     <NumberInput value={form.default_daily_ai_limit} onChange={(v) => setForm({ ...form, default_daily_ai_limit: Math.round(v ?? 0) })} min={0} max={10000} />
+                  </Field>
+                  <Field label={t("Premium günlük sorgu limiti")}>
+                    <NumberInput value={form.premium_daily_ai_limit} onChange={(v) => setForm({ ...form, premium_daily_ai_limit: Math.round(v ?? 0) })} min={0} max={10000} />
                   </Field>
                   <Field label={t("Dakikalık istek limiti")}>
                     <NumberInput value={form.per_minute_limit} onChange={(v) => setForm({ ...form, per_minute_limit: Math.round(v ?? 1) })} min={1} max={120} />

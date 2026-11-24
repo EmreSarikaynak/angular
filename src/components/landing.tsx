@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Activity, Camera, CalendarDays, ChevronDown, Droplets, Pill, Refrigerator, ScanBarcode, Share2, Target, Wifi } from "lucide-react";
+import { Activity, Check, Camera, CalendarDays, ChevronDown, Droplets, Pill, Refrigerator, ScanBarcode, Share2, Target, Wifi } from "lucide-react";
 import { InstallButtons } from "@/components/install-buttons";
 import { Logo } from "@/components/logo";
 import { Reveal } from "@/components/reveal";
@@ -30,6 +30,8 @@ type Copy = {
   finalTitle: string;
   finalText: string;
   article: { title: string; sections: { h: string; p: string }[] };
+  plans: { title: string; free: { name: string; items: string[] }; premium: { name: string; items: string[] }; note: string };
+  termsLink: string;
 };
 
 export const COPY: Record<"tr" | "en", Copy> = {
@@ -67,15 +69,23 @@ export const COPY: Record<"tr" | "en", Copy> = {
     install: { title: "Telefonuna ekle", text: "BKNY'yi ana ekrana ekle, uygulama gibi tek dokunuşla aç. Mağazadan indirmen gerekmez." },
     galleryTitle: "Uygulamadan görünümler",
     gallery: ["Günlük hedefler ve ilerleme özeti", "Fotoğraf, yazı ve barkodla kayıt ekleme", "Buzdolabından yemeğe: envanter ve öneriler", "Haftalık ve aylık istatistikler", "Beslenme asistanı sohbeti"],
-    badges: ["Ücretsiz", "Reklamsız", "Türkçe ve İngilizce", "Çevrimdışı çalışır"],
+    badges: ["Ücretsiz başla", "Reklamsız", "Türkçe ve İngilizce", "Çevrimdışı çalışır"],
     faqTitle: "Sık sorulan sorular",
     faq: [
-      { q: "BKNY ücretsiz mi?", a: "Evet, şu an ücretsizdir. Hesap oluşturup tüm özellikleri kullanabilirsin." },
+      { q: "BKNY ücretsiz mi?", a: "Ücretsiz başlayabilirsin: hesap oluşturup temel özellikleri ve günlük sınırlı yapay zekâ analizlerini kullanırsın. Daha yüksek yapay zekâ limiti için isteğe bağlı BKNY Premium aboneliği vardır." },
+      { q: "Premium aboneliği nasıl iptal edilir?", a: "Abonelik, mobil uygulamada Google Play ya da App Store üzerinden alınır; iptali de aynı mağazanın abonelik ayarlarından yapılır. İptal, mevcut dönemin sonunda geçerli olur." },
       { q: "Besin değerleri ne kadar doğru?", a: "Fotoğraf ve metinden yapılan değerler yapay zekâ tahminidir; her kalemi düzenleyebilirsin. Barkod ve etiket okuma, ambalajdaki değerlere dayanır." },
       { q: "Verilerimi silebilir miyim?", a: "Evet. Verilerini istediğin an dışa aktarabilir, hesabını ve tüm verilerini uygulama içinden silebilirsin." },
       { q: "Akıllı saatimle çalışır mı?", a: "Mobil uygulamada, izin verirsen Apple Sağlık veya Health Connect'e yansıyan adım, uyku ve antrenman verilerin okunur. Veriler reklam ya da üçüncü taraflarla paylaşılmaz." },
       { q: "Tıbbi tavsiye veriyor mu?", a: "Hayır. BKNY bir tıbbi cihaz değildir; sağlık durumunla ilgili kararlar için hekimine veya diyetisyenine danış." },
     ],
+    plans: {
+      title: "Ücretsiz başla, ihtiyacın olursa yüksel",
+      free: { name: "Ücretsiz", items: ["Fotoğraf, yazı, barkod ve etiketle kayıt", "Günlük sınırlı yapay zekâ analizi", "Su, takviye, uyku, hareket ve hedef takibi", "Özetler ve ürün notları"] },
+      premium: { name: "BKNY Premium", items: ["Çok daha yüksek günlük yapay zekâ limiti", "Daha fazla asistan sohbeti ve analiz", "Aylık ya da yıllık abonelik, istediğin zaman iptal", "Mobil uygulamadan satın alınır"] },
+      note: "Fiyatlar mağazada gösterilir. Abonelik otomatik yenilenir; mağaza hesap ayarlarından iptal edebilirsin.",
+    },
+    termsLink: "Kullanım koşulları",
     finalTitle: "Bugün kendin için ilk adımı at",
     finalText: "Hesabını bir dakikada oluştur, ilk öğününü kaydet.",
     article: {
@@ -124,15 +134,23 @@ export const COPY: Record<"tr" | "en", Copy> = {
     install: { title: "Add it to your phone", text: "Add BKNY to your home screen and open it like an app in one tap. No store download needed." },
     galleryTitle: "A look inside the app",
     gallery: ["Daily goals and progress summary", "Logging with photo, text and barcode", "Fridge to meal: inventory and ideas", "Weekly and monthly statistics", "Nutrition assistant chat"],
-    badges: ["Free", "No ads", "Turkish and English", "Works offline"],
+    badges: ["Free to start", "No ads", "Turkish and English", "Works offline"],
     faqTitle: "Frequently asked questions",
     faq: [
-      { q: "Is BKNY free?", a: "Yes, it is free at the moment. Create an account and use every feature." },
+      { q: "Is BKNY free?", a: "You can start for free: create an account and use the core features and a limited number of AI analyses per day. An optional BKNY Premium subscription raises the AI limit." },
+      { q: "How do I cancel Premium?", a: "The subscription is bought in the mobile app through Google Play or the App Store, and cancelled in that store's subscription settings. Cancellation takes effect at the end of the current period." },
       { q: "How accurate are the nutrient values?", a: "Values from photos and text are AI estimates, and you can edit every item. Barcode and label scans rely on the values printed on the package." },
       { q: "Can I delete my data?", a: "Yes. Export your data any time, or delete your account and all data from within the app." },
       { q: "Does it work with my smartwatch?", a: "In the mobile app, if you allow it, steps, sleep and workouts that appear in Apple Health or Health Connect are read. The data is not shared with advertisers or third parties." },
       { q: "Does it give medical advice?", a: "No. BKNY is not a medical device; for decisions about your health talk to your doctor or dietitian." },
     ],
+    plans: {
+      title: "Start free, upgrade if you need more",
+      free: { name: "Free", items: ["Log with photo, text, barcode and label", "A limited number of AI analyses per day", "Water, supplement, sleep, activity and goal tracking", "Summaries and product notes"] },
+      premium: { name: "BKNY Premium", items: ["A much higher daily AI limit", "More assistant chats and analyses", "Monthly or yearly, cancel any time", "Bought in the mobile app"] },
+      note: "Prices are shown in the store. The subscription renews automatically; you can cancel in your store account settings.",
+    },
+    termsLink: "Terms of use",
     finalTitle: "Take the first step for yourself today",
     finalText: "Create your account in a minute and log your first meal.",
     article: {
@@ -311,6 +329,28 @@ export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
           <p className="mt-3 text-sm leading-relaxed text-muted">{c.privacy}</p>
           <p className="mt-3 rounded-xl bg-warn/10 px-4 py-3 text-sm leading-relaxed text-warn">{c.disclaimer}</p>
         </section>
+        <section aria-labelledby="plans" className="mt-12">
+          <h2 id="plans" className="text-2xl font-bold tracking-tight">
+            {c.plans.title}
+          </h2>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            {[c.plans.free, c.plans.premium].map((p, i) => (
+              <Reveal key={p.name} delay={i * 100} className={`rounded-2xl border p-5 ${i === 1 ? "border-primary bg-primary-soft/40" : "border-border bg-surface"}`}>
+                <h3 className="text-lg font-bold">{p.name}</h3>
+                <ul className="mt-3 space-y-2 text-sm">
+                  {p.items.map((it) => (
+                    <li key={it} className="flex gap-2">
+                      <Check size={16} aria-hidden className="mt-0.5 shrink-0 text-primary" />
+                      {it}
+                    </li>
+                  ))}
+                </ul>
+              </Reveal>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-muted">{c.plans.note}</p>
+        </section>
+
         <section aria-labelledby="article" className="mt-12">
           <h2 id="article" className="text-2xl font-bold tracking-tight">
             {c.article.title}
@@ -363,6 +403,9 @@ export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
         <nav className="flex flex-wrap gap-x-5 gap-y-2">
           <Link href="/privacy" className="underline">
             {c.privacyLink}
+          </Link>
+          <Link href="/terms" className="underline">
+            {c.termsLink}
           </Link>
           <Link href="/login" className="underline">
             {c.login}

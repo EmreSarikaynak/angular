@@ -7,6 +7,7 @@ export const settingsSchema = z.object({
   gemini_model: z.string().trim().min(3).max(80).regex(/^[a-zA-Z0-9._-]+$/),
   gemini_temperature: z.number().min(0).max(1),
   default_daily_ai_limit: z.number().int().min(0).max(10000),
+  premium_daily_ai_limit: z.number().int().min(0).max(10000),
   per_minute_limit: z.number().int().min(1).max(120),
   price_input_per_m: z.number().min(0).max(1000),
   price_output_per_m: z.number().min(0).max(1000),
@@ -21,7 +22,8 @@ export function defaultSettings(): AppSettings {
     ai_enabled: true,
     gemini_model: process.env.GEMINI_MODEL || "gemini-3.8-flash",
     gemini_temperature: 0.2,
-    default_daily_ai_limit: 40,
+    default_daily_ai_limit: 10,
+    premium_daily_ai_limit: 300,
     per_minute_limit: 6,
     // USD / 1M belirteç. Yönetim panelinden güncel fiyat listesine göre düzenlenir.
     price_input_per_m: 0.75,

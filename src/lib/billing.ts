@@ -1,0 +1,88 @@
+"use client";
+import { isNative } from "./native";
+
+/** Premium abonelik: RevenueCat (Google Play Faturalandırma / Apple StoreKit) üzerinden yalnızca yerel uygulamada satılır. */
+export const ENTITLEMENT = "premium";
+
+export interface PlanOption {
+  id: string;
+  kind: "monthly" | "annual" | "other";
+  title: string;
+  price: string;
+  /** Ücretsiz deneme ya da tanıtım fiyatı varsa mağazanın verdiği açıklama. */
+  intro: string | null;
+}
+
+type Purchases = typeof import("@revenuecat/purchases-capacitor").Purchases;
+let sdk: Purchases | null = null;
+let configuredFor: string | null = null;
+
+const platform = () => (window as unknown as { Capacitor?: { getPlatform?: () => string } }).Capacitor?.getPlatform?.();
+
+function apiKey(): string | undefined {
+  return platform() === "ios" ? process.env.NEXT_PUBLIC_REVENUECAT_IOS_KEY : process.env.NEXT_PUBLIC_REVENUECAT_ANDROID_KEY;
+}
+
+export function billingAvailable(): boolean {
+  return isNative() && !!apiKey();
+}
+
+/** SDK'yı kullanıcı kimliğiyle (Supabase kullanıcı kimliği) başlatır; kimlik webhook'ta aboneliği eşleştirir. */
+export async function initBilling(userId: string): Promise<Purchases | null> {
+  if (!billingAvailable()) return null;
+  const { Purchases } = await import("@revenuecat/purchases-capacitor");
+  if (!sdk) {
+    await Purchases.configure({ apiKey: apiKey()!, appUserID: userId });
+    sdk = Purchases;
+    configuredFor = userId;
+  } else if (configuredFor !== userId) {
+    await Purchases.logIn({ appUserID: userId });
+    configuredFor = userId;
+  }
+  return sdk;
+}
+
+export async function loadPlans(userId: string): Promise<PlanOption[]> {
+  const p = await initBilling(userId);
+  if (!p) return [];
+  const offerings = await p.getOfferings();
+  const pkgs = offerings.current?.availablePackages ?? [];
+  return pkgs.map((k) => {
+    const intro = k.product.introPrice;
+    return {
+      id: k.identifier,
+      kind: k.packageType === "MONTHLY" ? "monthly" : k.packageType === "ANNUAL" ? "annual" : "other",
+      title: k.product.title.replace(/\s*\(.*\)\s*$/, ""),
+      price: k.product.priceString,
+      intro: intro ? (intro.price === 0 ? `${intro.periodNumberOfUnits} ${intro.periodUnit}` : intro.priceString) : null,
+    };
+  });
+}
+
+export type PurchaseResult = "ok" | "cancelled" | "failed";
+
+export async function buy(userId: string, planId: string): Promise<PurchaseResult> {
+  const p = await initBilling(userId);
+  if (!p) return "failed";
+  const offerings = await p.getOfferings();
+  const pkg = offerings.current?.availablePackages.find((k) => k.identifier === planId);
+  if (!pkg) return "failed";
+  try {
+    const { customerInfo } = await p.purchasePackage({ aPackage: pkg });
+    return customerInfo.entitlements.active[ENTITLEMENT] ? "ok" : "failed";
+  } catch (e) {
+    return (e as { userCancelled?: boolean }).userCancelled ? "cancelled" : "failed";
+  }
+}
+
+export async function restore(userId: string): Promise<boolean> {
+  const p = await initBilling(userId);
+  if (!p) return false;
+  const { customerInfo } = await p.restorePurchases();
+  return !!customerInfo.entitlements.active[ENTITLEMENT];
+}
+
+/** Aboneliği yönetme sayfası (mağazanın kendi ekranı). */
+export function manageUrl(): string {
+  return platform() === "ios" ? "https://apps.apple.com/account/subscriptions" : "https://play.google.com/store/account/subscriptions";
+}
