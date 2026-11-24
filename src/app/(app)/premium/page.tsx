@@ -13,16 +13,23 @@ export default function PremiumPage() {
   const userId = session?.user.id ?? null;
   const [native, setNative] = useState(false);
   const [plans, setPlans] = useState<PlanOption[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const [busy, setBusy] = useState<string | null>(null);
   const premium = !!config?.premium;
 
   useEffect(() => {
     setNative(isNative());
     if (!userId || !billingAvailable()) return;
+    setLoadError(null);
+    setPlans(null);
     loadPlans(userId)
       .then(setPlans)
-      .catch(() => setPlans([]));
-  }, [userId]);
+      .catch((e: unknown) => {
+        setLoadError(e instanceof Error ? e.message : typeof e === "object" && e && "message" in e ? String((e as { message: unknown }).message) : "unknown");
+        setPlans([]);
+      });
+  }, [userId, attempt]);
 
   /** Webhook birkaç saniye içinde aboneliği yazar; durumu kısa aralıklarla yeniden okur. */
   async function waitForPremium() {
@@ -105,7 +112,15 @@ export default function PremiumPage() {
       ) : native ? (
         <Card className="space-y-3">
           {plans === null && <p className="text-sm text-muted">{t("Planlar yükleniyor…")}</p>}
-          {plans && plans.length === 0 && <p className="text-sm text-muted">{t("Abonelik planları şu anda yüklenemedi. Daha sonra tekrar deneyin.")}</p>}
+          {plans && plans.length === 0 && (
+            <div className="space-y-2">
+              <p className="text-sm text-muted">{t("Abonelik planları şu anda yüklenemedi. Mağaza ürünleri yeni açıldıysa birkaç saat sürebilir; daha sonra tekrar deneyin.")}</p>
+              {loadError && <p className="break-words rounded-lg bg-surface-2 px-2.5 py-1.5 font-mono text-[11px] text-muted">{loadError.slice(0, 240)}</p>}
+              <Button variant="secondary" size="sm" onClick={() => setAttempt((n) => n + 1)}>
+                {t("Tekrar dene")}
+              </Button>
+            </div>
+          )}
           {plans?.map((p) => (
             <div key={p.id} className="flex items-center justify-between gap-3 rounded-2xl border border-border p-3">
               <div className="min-w-0">
