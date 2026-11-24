@@ -101,6 +101,7 @@ export default function DashboardPage() {
             {macro(t("Karb."), s.intake.carbs_g, profile?.carbs_target_g, "var(--carbs)")}
             {macro(t("Yağ"), s.intake.fat_g, profile?.fat_target_g, "var(--fat)")}
           </div>
+          <div className="mt-3 flex">{macro(t("Lif"), s.intake.fiber_g, profile?.fiber_target_g, "var(--fiber)")}</div>
           {profile?.add_exercise_calories && s.burned_kcal > 0 && <p className="mt-3 text-xs text-muted">{t("Yakılan {n} kcal günlük bütçenize eklendi.", { n: s.burned_kcal })}</p>}
         </Card>
 

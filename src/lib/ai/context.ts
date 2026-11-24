@@ -106,6 +106,7 @@ export async function buildAssistantContext(db: SupabaseClient, today: string) {
             protein_g: p.protein_target_g,
             carbs_g: p.carbs_target_g,
             fat_g: p.fat_target_g,
+            fiber_g: p.fiber_target_g,
             water_ml: p.water_target_ml,
             steps: p.steps_target,
           },

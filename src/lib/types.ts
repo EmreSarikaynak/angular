@@ -31,6 +31,7 @@ export interface Profile {
   protein_target_g: number | null;
   carbs_target_g: number | null;
   fat_target_g: number | null;
+  fiber_target_g: number;
   water_target_ml: number | null;
   steps_target: number;
   targets_custom: boolean;

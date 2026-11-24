@@ -24,7 +24,7 @@ export const FIBER_MIN_G = 20;
  * Son günlerin eğilimi: hangi değer hedefin belirgin biçimde üstünde ya da altında?
  * Beslenme ölçütleri için en az 2 kayıtlı gün gerekir; tek günlük sapma uyarı üretmez.
  */
-export function trendInsights(rows: DayRow[], profile: Pick<Profile, "kcal_target" | "protein_target_g" | "fat_target_g" | "water_target_ml" | "steps_target"> | null): Insight[] {
+export function trendInsights(rows: DayRow[], profile: Pick<Profile, "kcal_target" | "protein_target_g" | "fat_target_g" | "fiber_target_g" | "water_target_ml" | "steps_target"> | null): Insight[] {
   const out: Insight[] = [];
   const logged = rows.filter((r) => r.logged);
   const push = (key: InsightKey, direction: Insight["direction"], value: number, target: number, days: number, recipeTag?: RecipeTag) => out.push({ key, direction, value: Math.round(value * 10) / 10, target, days, recipeTag });
@@ -40,7 +40,9 @@ export function trendInsights(rows: DayRow[], profile: Pick<Profile, "kcal_targe
     if (m((r) => r.intake.sugar_g) > SUGAR_LIMIT_G) push("sugar_high", "over", m((r) => r.intake.sugar_g), SUGAR_LIMIT_G, n, "low_sugar");
     if (m((r) => r.intake.salt_g) > SALT_LIMIT_G) push("salt_high", "over", m((r) => r.intake.salt_g), SALT_LIMIT_G, n, "low_salt");
     if (profile?.fat_target_g && m((r) => r.intake.fat_g) > profile.fat_target_g * 1.3) push("fat_high", "over", m((r) => r.intake.fat_g), profile.fat_target_g, n, "low_fat");
-    if (m((r) => r.intake.fiber_g) < FIBER_MIN_G) push("fiber_low", "under", m((r) => r.intake.fiber_g), FIBER_MIN_G, n, "high_fiber");
+    // Hedefin %80'inin altında kalan ortalama lif uyarı verir; hedef yoksa 20 g varsayılır.
+    const fiberTarget = profile?.fiber_target_g ?? 25;
+    if (m((r) => r.intake.fiber_g) < fiberTarget * 0.8) push("fiber_low", "under", m((r) => r.intake.fiber_g), fiberTarget, n, "high_fiber");
   }
 
   // Su: kayıt girilmeyen gün 0 sayılır, ancak hiç su kaydı olmayan kullanıcıya uyarı gönderilmez.

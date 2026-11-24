@@ -129,3 +129,19 @@ describe("protein hedefi makul kalır", () => {
     for (const w of [60, 90, 120, 160, 200]) for (const goal of ["lose", "maintain", "gain"] as const) expect(calculateTargets({ ...base, weight_kg: w, goal }).protein_target_g).toBeLessThanOrEqual(150);
   });
 });
+
+import { fiberTarget } from "@/lib/nutrition/calc";
+describe("lif hedefi", () => {
+  it("1000 kcal başına 14 g, 25–38 g arası (kadınlarda üst sınır 30 g)", () => {
+    expect(fiberTarget(1500, "female")).toBe(25);
+    expect(fiberTarget(1850, "female")).toBe(26);
+    expect(fiberTarget(2800, "female")).toBe(30);
+    expect(fiberTarget(2400, "male")).toBe(34);
+    expect(fiberTarget(3500, "male")).toBe(38);
+  });
+  it("hedef hesaplamasına dahildir", () => {
+    const t = calculateTargets({ sex: "female", age: 30, height_cm: 168, weight_kg: 64, activity_level: "moderate", goal: "lose", weekly_rate_kg: 0.4 });
+    expect(t.fiber_target_g).toBeGreaterThanOrEqual(25);
+    expect(t.fiber_target_g).toBeLessThanOrEqual(30);
+  });
+});
