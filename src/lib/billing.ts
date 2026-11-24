@@ -46,7 +46,9 @@ export async function loadPlans(userId: string): Promise<PlanOption[]> {
   const p = await initBilling(userId);
   if (!p) return [];
   const offerings = await p.getOfferings();
-  const pkgs = offerings.current?.availablePackages ?? [];
+  if (!offerings.current) throw new Error("no_current_offering");
+  const pkgs = offerings.current.availablePackages;
+  if (!pkgs.length) throw new Error("no_packages");
   return pkgs.map((k) => {
     const intro = k.product.introPrice;
     return {
