@@ -1,12 +1,12 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Check, Crown, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, BadgeCheck, Crown, MessageCircleHeart, Sparkles, Zap } from "lucide-react";
 import { useApp } from "@/components/app-provider";
-import { Button, Card, PageHeader } from "@/components/ui";
+import { Bar, Button, Card, PageHeader } from "@/components/ui";
 import { Celebration } from "@/components/celebration";
 import { AndroidIcon, AppleIcon } from "@/components/platform-icons";
-import { buy, billingAvailable, billingDiagnostics, loadPlans, manageUrl, restore, type PlanOption } from "@/lib/billing";
+import { buy, billingAvailable, loadPlans, manageUrl, restore, type PlanOption } from "@/lib/billing";
 import { isNative } from "@/lib/native";
 
 export default function PremiumPage() {
@@ -17,60 +17,26 @@ export default function PremiumPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
   const [celebrate, setCelebrate] = useState(false);
-  const [step, setStep] = useState("başlıyor");
-  const [diag, setDiag] = useState("");
-  const [log, setLog] = useState<string[]>([]);
-  const [secs, setSecs] = useState(0);
-  const t0 = useRef(0);
   const [busy, setBusy] = useState<string | null>(null);
   const premium = !!config?.premium;
 
   useEffect(() => {
     setNative(isNative());
-    setDiag(billingDiagnostics());
     if (!userId) return;
     if (!billingAvailable()) {
-      setLoadError("billing_unavailable: " + billingDiagnostics());
+      setLoadError("billing_unavailable");
       setPlans([]);
       return;
     }
     setLoadError(null);
     setPlans(null);
-    setStep("başlıyor");
-    t0.current = Date.now();
-    setSecs(0);
-    const note = (m: string) => setLog((l) => [...l.slice(-7), `${((Date.now() - t0.current) / 1000).toFixed(1)}s ${m}`]);
-    setLog([]);
-    note("başladı");
-    const onErr = (e: ErrorEvent) => note(`js hata: ${e.message}`.slice(0, 120));
-    const onRej = (e: PromiseRejectionEvent) => note(`söz reddi: ${String((e.reason as { message?: string })?.message ?? e.reason)}`.slice(0, 120));
-    window.addEventListener("error", onErr);
-    window.addEventListener("unhandledrejection", onRej);
-    loadPlans(userId, (s) => {
-      setStep(s);
-      note(s);
-    })
-      .then((r) => {
-        note("planlar geldi");
-        setPlans(r);
-      })
+    loadPlans(userId)
+      .then(setPlans)
       .catch((e: unknown) => {
-        note("hata");
         setLoadError(e instanceof Error ? e.message : typeof e === "object" && e && "message" in e ? String((e as { message: unknown }).message) : "unknown");
         setPlans([]);
       });
-    return () => {
-      window.removeEventListener("error", onErr);
-      window.removeEventListener("unhandledrejection", onRej);
-    };
   }, [userId, attempt]);
-
-  // Sayfanın canlı olduğunu göstermek için saniye sayacı (yükleme sürerken).
-  useEffect(() => {
-    if (plans !== null) return;
-    const id = setInterval(() => setSecs(Math.round((Date.now() - t0.current) / 1000)), 1000);
-    return () => clearInterval(id);
-  }, [plans]);
 
   /** Webhook birkaç saniye içinde aboneliği yazar; durumu kısa aralıklarla yeniden okur. */
   async function waitForPremium() {
@@ -105,44 +71,71 @@ export default function PremiumPage() {
   }
 
   const benefits = [
-    t("Çok daha yüksek günlük yapay zekâ limiti: fotoğraf, yazı, etiket, buzdolabı ve tarif analizleri"),
-    t("Beslenme asistanıyla daha fazla sohbet"),
-    t("Tüm özellikler tek abonelikte; reklam yok"),
+    { icon: Zap, title: t("Kat kat daha fazla analiz"), text: t("Fotoğraf, etiket, buzdolabı ve tarif analizleri için günlük limitin ücretsiz plandan çok daha yüksek.") },
+    { icon: MessageCircleHeart, title: t("Asistanın hep yanında"), text: t("Beslenme asistanıyla dilediğin kadar sohbet et; öğünlerin ve hedeflerin için kişisel öneriler al.") },
+    { icon: BadgeCheck, title: t("Tek abonelik, sıfır reklam"), text: t("Tüm özellikler tek pakette. Reklam ve izleme yok; istediğin an iptal edebilirsin.") },
   ];
+
+  const used = config?.quota.used ?? 0;
+  const limit = config?.quota.limit ?? 0;
 
   return (
     <div className="mx-auto max-w-xl space-y-4">
       <Celebration open={celebrate} onClose={() => setCelebrate(false)} />
-      <PageHeader title={t("BKNY Premium")} back={
+      <PageHeader
+        title={t("BKNY Premium")}
+        back={
           <Link href="/profile" aria-label={t("Geri")} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-2">
             <ArrowLeft size={18} />
           </Link>
         }
       />
-      <Card className="space-y-3 bg-gradient-to-br from-primary-soft/70 via-surface to-surface">
-        <div className="flex items-center gap-3">
-          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-primary text-white">
-            <Crown size={22} />
+
+      {/* Hero */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-primary to-teal-500 p-6 text-center text-white shadow-xl">
+        <span aria-hidden className="bt-shimmer pointer-events-none absolute inset-0" />
+        {[
+          ["8%", "14%", "0s", 14],
+          ["86%", "20%", "0.8s", 18],
+          ["18%", "74%", "1.4s", 12],
+          ["80%", "70%", "0.4s", 16],
+        ].map(([l, tp, d, sz], i) => (
+          <Sparkles key={i} aria-hidden size={sz as number} className="bt-twinkle absolute text-white/80" style={{ left: l as string, top: tp as string, animationDelay: d as string }} />
+        ))}
+        <div className="relative">
+          <span className="bt-glow bt-float mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-white/20 backdrop-blur">
+            <Crown size={40} />
           </span>
-          <div>
-            <p className="font-semibold">{premium ? t("Premium üyesin") : t("Premium'a geç")}</p>
-            <p className="text-xs text-muted">{premium ? t("Teşekkürler! Limitlerin artırıldı.") : t("Ücretsiz plan her zaman kullanılabilir.")}</p>
-          </div>
+          <h2 className="bt-gradient-text mt-4 text-3xl font-black tracking-tight">{premium ? t("Premium üyesin") : t("Premium'a geç")}</h2>
+          <p className="mt-1 text-sm text-white/85">{premium ? t("Teşekkürler! Tüm Premium ayrıcalıkların aktif.") : t("Daha fazla analiz, daha fazla sohbet, sıfır reklam.")}</p>
+          {premium && limit > 0 && (
+            <div className="mx-auto mt-4 max-w-xs text-left">
+              <div className="mb-1 flex justify-between text-xs text-white/85">
+                <span>{t("Bugünkü yapay zekâ kullanımın")}</span>
+                <span className="font-semibold">
+                  {used} / {limit}
+                </span>
+              </div>
+              <Bar value={used} max={limit} color="#ffffff" />
+            </div>
+          )}
         </div>
-        <ul className="space-y-2 text-sm">
-          {benefits.map((b) => (
-            <li key={b} className="flex gap-2">
-              <Check size={16} className="mt-0.5 shrink-0 text-primary" />
-              {b}
-            </li>
-          ))}
-        </ul>
-        {config && (
-          <p className="text-xs text-muted">
-            {t("Bugünkü yapay zekâ kullanımın: {u} / {l}", { u: config.quota.used, l: config.quota.limit })}
-          </p>
-        )}
-      </Card>
+      </div>
+
+      {/* Avantajlar: sırayla uçarak gelen üç kutu */}
+      <div className="grid gap-3">
+        {benefits.map((b, i) => (
+          <div key={b.title} className={`bt-fly flex items-start gap-3 rounded-2xl border border-border bg-surface p-4 shadow-sm ${i % 2 ? "bt-fly-r" : "bt-fly-l"}`} style={{ animationDelay: `${i * 160 + 150}ms` }}>
+            <span className="bt-float grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary" style={{ animationDelay: `${i * 0.6}s` }}>
+              <b.icon size={22} />
+            </span>
+            <div className="min-w-0">
+              <p className="font-semibold">{b.title}</p>
+              <p className="mt-0.5 text-sm leading-relaxed text-muted">{b.text}</p>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {premium ? (
         <Card className="space-y-2">
@@ -152,34 +145,40 @@ export default function PremiumPage() {
           </a>
         </Card>
       ) : native ? (
-        <Card className="space-y-3">
-          {plans === null && <p className="text-sm text-muted">{t("Planlar yükleniyor…")} <span className="text-[11px]">({step} · {secs} sn)</span></p>}
+        <div className="space-y-3">
+          {plans === null && <div className="bt-pulse h-24 rounded-2xl bg-surface-2" aria-label={t("Planlar yükleniyor…")} />}
           {plans && plans.length === 0 && (
-            <div className="space-y-2">
+            <Card className="space-y-2">
               <p className="text-sm text-muted">{t("Abonelik planları şu anda yüklenemedi. Mağaza ürünleri yeni açıldıysa birkaç saat sürebilir; daha sonra tekrar deneyin.")}</p>
-              {loadError && <p className="break-words rounded-lg bg-surface-2 px-2.5 py-1.5 font-mono text-[11px] text-muted">{loadError.slice(0, 240)}</p>}
+              {loadError && <p className="break-words rounded-lg bg-surface-2 px-2.5 py-1.5 font-mono text-[11px] text-muted">{loadError.slice(0, 160)}</p>}
               <Button variant="secondary" size="sm" onClick={() => setAttempt((n) => n + 1)}>
                 {t("Tekrar dene")}
               </Button>
-            </div>
+            </Card>
           )}
-          {plans?.map((p) => (
-            <div key={p.id} className="flex items-center justify-between gap-3 rounded-2xl border border-border p-3">
+          {plans?.map((p, i) => (
+            <div
+              key={p.id}
+              className={`bt-fly bt-fly-up relative flex items-center justify-between gap-3 rounded-2xl p-4 ${p.kind === "annual" ? "border-2 border-primary bg-primary-soft/50 shadow-md" : "border border-border bg-surface"}`}
+              style={{ animationDelay: `${i * 140 + 650}ms` }}
+            >
+              {p.kind === "annual" && (
+                <span className="absolute -top-2.5 left-4 inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-0.5 text-[11px] font-semibold text-white">
+                  <Sparkles size={11} />
+                  {t("Avantajlı")}
+                </span>
+              )}
               <div className="min-w-0">
-                <p className="flex items-center gap-1.5 font-semibold">
-                  {p.kind === "annual" ? t("Yıllık") : p.kind === "monthly" ? t("Aylık") : p.title}
-                  {p.kind === "annual" && (
-                    <span className="inline-flex items-center gap-0.5 rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-medium text-primary">
-                      <Sparkles size={11} />
-                      {t("Avantajlı")}
-                    </span>
-                  )}
-                </p>
+                <p className="font-semibold">{p.kind === "annual" ? t("Yıllık") : p.kind === "monthly" ? t("Aylık") : p.title}</p>
                 <p className="text-sm text-muted">
                   {p.price}
                   {p.kind === "annual" ? ` / ${t("yıl")}` : p.kind === "monthly" ? ` / ${t("ay")}` : ""}
                 </p>
-                {p.intro && <p className="text-xs text-primary">{t("Başlangıç teklifi")}: {p.intro}</p>}
+                {p.intro && (
+                  <p className="text-xs text-primary">
+                    {t("Başlangıç teklifi")}: {p.intro}
+                  </p>
+                )}
               </div>
               <Button loading={busy === p.id} disabled={!!busy} onClick={() => purchase(p.id)}>
                 {t("Abone ol")}
@@ -189,23 +188,32 @@ export default function PremiumPage() {
           <Button variant="secondary" className="w-full" loading={busy === "restore"} disabled={!!busy} onClick={doRestore}>
             {t("Satın alımları geri yükle")}
           </Button>
-        </Card>
+        </div>
       ) : (
         <Card className="space-y-3">
           <p className="text-sm">{t("Premium abonelik, BKNY mobil uygulaması üzerinden satın alınır. Uygulamayı indirip aynı hesapla giriş yaptığında Premium burada da etkinleşir.")}</p>
-          <div className="flex gap-2 text-sm font-medium text-muted">
-            <span className="inline-flex items-center gap-1.5"><AppleIcon size={16} />App Store</span>
-            <span className="inline-flex items-center gap-1.5"><AndroidIcon size={16} />Google Play</span>
+          <div className="flex gap-3 text-sm font-medium text-muted">
+            <span className="inline-flex items-center gap-1.5">
+              <AppleIcon size={16} />
+              App Store
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <AndroidIcon size={16} />
+              Google Play
+            </span>
           </div>
         </Card>
       )}
 
-      {diag && <p className="break-words font-mono text-[10px] text-muted/70">{diag}</p>}
-      {log.length > 0 && <pre className="whitespace-pre-wrap break-words font-mono text-[10px] text-muted/70">{log.join("\n")}</pre>}
-
       <p className="text-[11px] leading-relaxed text-muted">
         {t("Abonelik, satın alma onayında seçtiğin süre sonunda otomatik olarak yenilenir; yenileme tutarı hesabından (Apple Kimliği ya da Google Play) tahsil edilir. Aboneliği, yenileme tarihinden en az 24 saat önce mağaza hesap ayarlarından iptal edebilirsin; iptal, mevcut dönemin sonunda geçerli olur. Ücretsiz deneme sunulursa, süre dolmadan iptal etmezsen abonelik ücretli olarak başlar.")}{" "}
-        <Link href="/terms" className="underline">{t("Kullanım koşulları")}</Link> · <Link href="/privacy" className="underline">{t("Gizlilik")}</Link>
+        <Link href="/terms" className="underline">
+          {t("Kullanım koşulları")}
+        </Link>{" "}
+        ·{" "}
+        <Link href="/privacy" className="underline">
+          {t("Gizlilik")}
+        </Link>
       </p>
     </div>
   );

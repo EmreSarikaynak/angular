@@ -1,4 +1,13 @@
 export const EN: Record<string, string> = {
+  "Bugünkü yapay zekâ kullanımın": "Your AI usage today",
+  "Tüm özellikler tek pakette. Reklam ve izleme yok; istediğin an iptal edebilirsin.": "All features in one package. No ads and no tracking; cancel any time.",
+  "Tek abonelik, sıfır reklam": "One subscription, zero ads",
+  "Beslenme asistanıyla dilediğin kadar sohbet et; öğünlerin ve hedeflerin için kişisel öneriler al.": "Chat with the nutrition assistant as much as you like and get personal suggestions for your meals and goals.",
+  "Asistanın hep yanında": "Your assistant, always by your side",
+  "Fotoğraf, etiket, buzdolabı ve tarif analizleri için günlük limitin ücretsiz plandan çok daha yüksek.": "Your daily limit for photo, label, fridge and recipe analyses is far higher than on the free plan.",
+  "Kat kat daha fazla analiz": "Many times more analyses",
+  "Daha fazla analiz, daha fazla sohbet, sıfır reklam.": "More analyses, more chats, zero ads.",
+  "Teşekkürler! Tüm Premium ayrıcalıkların aktif.": "Thank you! All your Premium perks are active.",
   "Premium'a hoş geldin!": "Welcome to Premium!",
   "Aboneliğin etkinleşti. Daha yüksek yapay zekâ limitinin keyfini çıkar.": "Your subscription is active. Enjoy the higher AI limit.",
   "Harika!": "Awesome!",
