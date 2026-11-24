@@ -1,10 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ChevronDown, Trash2 } from "lucide-react";
 import { useApp } from "./app-provider";
 import { Field, Input, NumberInput, cx } from "./ui";
-import { scaleNutrients } from "@/lib/nutrition/calc";
-import { scaleMicros } from "@/lib/nutrition/micros";
+import { regram, type RegramBase } from "@/lib/nutrition/regram";
 import type { FoodItem } from "@/lib/types";
 
 export function blankItem(): FoodItem {
@@ -31,10 +30,14 @@ export function ItemFields({ item, onChange, onRemove, defaultOpen }: { item: Fo
   const set = (patch: Partial<FoodItem>) => onChange({ ...item, ...patch });
   const num = (v: number | null) => (v == null || !isFinite(v) || v < 0 ? 0 : v);
 
+  // Gramaj değişince besin değerleri HER ZAMAN ilk (referans) değerden orantılanır; böylece "200" yazarken
+  // 2 → 20 → 200 ara adımlarında yuvarlama birikmez ve alan silinip yeniden yazılınca değerler bozulmaz.
+  const base = useRef<RegramBase | null>(null);
   function setGrams(g: number | null) {
-    // Gramaj değişince besin değerleri orantılanır (önceki gramaj biliniyorsa).
-    if (g != null && g > 0 && item.grams && item.grams > 0 && item.kcal > 0) onChange({ ...scaleNutrients(item, g / item.grams), grams: g, micros: scaleMicros(item.micros, g / item.grams) });
-    else set({ grams: g });
+    if (g == null || !(g > 0)) return set({ grams: g });
+    const r = regram(item, g, base.current);
+    base.current = r.base;
+    onChange({ ...item, ...r.patch });
   }
 
   return (
