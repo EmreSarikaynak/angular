@@ -1,4 +1,12 @@
 export const EN: Record<string, string> = {
+  "Dün gece nasıl uyudun?": "How did you sleep last night?",
+  "Sabah, uyandıktan sonra doldurun.": "Fill this in in the morning, after waking up.",
+  "Yatış saati": "Bedtime",
+  "Kalkış saati": "Wake-up time",
+  "Saatleri girerseniz süre otomatik hesaplanır; elle de yazabilirsiniz.": "If you enter the times, the duration is calculated automatically; you can also type it in.",
+  "Uykuyu kaydet": "Save sleep",
+  "Gün içinde ya da akşam doldurun.": "Fill this in during the day or in the evening.",
+  "Günü kaydet": "Save day",
   "Ürün notları": "Product notes",
   "İçindekiler listesi bulunamadı. Daha ayrıntılı notlar için ambalajdaki içindekiler bölümünün fotoğrafını çekin.": "No ingredient list found. For more detailed notes, photograph the ingredients section of the packaging.",
   "Süre 1–1440 dakika arasında olmalı.": "Duration must be between 1 and 1440 minutes.",
