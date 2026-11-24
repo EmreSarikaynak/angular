@@ -15,13 +15,13 @@ export async function GET(req: Request, ctx: RouteContext<"/api/barcode/[code]">
   const { code } = await ctx.params;
   if (!/^\d{8,14}$/.test(code)) return json({ error: "bad_barcode" }, 400);
 
-  const key = `barcode:${code}`;
+  const key = `barcode:v2:${code}`;
   const cached = await cacheGet(key, 30);
   if (cached) return json({ product: cached, cached: true });
 
   try {
     const res = await fetch(
-      `https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=product_name,product_name_tr,brands,serving_quantity,serving_size,quantity,nutriments`,
+      `https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=product_name,product_name_tr,brands,serving_quantity,serving_size,quantity,nutriments,ingredients_text,ingredients_text_tr,additives_tags,allergens_tags,traces_tags,nova_group`,
       { headers: { "User-Agent": "BKNY/1.0 (nutrition tracker)" }, signal: AbortSignal.timeout(10_000) },
     );
     if (res.status === 404) return json({ error: "not_found" }, 404);
@@ -53,7 +53,18 @@ export async function GET(req: Request, ctx: RouteContext<"/api/barcode/[code]">
       is_estimated: false,
       data_source: "openfoodfacts",
     };
-    const product = { code, per100, serving_g: n(p.serving_quantity) || null, serving_label: p.serving_size ? String(p.serving_size) : null };
+    const tags = (v: unknown) => (Array.isArray(v) ? v.map(String).slice(0, 60) : []);
+    const nova = Number(p.nova_group);
+    const info = {
+      ingredients_text: String(p.ingredients_text_tr || p.ingredients_text || "").slice(0, 1500) || null,
+      additives: tags(p.additives_tags),
+      allergens: tags(p.allergens_tags),
+      traces: tags(p.traces_tags),
+      nova: nova >= 1 && nova <= 4 ? nova : null,
+      sat_fat_g: n(nu["saturated-fat_100g"]),
+      liquid: /\b\d+([.,]\d+)?\s*(ml|cl|l)\b/i.test(String(p.quantity ?? "")),
+    };
+    const product = { code, per100, serving_g: n(p.serving_quantity) || null, serving_label: p.serving_size ? String(p.serving_size) : null, info };
     await cacheSet(key, "barcode", "openfoodfacts", product);
     return json({ product });
   } catch (e) {

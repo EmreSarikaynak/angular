@@ -1,4 +1,6 @@
 export const EN: Record<string, string> = {
+  "Ürün notları": "Product notes",
+  "İçindekiler listesi bulunamadı. Daha ayrıntılı notlar için ambalajdaki içindekiler bölümünün fotoğrafını çekin.": "No ingredient list found. For more detailed notes, photograph the ingredients section of the packaging.",
   "Süre 1–1440 dakika arasında olmalı.": "Duration must be between 1 and 1440 minutes.",
   "Cihaza kaydedildi; bağlantı gelince gönderilecek.": "Saved on this device; it will be sent when you're back online.",
   "Aktivite eklendi.": "Activity added.",
