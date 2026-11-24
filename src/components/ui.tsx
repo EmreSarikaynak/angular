@@ -1,5 +1,5 @@
 "use client";
-import { Children, cloneElement, isValidElement, useEffect, useId } from "react";
+import { Children, cloneElement, isValidElement, useEffect, useId, useState } from "react";
 import { X } from "lucide-react";
 
 export function cx(...parts: (string | false | null | undefined)[]) {
@@ -211,7 +211,12 @@ export function Ring({
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const ratio = max > 0 ? value / max : 0;
-  const shown = Math.min(1, Math.max(0, ratio));
+  const [drawn, setDrawn] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setDrawn(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  const shown = drawn ? Math.min(1, Math.max(0, ratio)) : 0;
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }} role="img" aria-label={label}>
       <svg width={size} height={size} className="-rotate-90">
@@ -226,7 +231,7 @@ export function Ring({
           strokeLinecap="round"
           strokeDasharray={c}
           strokeDashoffset={c * (1 - shown)}
-          style={{ transition: "stroke-dashoffset .4s ease" }}
+          style={{ transition: "stroke-dashoffset 1s cubic-bezier(.2,.8,.2,1)" }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">{children}</div>

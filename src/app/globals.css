@@ -184,3 +184,20 @@ html.native {
   .bt-fly, .bt-glow, .bt-twinkle, .bt-gradient-text, .bt-pulse { animation: none; }
   .bt-gradient-text { color: #fff; background: none; }
 }
+
+/* Ana sayfa canlılığı */
+@keyframes bt-rise-in { from { opacity: 0; transform: translateY(18px) scale(.985); } to { opacity: 1; transform: none; } }
+@keyframes bt-flicker { 0%, 100% { transform: scale(1) rotate(0deg); } 25% { transform: scale(1.12) rotate(-4deg); } 50% { transform: scale(.96) rotate(3deg); } 75% { transform: scale(1.08) rotate(-2deg); } }
+@keyframes bt-breathe { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 45%, transparent); } 50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--primary) 0%, transparent); } }
+@keyframes bt-drop-up { 0% { opacity: 0; transform: translateY(6px) scale(.8); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(-26px) scale(1.1); } }
+@keyframes bt-bump { 0% { transform: scale(1); } 35% { transform: scale(1.06); } 100% { transform: scale(1); } }
+@keyframes bt-badge-pop { 0% { transform: scale(0) rotate(-40deg); } 70% { transform: scale(1.25) rotate(8deg); } 100% { transform: scale(1) rotate(0); } }
+.bt-rise { animation: bt-rise-in .6s cubic-bezier(.2,.8,.2,1) both; }
+.bt-flicker { display: inline-block; animation: bt-flicker 1.8s ease-in-out infinite; transform-origin: 50% 80%; }
+.bt-breathe { animation: bt-breathe 2.4s ease-in-out infinite; }
+.bt-drop-up { animation: bt-drop-up 1.1s ease-out both; }
+.bt-bump { animation: bt-bump .5s ease-out; }
+.bt-badge-pop { animation: bt-badge-pop .5s cubic-bezier(.2,.8,.2,1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .bt-rise, .bt-flicker, .bt-breathe, .bt-drop-up, .bt-bump, .bt-badge-pop { animation: none; }
+}
