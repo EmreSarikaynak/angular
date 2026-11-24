@@ -57,6 +57,8 @@ function WellbeingInner() {
   useEffect(() => {
     if (sleepDirty) return;
     setSleep({ sleep_hours: existing?.sleep_hours ?? null, sleep_quality: existing?.sleep_quality ?? null });
+    setBed(existing?.sleep_bedtime ?? "");
+    setWake(existing?.sleep_waketime ?? "");
   }, [existing, sleepDirty]);
   useEffect(() => {
     if (dayDirty) return;
@@ -75,14 +77,15 @@ function WellbeingInner() {
     setBed(b);
     setWake(w);
     const h = sleepHours(b, w);
-    if (h != null) setS({ sleep_hours: h });
+    setSleepDirty(true);
+    setSleep((f) => ({ ...f, sleep_hours: h ?? f.sleep_hours }));
   };
 
   async function persist(kind: "sleep" | "day") {
     if (kind === "sleep" && sleep.sleep_hours != null && (sleep.sleep_hours < 0 || sleep.sleep_hours > 24)) return toast(t("Uyku süresi 0–24 saat arasında olmalı."), "error");
     setBusy(kind);
     try {
-      const patch = kind === "sleep" ? sleep : { ...dayForm, note: dayForm.note?.trim() || null };
+      const patch = kind === "sleep" ? { ...sleep, sleep_bedtime: bed || null, sleep_waketime: wake || null } : { ...dayForm, note: dayForm.note?.trim() || null };
       const { queued } = await saveDaily(date, existing, patch);
       if (kind === "sleep") setSleepDirty(false);
       else setDayDirty(false);
