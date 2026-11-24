@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Check, Crown, Sparkles } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { Button, Card, PageHeader } from "@/components/ui";
+import { Celebration } from "@/components/celebration";
 import { AndroidIcon, AppleIcon } from "@/components/platform-icons";
 import { buy, billingAvailable, billingDiagnostics, loadPlans, manageUrl, restore, type PlanOption } from "@/lib/billing";
 import { isNative } from "@/lib/native";
@@ -15,6 +16,7 @@ export default function PremiumPage() {
   const [plans, setPlans] = useState<PlanOption[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const [celebrate, setCelebrate] = useState(false);
   const [step, setStep] = useState("başlıyor");
   const [diag, setDiag] = useState("");
   const [log, setLog] = useState<string[]>([]);
@@ -83,7 +85,7 @@ export default function PremiumPage() {
     setBusy(id);
     const r = await buy(userId, id);
     if (r === "ok") {
-      toast(t("Premium etkinleştiriliyor…"), "ok");
+      setCelebrate(true);
       await waitForPremium();
     } else if (r === "failed") toast(t("Satın alma tamamlanamadı. Lütfen tekrar deneyin."), "error");
     setBusy(null);
@@ -110,6 +112,7 @@ export default function PremiumPage() {
 
   return (
     <div className="mx-auto max-w-xl space-y-4">
+      <Celebration open={celebrate} onClose={() => setCelebrate(false)} />
       <PageHeader title={t("BKNY Premium")} back={
           <Link href="/profile" aria-label={t("Geri")} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-2">
             <ArrowLeft size={18} />

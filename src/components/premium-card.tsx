@@ -1,27 +1,32 @@
 "use client";
 import Link from "next/link";
-import { ChevronRight, Crown } from "lucide-react";
+import { ChevronRight, Crown, Sparkles } from "lucide-react";
 import { useApp } from "./app-provider";
-import { Card } from "./ui";
 
-/** Profil sayfasındaki Premium kartı: durum ve günlük yapay zekâ kullanımı. */
+/** Profilin en üstündeki Premium alanı: üyeyse rozet, değilse "Premium üye ol" daveti. */
 export function PremiumCard() {
   const { t, config } = useApp();
-  const premium = !!config?.premium;
+  if (!config) return null;
+  const premium = !!config.premium;
   return (
-    <Link href="/premium" className="block">
-      <Card className="flex items-center gap-3">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary-soft text-primary">
-          <Crown size={22} />
-        </span>
+    <Link
+      href="/premium"
+      className={`relative block overflow-hidden rounded-2xl p-4 text-white shadow-md transition active:scale-[.99] ${premium ? "bg-gradient-to-r from-emerald-600 via-primary to-teal-500" : "bg-gradient-to-r from-primary to-emerald-500"}`}
+    >
+      <span aria-hidden className="bt-shimmer pointer-events-none absolute inset-0" />
+      <div className="relative flex items-center gap-3">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/20">{premium ? <Crown size={22} /> : <Sparkles size={22} />}</span>
         <div className="min-w-0 flex-1">
-          <p className="font-semibold">{premium ? t("BKNY Premium: aktif") : t("BKNY Premium")}</p>
-          <p className="truncate text-xs text-muted">
-            {config ? t("Bugünkü yapay zekâ kullanımın: {u} / {l}", { u: config.quota.used, l: config.quota.limit }) : t("Daha yüksek yapay zekâ limiti")}
+          <p className="flex items-center gap-1.5 font-bold">
+            {premium ? t("Premium üye") : t("Premium üye ol")}
+            {premium && <span className="rounded-full bg-white/25 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">{t("Aktif")}</span>}
+          </p>
+          <p className="truncate text-xs text-white/85">
+            {premium ? t("Bugünkü yapay zekâ kullanımın: {u} / {l}", { u: config.quota.used, l: config.quota.limit }) : t("Çok daha yüksek yapay zekâ limiti")}
           </p>
         </div>
-        <ChevronRight size={18} className="text-muted" />
-      </Card>
+        <ChevronRight size={18} className="shrink-0 text-white/80" />
+      </div>
     </Link>
   );
 }

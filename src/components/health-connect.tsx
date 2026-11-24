@@ -2,7 +2,8 @@
 import { useEffect, useState } from "react";
 import { Activity, Check, Watch } from "lucide-react";
 import { useApp } from "@/components/app-provider";
-import { Button, Card, Switch } from "@/components/ui";
+import { Button, Switch } from "@/components/ui";
+import { Collapsible } from "@/components/collapsible";
 import { ALL_SCOPES, connectHealth, disconnectHealth, healthAvailable, healthState, openSystemHealthSettings, type HealthScope } from "@/lib/health";
 import { runHealthSync } from "@/lib/health-sync";
 import { isNative } from "@/lib/native";
@@ -36,13 +37,9 @@ export function HealthConnectCard() {
 
   if (!native) {
     return (
-      <Card className="space-y-2">
-        <h2 className="flex items-center gap-2 font-semibold">
-          <Watch size={18} className="text-primary" />
-          {t("Saat ve sağlık verileri")}
-        </h2>
+      <Collapsible title={t("Saat ve sağlık verileri")} icon={<Watch size={18} />}>
         <p className="text-sm text-muted">{t("Apple Watch, Galaxy Watch ve diğer saatlerin verileri, mobil uygulamada telefonunuzun sağlık deposundan (Apple Sağlık veya Health Connect) okunur. Bu özellik için BKNY mobil uygulamasını kullanın.")}</p>
-      </Card>
+      </Collapsible>
     );
   }
 
@@ -85,11 +82,7 @@ export function HealthConnectCard() {
   }
 
   return (
-    <Card className="space-y-3">
-      <h2 className="flex items-center gap-2 font-semibold">
-        <Watch size={18} className="text-primary" />
-        {t("Saat ve sağlık verileri")}
-      </h2>
+    <Collapsible title={t("Saat ve sağlık verileri")} icon={<Watch size={18} />}>
       <p className="text-sm text-muted">{t("BKNY, saatinizin telefona yazdığı verileri yalnızca okur: adım, halkalar, uyku, antrenman ve kilo. Reklam için kullanılmaz; istediğiniz zaman kapatabilirsiniz.")}</p>
 
       {available === false && <p className="rounded-xl bg-warn/10 px-3 py-2 text-sm text-warn">{t("Bu cihazda sağlık deposu bulunamadı. Android'de Health Connect uygulamasını Play Store'dan yükleyin.")}</p>}
@@ -136,6 +129,6 @@ export function HealthConnectCard() {
         </Button>
       )}
       <p className="text-xs text-muted">{t("Apple Sağlık hangi izinleri verdiğinizi uygulamalara göstermez; veri gelmiyorsa Ayarlar › Sağlık › Veri Erişimi bölümünde BKNY'yi kontrol edin.")}</p>
-    </Card>
+    </Collapsible>
   );
 }

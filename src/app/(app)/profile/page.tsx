@@ -2,9 +2,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, Download, Link2, LogOut, Shield, Stethoscope, Trash2 } from "lucide-react";
+import { Bell, Download, Link2, LogOut, Shield, Stethoscope, Trash2, User, Target, Leaf, SlidersHorizontal, ShieldCheck, Moon } from "lucide-react";
 import { useApp } from "@/components/app-provider";
-import { Bar, Button, Card, Chip, Field, Input, NumberInput, PageHeader, Segmented, Select, Sheet, Switch } from "@/components/ui";
+import { Bar, Button, Chip, Field, Input, NumberInput, PageHeader, Segmented, Select, Sheet, Switch } from "@/components/ui";
 import { api } from "@/lib/api";
 import { exportAllData } from "@/lib/data/export-all";
 import { clearLocalData } from "@/lib/data/store";
@@ -13,6 +13,7 @@ import { download } from "@/lib/export";
 import { ACTIVITY_LEVEL_LABELS, ALLERGY_OPTIONS, DIET_OPTIONS, GOAL_LABELS, label } from "@/lib/i18n/labels";
 import { HealthConnectCard } from "@/components/health-connect";
 import { PremiumCard } from "@/components/premium-card";
+import { Collapsible } from "@/components/collapsible";
 import { QuietHoursCard } from "@/components/quiet-hours-card";
 import { isNative } from "@/lib/native";
 import { TimePicker15 } from "@/components/time-picker";
@@ -175,8 +176,9 @@ export default function ProfilePage() {
     <div className="mx-auto max-w-2xl space-y-4">
       <PageHeader title={t("Profil")} subtitle={session?.user.email} />
 
-      <Card className="space-y-3">
-        <h2 className="font-semibold">{t("Kişisel bilgiler")}</h2>
+      <PremiumCard />
+
+      <Collapsible title={t("Kişisel bilgiler")} icon={<User size={18} />}>
         <div className="grid grid-cols-2 gap-3">
           <Field label={t("Ad")}>
             <Input value={form.first_name ?? ""} onChange={(e) => set({ first_name: e.target.value })} maxLength={80} />
@@ -202,10 +204,9 @@ export default function ProfilePage() {
             </Link>
           </Field>
         </div>
-      </Card>
+      </Collapsible>
 
-      <Card className="space-y-3">
-        <h2 className="font-semibold">{t("Hedefler")}</h2>
+      <Collapsible title={t("Hedefler")} icon={<Target size={18} />}>
         <div className="grid grid-cols-2 gap-3">
           <Field label={t("Hedef")}>
             <Select value={form.goal ?? "maintain"} onChange={(e) => set({ goal: e.target.value as Goal })}>
@@ -262,10 +263,9 @@ export default function ProfilePage() {
           </div>
           <Switch checked={form.add_exercise_calories} onChange={(v) => set({ add_exercise_calories: v })} label={t("Egzersiz kalorilerini günlük bütçeye ekle")} />
         </div>
-      </Card>
+      </Collapsible>
 
-      <Card className="space-y-3">
-        <h2 className="font-semibold">{t("Alerjiler ve beslenme tercihleri")}</h2>
+      <Collapsible title={t("Alerjiler ve beslenme tercihleri")} icon={<Leaf size={18} />}>
         <Field label={t("Besin alerjileri (varsa)")}>
           <div className="flex flex-wrap gap-2">
             {knownAllergies.map((k) => (
@@ -304,7 +304,7 @@ export default function ProfilePage() {
             ))}
           </div>
         </Field>
-      </Card>
+      </Collapsible>
 
       {dirty && (
         <div className="sticky bottom-20 z-30 lg:bottom-4">
@@ -314,8 +314,7 @@ export default function ProfilePage() {
         </div>
       )}
 
-      <Card className="space-y-4">
-        <h2 className="font-semibold">{t("Bildirimler")}</h2>
+      <Collapsible title={t("Bildirimler")} icon={<Bell size={18} />}>
         <p className="text-xs text-muted">{t("BKNY; su, takviye ve hedeflerinizi motive edici mesajlarla hatırlatır. Sıklığı buradan ayarlayabilirsiniz.")}</p>
         {toggleRow(t("Su hatırlatmaları"), t("Hedefe ulaşana kadar belirlediğiniz aralıkla."), profile.reminder_enabled, (v) => notify({ reminder_enabled: v }, v))}
         {profile.reminder_enabled && (
@@ -380,15 +379,13 @@ export default function ProfilePage() {
           {t("Bu cihazda bildirimleri aç")}
         </Button>
         <p className="text-xs text-muted">{(isNative() ? config?.fcm_available : config?.web_push_available) ? t("Bildirimler bu cihazda tarayıcı izni gerektirir. iPhone'da önce uygulamayı ana ekrana ekleyin.") : t("Sunucu bildirimleri yapılandırılmamış; hatırlatmalar yalnızca uygulama açıkken gösterilir.")}</p>
-      </Card>
-
-      <PremiumCard />
+      </Collapsible>
 
       <QuietHoursCard />
 
       <HealthConnectCard />
 
-      <Card className="space-y-3">
+      <Collapsible title={t("Ramazan modu")} icon={<Moon size={18} />}>
         {toggleRow(t("Ramazan modu"), t("Öğünler Sahur ve İftar olarak adlandırılır; su ve beslenme hatırlatmaları yalnızca iftar ile sahur arasında gönderilir."), profile.ramadan_mode, (v) => notify({ ramadan_mode: v }))}
         {profile.ramadan_mode && (
           <div className="grid grid-cols-2 gap-3">
@@ -401,10 +398,9 @@ export default function ProfilePage() {
             <p className="col-span-2 text-xs text-muted">{t("Saatler şehre ve güne göre değişir; bulunduğunuz yerin vakitlerini girip birkaç günde bir güncelleyin.")}</p>
           </div>
         )}
-      </Card>
+      </Collapsible>
 
-      <Card className="space-y-4">
-        <h2 className="font-semibold">{t("Uygulama")}</h2>
+      <Collapsible title={t("Uygulama")} icon={<SlidersHorizontal size={18} />}>
         <Field label={t("Dil")}>
           <Segmented<Lang> value={lang} onChange={setLang} options={[{ value: "tr", label: "Türkçe" }, { value: "en", label: "English" }]} />
         </Field>
@@ -430,10 +426,9 @@ export default function ProfilePage() {
           </div>
         )}
         <p className="text-xs text-muted">{t("Ana ekrana eklemek için: iPhone'da Safari › Paylaş › “Ana Ekrana Ekle”; Android'de Chrome menüsü › “Uygulamayı yükle”.")}</p>
-      </Card>
+      </Collapsible>
 
-      <Card className="space-y-3">
-        <h2 className="font-semibold">{t("Verileriniz ve gizlilik")}</h2>
+      <Collapsible title={t("Verileriniz ve gizlilik")} icon={<ShieldCheck size={18} />}>
         <p className="text-xs text-muted">
           {t("Verileriniz yalnızca size aittir. Dilediğiniz zaman indirebilir veya kalıcı olarak silebilirsiniz.")}{" "}
           <Link href="/privacy" className="font-medium text-primary underline">
@@ -458,7 +453,7 @@ export default function ProfilePage() {
             {t("Hesabımı sil")}
           </Button>
         </div>
-      </Card>
+      </Collapsible>
 
       <div className="flex flex-wrap gap-2">
         <Link href="/dietitian" className="inline-flex h-11 items-center gap-2 rounded-xl bg-surface-2 px-4 text-sm font-semibold">
