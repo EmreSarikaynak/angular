@@ -1,4 +1,5 @@
 export const EN: Record<string, string> = {
+  "Daha fazla": "More",
   "Bugünkü yapay zekâ kullanımın": "Your AI usage today",
   "Tüm özellikler tek pakette. Reklam ve izleme yok; istediğin an iptal edebilirsin.": "All features in one package. No ads and no tracking; cancel any time.",
   "Tek abonelik, sıfır reklam": "One subscription, zero ads",
