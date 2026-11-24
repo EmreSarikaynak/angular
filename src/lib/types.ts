@@ -138,6 +138,8 @@ export interface DailyLog {
   steps: number | null;
   sleep_hours: number | null;
   sleep_quality: number | null;
+  sleep_bedtime?: string | null;
+  sleep_waketime?: string | null;
   mood: number | null;
   energy: number | null;
   stress: number | null;
