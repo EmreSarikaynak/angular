@@ -195,6 +195,8 @@ export interface AnalysisResult {
   needs_clarification: boolean;
   clarification_question: string | null;
   notes: string | null;
+  /** Ambalajda görünen "İçindekiler" metni (görünmüyorsa null). */
+  ingredients_text?: string | null;
   cached?: boolean;
 }
 

@@ -27,7 +27,7 @@ export async function POST(req: Request) {
   const model = settings.gemini_model;
 
   const imageHash = input.image ? createHash("sha256").update(input.image.data).digest("hex") : undefined;
-  const key = cacheKey(["v1", input.kind, model, input.lang, input.text?.toLowerCase().replace(/\s+/g, " "), imageHash, input.hint?.toLowerCase()]);
+  const key = cacheKey(["v2", input.kind, model, input.lang, input.text?.toLowerCase().replace(/\s+/g, " "), imageHash, input.hint?.toLowerCase()]);
 
   try {
     const cached = (await cacheGet(key, settings.cache_ttl_days)) as AnalysisResult | null;

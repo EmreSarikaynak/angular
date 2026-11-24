@@ -5,6 +5,7 @@ import { HelpCircle, Plus } from "lucide-react";
 import { useApp } from "./app-provider";
 import { Button, Card, Chip, Field, Input } from "./ui";
 import { ItemFields, blankItem } from "./item-fields";
+import { ProductNotes } from "./product-notes";
 import { sumNutrients } from "@/lib/nutrition/calc";
 import { defaultMeal, timeOf, timestampFor, toDateKey } from "@/lib/dates";
 import { upsertRow, upsertRows, uuid } from "@/lib/data/store";
@@ -24,6 +25,11 @@ export interface ReviewProps {
   onClarify?: (hint: string) => Promise<void>;
   onSaved: (date: string) => void;
   onCancel: () => void;
+}
+
+function per100Of(i: FoodItem) {
+  const k = 100 / (i.grams ?? 100);
+  return { kcal: i.kcal * k, protein_g: i.protein_g * k, fat_g: i.fat_g * k, sat_fat_g: null, sugar_g: i.sugar_g * k, fiber_g: i.fiber_g * k, salt_g: i.salt_g * k };
 }
 
 /** Analiz sonucunu (ya da elle girilen kaydı) düzenleme ve onaylama ekranı. */
@@ -107,6 +113,15 @@ export function Review({ source, initial, analysis, image, date: initialDate, me
       {image && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={image.dataUrl} alt={t("Yemek fotoğrafı")} className="max-h-56 w-full rounded-2xl object-cover" />
+      )}
+
+      {(source === "photo" || source === "label") && analysis?.ingredients_text && (
+        <ProductNotes
+          input={{
+            ingredients_text: analysis.ingredients_text,
+            per100: source === "label" && items.length === 1 && (items[0].grams ?? 0) > 0 ? per100Of(items[0]) : null,
+          }}
+        />
       )}
 
       {analysis?.needs_clarification && onClarify && (

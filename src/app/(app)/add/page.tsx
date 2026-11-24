@@ -9,6 +9,7 @@ import { CustomizeSheet, useUiPrefs } from "@/components/customize";
 import { cycleAvailable } from "@/lib/bkn/cycle";
 import { visibleItems } from "@/lib/layout-prefs";
 import { Review } from "@/components/review";
+import { ProductNotes } from "@/components/product-notes";
 import { blankItem } from "@/components/item-fields";
 import { Button, Card, Empty, Field, Input, NumberInput, PageHeader, Skeleton, Textarea } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
@@ -36,6 +37,7 @@ interface Product {
   per100: FoodItem;
   serving_g: number | null;
   serving_label: string | null;
+  info?: { ingredients_text: string | null; additives: string[]; allergens: string[]; traces: string[]; nova: number | null; sat_fat_g: number; liquid: boolean };
 }
 
 const EXAMPLES = ["2 haşlanmış yumurta", "150 gram tavuk göğsü", "1 kase mercimek çorbası", "2 dilim ekmek", "1 bardak ayran", "1 porsiyon Adana kebap"];
@@ -328,6 +330,17 @@ function AddInner() {
               </p>
               <p className="mt-1 text-[11px] text-muted">{t("Kaynak: Open Food Facts")}</p>
             </div>
+            <ProductNotes
+              input={{
+                ingredients_text: product.info?.ingredients_text,
+                additives: product.info?.additives,
+                allergens: product.info?.allergens,
+                traces: product.info?.traces,
+                nova: product.info?.nova,
+                liquid: product.info?.liquid,
+                per100: { ...product.per100, sat_fat_g: product.info?.sat_fat_g || null },
+              }}
+            />
             <Field label={t("Tükettiğiniz miktar (g / ml)")} hint={product.serving_label ? t("Porsiyon: {s}", { s: product.serving_label }) : undefined}>
               <NumberInput value={amount} onChange={setAmount} min={1} max={5000} />
             </Field>

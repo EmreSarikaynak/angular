@@ -26,6 +26,7 @@ export function photoPrompt(lang: "tr" | "en", hint?: string) {
     system: COMMON_RULES(lang),
     user: `Analyse the meal in this photo. Identify each food on the plate, estimate its portion and weight in grams using visual cues (plate size, cutlery, typical serving sizes), then give nutrients.
 If the image does not show food or drink, set "is_food" to false and return an empty "items" array.
+If an ingredients list ("İçindekiler" / "Ingredients") is visible anywhere on the package, copy it into "ingredients_text" exactly as printed (including E-numbers and allergen statements). If it is not visible, set "ingredients_text" to null; never infer or invent ingredients.
 ${hint ? `The user added this information about the meal or portions; trust it over your visual estimate: "${hint}"` : ""}`,
   };
 }
@@ -50,6 +51,7 @@ Return ONE item for the product: "name" is the product name if visible, otherwis
 Use the serving size printed on the label as "grams" (if only per-100 g values are printed, return values for 100 g and set quantity 100, unit "g").
 If the label shows sodium instead of salt, convert: salt_g = sodium_g x 2.5. Set "ref_key" to null.
 If the image is not a nutrition label, set "is_food" to false with empty "items".
+If an ingredients list ("İçindekiler" / "Ingredients") is visible anywhere on the package, copy it into "ingredients_text" exactly as printed (including E-numbers and allergen statements). If it is not visible, set "ingredients_text" to null; never infer or invent ingredients.
 ${hint ? `User note: "${hint}"` : ""}`,
   };
 }

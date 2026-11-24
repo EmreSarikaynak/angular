@@ -37,6 +37,7 @@ export const rawAnalysisSchema = z.object({
   needs_clarification: z.boolean().catch(false),
   clarification_question: z.string().trim().max(400).nullish(),
   notes: z.string().trim().max(600).nullish(),
+  ingredients_text: z.string().trim().max(1500).nullish(),
 });
 
 export type RawItem = z.infer<typeof rawItemSchema>;
@@ -82,6 +83,7 @@ export const ANALYSIS_RESPONSE_SCHEMA = {
     needs_clarification: { type: "BOOLEAN" },
     clarification_question: { type: "STRING", nullable: true },
     notes: { type: "STRING", nullable: true },
+    ingredients_text: { type: "STRING", nullable: true },
   },
   required: ["is_food", "dish_name", "items", "overall_confidence", "needs_clarification"],
 } as const;
