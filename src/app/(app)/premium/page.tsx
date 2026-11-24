@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Check, Crown, Sparkles } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { Button, Card, PageHeader } from "@/components/ui";
@@ -17,6 +17,9 @@ export default function PremiumPage() {
   const [attempt, setAttempt] = useState(0);
   const [step, setStep] = useState("başlıyor");
   const [diag, setDiag] = useState("");
+  const [log, setLog] = useState<string[]>([]);
+  const [secs, setSecs] = useState(0);
+  const t0 = useRef(0);
   const [busy, setBusy] = useState<string | null>(null);
   const premium = !!config?.premium;
 
@@ -32,13 +35,40 @@ export default function PremiumPage() {
     setLoadError(null);
     setPlans(null);
     setStep("başlıyor");
-    loadPlans(userId, setStep)
-      .then(setPlans)
+    t0.current = Date.now();
+    setSecs(0);
+    const note = (m: string) => setLog((l) => [...l.slice(-7), `${((Date.now() - t0.current) / 1000).toFixed(1)}s ${m}`]);
+    setLog([]);
+    note("başladı");
+    const onErr = (e: ErrorEvent) => note(`js hata: ${e.message}`.slice(0, 120));
+    const onRej = (e: PromiseRejectionEvent) => note(`söz reddi: ${String((e.reason as { message?: string })?.message ?? e.reason)}`.slice(0, 120));
+    window.addEventListener("error", onErr);
+    window.addEventListener("unhandledrejection", onRej);
+    loadPlans(userId, (s) => {
+      setStep(s);
+      note(s);
+    })
+      .then((r) => {
+        note("planlar geldi");
+        setPlans(r);
+      })
       .catch((e: unknown) => {
+        note("hata");
         setLoadError(e instanceof Error ? e.message : typeof e === "object" && e && "message" in e ? String((e as { message: unknown }).message) : "unknown");
         setPlans([]);
       });
+    return () => {
+      window.removeEventListener("error", onErr);
+      window.removeEventListener("unhandledrejection", onRej);
+    };
   }, [userId, attempt]);
+
+  // Sayfanın canlı olduğunu göstermek için saniye sayacı (yükleme sürerken).
+  useEffect(() => {
+    if (plans !== null) return;
+    const id = setInterval(() => setSecs(Math.round((Date.now() - t0.current) / 1000)), 1000);
+    return () => clearInterval(id);
+  }, [plans]);
 
   /** Webhook birkaç saniye içinde aboneliği yazar; durumu kısa aralıklarla yeniden okur. */
   async function waitForPremium() {
@@ -120,7 +150,7 @@ export default function PremiumPage() {
         </Card>
       ) : native ? (
         <Card className="space-y-3">
-          {plans === null && <p className="text-sm text-muted">{t("Planlar yükleniyor…")} <span className="text-[11px]">({step})</span></p>}
+          {plans === null && <p className="text-sm text-muted">{t("Planlar yükleniyor…")} <span className="text-[11px]">({step} · {secs} sn)</span></p>}
           {plans && plans.length === 0 && (
             <div className="space-y-2">
               <p className="text-sm text-muted">{t("Abonelik planları şu anda yüklenemedi. Mağaza ürünleri yeni açıldıysa birkaç saat sürebilir; daha sonra tekrar deneyin.")}</p>
@@ -168,6 +198,7 @@ export default function PremiumPage() {
       )}
 
       {diag && <p className="break-words font-mono text-[10px] text-muted/70">{diag}</p>}
+      {log.length > 0 && <pre className="whitespace-pre-wrap break-words font-mono text-[10px] text-muted/70">{log.join("\n")}</pre>}
 
       <p className="text-[11px] leading-relaxed text-muted">
         {t("Abonelik, satın alma onayında seçtiğin süre sonunda otomatik olarak yenilenir; yenileme tutarı hesabından (Apple Kimliği ya da Google Play) tahsil edilir. Aboneliği, yenileme tarihinden en az 24 saat önce mağaza hesap ayarlarından iptal edebilirsin; iptal, mevcut dönemin sonunda geçerli olur. Ücretsiz deneme sunulursa, süre dolmadan iptal etmezsen abonelik ücretli olarak başlar.")}{" "}
