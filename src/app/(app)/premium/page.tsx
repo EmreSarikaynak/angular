@@ -5,7 +5,7 @@ import { ArrowLeft, Check, Crown, Sparkles } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { Button, Card, PageHeader } from "@/components/ui";
 import { AndroidIcon, AppleIcon } from "@/components/platform-icons";
-import { buy, billingAvailable, loadPlans, manageUrl, restore, type PlanOption } from "@/lib/billing";
+import { buy, billingAvailable, billingDiagnostics, loadPlans, manageUrl, restore, type PlanOption } from "@/lib/billing";
 import { isNative } from "@/lib/native";
 
 export default function PremiumPage() {
@@ -15,15 +15,24 @@ export default function PremiumPage() {
   const [plans, setPlans] = useState<PlanOption[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const [step, setStep] = useState("başlıyor");
+  const [diag, setDiag] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const premium = !!config?.premium;
 
   useEffect(() => {
     setNative(isNative());
-    if (!userId || !billingAvailable()) return;
+    setDiag(billingDiagnostics());
+    if (!userId) return;
+    if (!billingAvailable()) {
+      setLoadError("billing_unavailable: " + billingDiagnostics());
+      setPlans([]);
+      return;
+    }
     setLoadError(null);
     setPlans(null);
-    loadPlans(userId)
+    setStep("başlıyor");
+    loadPlans(userId, setStep)
       .then(setPlans)
       .catch((e: unknown) => {
         setLoadError(e instanceof Error ? e.message : typeof e === "object" && e && "message" in e ? String((e as { message: unknown }).message) : "unknown");
@@ -111,7 +120,7 @@ export default function PremiumPage() {
         </Card>
       ) : native ? (
         <Card className="space-y-3">
-          {plans === null && <p className="text-sm text-muted">{t("Planlar yükleniyor…")}</p>}
+          {plans === null && <p className="text-sm text-muted">{t("Planlar yükleniyor…")} <span className="text-[11px]">({step})</span></p>}
           {plans && plans.length === 0 && (
             <div className="space-y-2">
               <p className="text-sm text-muted">{t("Abonelik planları şu anda yüklenemedi. Mağaza ürünleri yeni açıldıysa birkaç saat sürebilir; daha sonra tekrar deneyin.")}</p>
@@ -157,6 +166,8 @@ export default function PremiumPage() {
           </div>
         </Card>
       )}
+
+      {diag && <p className="break-words font-mono text-[10px] text-muted/70">{diag}</p>}
 
       <p className="text-[11px] leading-relaxed text-muted">
         {t("Abonelik, satın alma onayında seçtiğin süre sonunda otomatik olarak yenilenir; yenileme tutarı hesabından (Apple Kimliği ya da Google Play) tahsil edilir. Aboneliği, yenileme tarihinden en az 24 saat önce mağaza hesap ayarlarından iptal edebilirsin; iptal, mevcut dönemin sonunda geçerli olur. Ücretsiz deneme sunulursa, süre dolmadan iptal etmezsen abonelik ücretli olarak başlar.")}{" "}

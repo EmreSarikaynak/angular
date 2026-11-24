@@ -40,14 +40,22 @@ function withTimeout<T>(p: Promise<T>, ms: number, step: string): Promise<T> {
   });
 }
 
+/** Tanı bilgisi: uygulamanın hangi derlemede olduğu ve faturalamanın neden kullanılamadığı. */
+export function billingDiagnostics(): string {
+  const build = (process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA || "?").slice(0, 7);
+  return `build ${build} · native ${isNative() ? "evet" : "hayır"} · platform ${typeof window === "undefined" ? "?" : platform() ?? "?"} · anahtar ${apiKey() ? "var" : "yok"}`;
+}
+
 export function billingAvailable(): boolean {
   return isNative() && !!apiKey();
 }
 
 /** SDK'yı kullanıcı kimliğiyle (Supabase kullanıcı kimliği) başlatır; kimlik webhook'ta aboneliği eşleştirir. */
-export async function initBilling(userId: string): Promise<Purchases | null> {
+export async function initBilling(userId: string, onStep?: (s: string) => void): Promise<Purchases | null> {
   if (!billingAvailable()) return null;
-  const { Purchases } = await import("@revenuecat/purchases-capacitor");
+  onStep?.("import");
+  const { Purchases } = await withTimeout(import("@revenuecat/purchases-capacitor"), 15_000, "import");
+  onStep?.("configure");
   if (!sdk) {
     await withTimeout(Purchases.configure({ apiKey: apiKey()!, appUserID: userId }), 15_000, "configure");
     sdk = Purchases;
@@ -59,9 +67,10 @@ export async function initBilling(userId: string): Promise<Purchases | null> {
   return sdk;
 }
 
-export async function loadPlans(userId: string): Promise<PlanOption[]> {
-  const p = await initBilling(userId);
-  if (!p) return [];
+export async function loadPlans(userId: string, onStep?: (s: string) => void): Promise<PlanOption[]> {
+  const p = await initBilling(userId, onStep);
+  if (!p) throw new Error("billing_unavailable");
+  onStep?.("offerings");
   const offerings = await withTimeout(p.getOfferings(), 20_000, "offerings");
   if (!offerings.current) throw new Error("no_current_offering");
   const pkgs = offerings.current.availablePackages;
