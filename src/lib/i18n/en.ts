@@ -1,4 +1,8 @@
 export const EN: Record<string, string> = {
+  "İyi geceler": "Good night",
+  "Günaydın": "Good morning",
+  "İyi günler": "Good afternoon",
+  "İyi akşamlar": "Good evening",
   "Dün gece nasıl uyudun?": "How did you sleep last night?",
   "Sabah, uyandıktan sonra doldurun.": "Fill this in in the morning, after waking up.",
   "Yatış saati": "Bedtime",
