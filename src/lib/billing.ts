@@ -23,6 +23,23 @@ function apiKey(): string | undefined {
   return platform() === "ios" ? process.env.NEXT_PUBLIC_REVENUECAT_IOS_KEY : process.env.NEXT_PUBLIC_REVENUECAT_ANDROID_KEY;
 }
 
+/** Faturalama bağlantısı kurulamazsa süresiz beklemek yerine hangi adımda takıldığını söyleyerek hata verir. */
+function withTimeout<T>(p: Promise<T>, ms: number, step: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const id = setTimeout(() => reject(new Error(`timeout:${step}`)), ms);
+    p.then(
+      (v) => {
+        clearTimeout(id);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(id);
+        reject(e);
+      },
+    );
+  });
+}
+
 export function billingAvailable(): boolean {
   return isNative() && !!apiKey();
 }
@@ -32,11 +49,11 @@ export async function initBilling(userId: string): Promise<Purchases | null> {
   if (!billingAvailable()) return null;
   const { Purchases } = await import("@revenuecat/purchases-capacitor");
   if (!sdk) {
-    await Purchases.configure({ apiKey: apiKey()!, appUserID: userId });
+    await withTimeout(Purchases.configure({ apiKey: apiKey()!, appUserID: userId }), 15_000, "configure");
     sdk = Purchases;
     configuredFor = userId;
   } else if (configuredFor !== userId) {
-    await Purchases.logIn({ appUserID: userId });
+    await withTimeout(Purchases.logIn({ appUserID: userId }), 15_000, "login");
     configuredFor = userId;
   }
   return sdk;
@@ -45,7 +62,7 @@ export async function initBilling(userId: string): Promise<Purchases | null> {
 export async function loadPlans(userId: string): Promise<PlanOption[]> {
   const p = await initBilling(userId);
   if (!p) return [];
-  const offerings = await p.getOfferings();
+  const offerings = await withTimeout(p.getOfferings(), 20_000, "offerings");
   if (!offerings.current) throw new Error("no_current_offering");
   const pkgs = offerings.current.availablePackages;
   if (!pkgs.length) throw new Error("no_packages");
