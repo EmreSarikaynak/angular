@@ -57,7 +57,15 @@ export async function initBilling(userId: string, onStep?: (s: string) => void):
   const { Purchases } = await withTimeout(import("@revenuecat/purchases-capacitor"), 15_000, "import");
   onStep?.("configure");
   if (!sdk) {
-    await withTimeout(Purchases.configure({ apiKey: apiKey()!, appUserID: userId }), 15_000, "configure");
+    // Yerel başlatma çağrısının yanıtı bazen köprüden dönmez; 5 sn beklenip devam edilir (asıl hata sonraki adımda görünür).
+    let rejected: unknown = null;
+    await Promise.race([
+      Purchases.configure({ apiKey: apiKey()!, appUserID: userId }).catch((e: unknown) => {
+        rejected = e;
+      }),
+      new Promise<void>((r) => setTimeout(r, 5_000)),
+    ]);
+    if (rejected) throw rejected;
     sdk = Purchases;
     configuredFor = userId;
   } else if (configuredFor !== userId) {
