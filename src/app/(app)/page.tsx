@@ -17,6 +17,7 @@ import { setPendingPhoto } from "@/lib/image";
 import { BknToday } from "@/components/bkn-today";
 import { InstallHint } from "@/components/install-hint";
 import { AnimNum } from "@/components/anim-num";
+import { dayOfYear, useOwnerMessages } from "@/components/owner-messages";
 import { DietitianNoteCard } from "@/components/my-dietitian";
 import { MEALS } from "@/lib/types";
 
@@ -45,6 +46,9 @@ export default function DashboardPage() {
     return () => cancelAnimationFrame(id);
   }, []);
   const [bump, setBump] = useState({ n: 0, ml: 0 });
+  const ownerMsgs = useOwnerMessages();
+  const [msgShift, setMsgShift] = useState(0);
+  const ownerTip = config?.owner ? ownerMsgs[(dayOfYear() + msgShift) % ownerMsgs.length] : null;
   const rise = (i: number) => ({ className: "bt-rise", style: { animationDelay: `${i * 70}ms` } });
 
   async function quickWater(ml: number) {
@@ -147,7 +151,13 @@ export default function DashboardPage() {
         <div className="min-w-0">
           <p className="truncate text-xs text-muted">{formatDate(today, lang)}</p>
           <h1 className="truncate text-lg font-bold leading-tight tracking-tight">{profile?.first_name ? `${greeting}, ${profile.first_name}` : greeting}</h1>
-          <p className="truncate text-xs text-primary">{tip}</p>
+          {ownerTip ? (
+            <button key={msgShift} type="button" onClick={() => setMsgShift((n) => n + 1)} className="bt-rise block max-w-full text-left text-xs font-medium text-primary" aria-label={t("Başka bir söz")}>
+              {ownerTip}
+            </button>
+          ) : (
+            <p className="truncate text-xs text-primary">{tip}</p>
+          )}
         </div>
         <Link href="/assistant" aria-label={t("Asistan")} className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
           <MessageCircle size={19} />

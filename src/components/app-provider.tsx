@@ -13,6 +13,7 @@ export interface RuntimeConfig {
   blocked: boolean;
   quota: { limit: number; used: number; remaining: number };
   premium?: boolean;
+  owner?: boolean;
   announcement: string;
   is_admin: boolean;
   push_available: boolean;

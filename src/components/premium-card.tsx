@@ -18,8 +18,8 @@ export function PremiumCard() {
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/20">{premium ? <Crown size={22} /> : <Sparkles size={22} />}</span>
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-1.5 font-bold">
-            {premium ? t("Premium üye") : t("Premium üye ol")}
-            {premium && <span className="rounded-full bg-white/25 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">{t("Aktif")}</span>}
+            {config.owner ? t("Kurucu · Premium") : premium ? t("Premium üye") : t("Premium üye ol")}
+            {premium && <span className="rounded-full bg-white/25 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">{config.owner ? t("Sonsuza dek") : t("Aktif")}</span>}
           </p>
           <p className="truncate text-xs text-white/85">
             {premium ? t("Bugünkü yapay zekâ kullanımın: {u} / {l}", { u: config.quota.used, l: config.quota.limit }) : t("Çok daha yüksek yapay zekâ limiti")}
