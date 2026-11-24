@@ -1,8 +1,9 @@
 "use client";
 import { mealLabel } from "@/lib/bkn/ramadan";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Activity as ActivityIcon, Barcode, Camera, Droplets, Flame, Footprints, MessageCircle, Plus, Scale, Type, Utensils } from "lucide-react";
+import { Activity as ActivityIcon, Barcode, Camera, Check, Droplets, Flame, Footprints, MessageCircle, Plus, Scale, Type, Utensils } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { Button, Card, Ring, Skeleton } from "@/components/ui";
 import { useBody, useDay } from "@/lib/data/hooks";
@@ -15,6 +16,7 @@ import { ACTIVITY_LABELS, label } from "@/lib/i18n/labels";
 import { setPendingPhoto } from "@/lib/image";
 import { BknToday } from "@/components/bkn-today";
 import { InstallHint } from "@/components/install-hint";
+import { AnimNum } from "@/components/anim-num";
 import { DietitianNoteCard } from "@/components/my-dietitian";
 import { MEALS } from "@/lib/types";
 
@@ -36,9 +38,19 @@ export default function DashboardPage() {
   const hour = new Date().getHours();
   const greeting = hour < 5 ? t("İyi geceler") : hour < 12 ? t("Günaydın") : hour < 18 ? t("İyi günler") : t("İyi akşamlar");
 
+  // Çubuklar ve kartlar ilk boyamadan sonra dolar / belirir.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  const [bump, setBump] = useState({ n: 0, ml: 0 });
+  const rise = (i: number) => ({ className: "bt-rise", style: { animationDelay: `${i * 70}ms` } });
+
   async function quickWater(ml: number) {
     try {
       const { queued } = await addWater(today, ml);
+      setBump((b) => ({ n: b.n + 1, ml }));
       toast(queued ? t("{n} ml cihaza kaydedildi", { n: ml }) : t("{n} ml su eklendi", { n: ml }), queued ? "info" : "ok");
     } catch {
       toast(t("Kaydedilemedi."), "error");
@@ -51,16 +63,16 @@ export default function DashboardPage() {
       <div className="min-w-0">
         <p className="truncate text-[11px] text-muted">{name}</p>
         <p className="text-[13px] font-semibold leading-tight">
-          {nf(value)}
+          <AnimNum value={value} />
           <span className="font-normal text-muted">/{target ?? "–"}</span>
         </p>
         <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
-          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color, transition: "width .4s ease" }} />
+          <div className="h-full rounded-full" style={{ width: `${mounted ? pct : 0}%`, background: color, transition: "width 1s cubic-bezier(.2,.8,.2,1)" }} />
         </div>
       </div>
     );
   };
-  const mini = (label: string, value: string, unit?: string, color?: string) => (
+  const mini = (label: string, value: React.ReactNode, unit?: string, color?: string) => (
     <div className="min-w-0">
       <p className="truncate text-[11px] text-muted">{label}</p>
       <p className="truncate text-base font-semibold leading-tight" style={color ? { color } : undefined}>
@@ -69,21 +81,50 @@ export default function DashboardPage() {
       </p>
     </div>
   );
-  const tile = (href: string, icon: React.ReactNode, labelText: string, value: string, sub: string, pct: number, color: string) => (
-    <Link href={href} className="min-w-0 rounded-2xl border border-border bg-surface p-3 shadow-sm transition active:scale-[.98]">
-      <p className="flex items-center gap-1 text-[11px] text-muted" style={{ color }}>
+  const tile = (href: string, icon: React.ReactNode, labelText: string, value: React.ReactNode, sub: string, pct: number, color: string, opts?: { done?: boolean; bumpKey?: number; bumpText?: string; delay?: number }) => (
+    <Link
+      key={opts?.bumpKey}
+      href={href}
+      className={`relative min-w-0 rounded-2xl border border-border bg-surface p-3 shadow-sm transition active:scale-[.98] ${opts?.bumpKey ? "bt-bump" : ""} bt-rise`}
+      style={{ animationDelay: `${(opts?.delay ?? 0) * 70}ms`, borderColor: opts?.done ? color : undefined, boxShadow: opts?.done ? `0 0 0 3px color-mix(in srgb, ${color} 18%, transparent)` : undefined }}
+    >
+      <p className="flex items-center gap-1 text-[11px]" style={{ color }}>
         {icon}
         <span className="truncate text-muted">{labelText}</span>
       </p>
+      {opts?.done && (
+        <span className="bt-badge-pop absolute right-2 top-2 grid h-4 w-4 place-items-center rounded-full text-white" style={{ background: color }}>
+          <Check size={10} strokeWidth={3.5} />
+        </span>
+      )}
+      {opts?.bumpKey ? (
+        <span key={opts.bumpKey} aria-hidden className="bt-drop-up pointer-events-none absolute right-3 top-3 text-xs font-bold" style={{ color }}>
+          {opts.bumpText}
+        </span>
+      ) : null}
       <p className="mt-1 truncate text-lg font-bold leading-none">{value}</p>
       <p className="mt-0.5 truncate text-[10px] text-muted">{sub}</p>
       <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
-        <div className="h-full rounded-full" style={{ width: `${Math.min(100, Math.max(0, pct))}%`, background: color, transition: "width .4s ease" }} />
+        <div className="h-full rounded-full" style={{ width: `${mounted ? Math.min(100, Math.max(0, pct)) : 0}%`, background: color, transition: "width 1s cubic-bezier(.2,.8,.2,1)" }} />
       </div>
     </Link>
   );
   const waterPct = waterTarget ? (s.water_ml / waterTarget) * 100 : 0;
   const stepsTarget = profile?.steps_target ?? 0;
+  const tip =
+    data.food.length === 0
+      ? hour < 11
+        ? t("Güne iyi bir kahvaltıyla başla.")
+        : t("İlk öğününü kaydederek günü başlat.")
+      : over
+        ? t("Bugünlük bütçeyi aştın; yarın yeni bir gün.")
+        : waterPct >= 100
+          ? t("Su hedefin tamam, harika gidiyorsun!")
+          : hour >= 12 && waterPct < 35
+            ? t("Bir bardak su iyi gelir.")
+            : s.remaining_kcal > 0 && s.remaining_kcal < 250
+              ? t("Günlük hedefine çok yakınsın.")
+              : t("Küçük adımlar büyük fark yaratır.");
 
   return (
     <div className="space-y-3">
@@ -102,10 +143,11 @@ export default function DashboardPage() {
           }
         }}
       />
-      <header className="flex items-center justify-between gap-3">
+      <header className="bt-rise flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-xs text-muted">{formatDate(today, lang)}</p>
           <h1 className="truncate text-lg font-bold leading-tight tracking-tight">{profile?.first_name ? `${greeting}, ${profile.first_name}` : greeting}</h1>
+          <p className="truncate text-xs text-primary">{tip}</p>
         </div>
         <Link href="/assistant" aria-label={t("Asistan")} className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
           <MessageCircle size={19} />
@@ -113,16 +155,18 @@ export default function DashboardPage() {
       </header>
 
       <div className="grid gap-3 lg:grid-cols-2">
-        <Card className="bg-gradient-to-br from-primary-soft/70 via-surface to-surface p-3.5 shadow-sm">
+        <Card {...rise(1)} className="bt-rise bg-gradient-to-br from-primary-soft/70 via-surface to-surface p-3.5 shadow-sm">
           <div className="flex items-center gap-3.5">
             <Ring size={116} stroke={10} value={s.intake.kcal} max={s.budget_kcal} label={t("Kalori: {a} / {b} kcal", { a: Math.round(s.intake.kcal), b: s.budget_kcal })}>
-              <span className={`text-xl font-bold leading-none ${over ? "text-danger" : ""}`}>{nf(Math.abs(s.remaining_kcal))}</span>
+              <span className={`text-xl font-bold leading-none ${over ? "text-danger" : ""}`}>
+                <AnimNum value={Math.abs(s.remaining_kcal)} />
+              </span>
               <span className="mt-0.5 text-[10px] text-muted">{over ? t("kcal fazla") : t("kcal kaldı")}</span>
             </Ring>
             <div className="grid min-w-0 flex-1 gap-1.5">
-              {mini(t("Günlük hedef"), nf(s.target_kcal), "kcal")}
-              {mini(t("Alınan"), nf(s.intake.kcal), "kcal")}
-              {mini(s.burned_source === "rings" ? t("Yakılan (saatinizden)") : t("Sporla yakılan (tahmini)"), nf(s.burned_kcal), "kcal", "var(--burn)")}
+              {mini(t("Günlük hedef"), <AnimNum value={s.target_kcal} />, "kcal")}
+              {mini(t("Alınan"), <AnimNum value={s.intake.kcal} />, "kcal")}
+              {mini(s.burned_source === "rings" ? t("Yakılan (saatinizden)") : t("Sporla yakılan (tahmini)"), <AnimNum value={s.burned_kcal} />, "kcal", "var(--burn)")}
             </div>
           </div>
           <div className="mt-3 grid grid-cols-4 gap-2.5">
@@ -134,7 +178,7 @@ export default function DashboardPage() {
           {profile?.add_exercise_calories && s.burned_kcal > 0 && <p className="mt-2 text-[11px] text-muted">{t("Yakılan {n} kcal günlük bütçenize eklendi.", { n: s.burned_kcal })}</p>}
         </Card>
 
-        <div className="grid grid-cols-5 gap-2 self-start">
+        <div className="bt-rise grid grid-cols-5 gap-2 self-start" style={{ animationDelay: "140ms" }}>
           {[
             { icon: <Camera size={19} />, label: t("Fotoğraf"), onClick: () => document.getElementById("bt-home-camera")?.click(), primary: true, disabled: !aiReady, tint: "" },
             { icon: <Type size={19} />, label: t("Yazarak"), onClick: () => router.push("/add?mode=text"), disabled: !aiReady, tint: "bg-protein/15 text-protein" },
@@ -147,7 +191,7 @@ export default function DashboardPage() {
               type="button"
               onClick={a.onClick}
               disabled={a.disabled}
-              className={`flex min-w-0 flex-col items-center gap-1.5 rounded-2xl border px-0.5 py-2.5 text-[11px] font-medium shadow-sm transition active:scale-[.97] disabled:opacity-45 ${a.primary ? "border-primary bg-primary text-white" : "border-border bg-surface"}`}
+              className={`flex min-w-0 flex-col items-center gap-1.5 rounded-2xl border px-0.5 py-2.5 text-[11px] font-medium shadow-sm transition active:scale-[.97] disabled:opacity-45 ${a.primary ? "bt-breathe border-primary bg-primary text-white" : "border-border bg-surface"}`}
             >
               <span className={`grid h-9 w-9 place-items-center rounded-full ${a.primary ? "bg-white/20" : a.tint}`}>{a.icon}</span>
               <span className="max-w-full truncate">{a.label}</span>
@@ -157,21 +201,28 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-3 gap-2">
-        {tile("/water", <Droplets size={13} />, t("Su"), nf(s.water_ml), s.water_ml >= waterTarget ? t("Hedef tamamlandı") : `/ ${nf(waterTarget)} ml`, waterPct, "var(--water)")}
-        {tile("/activity", <Footprints size={13} />, t("Adım"), nf(s.steps), `/ ${nf(stepsTarget)}`, stepsTarget ? (s.steps / stepsTarget) * 100 : 0, "var(--burn)")}
+        {tile("/water", <Droplets size={13} />, t("Su"), <AnimNum value={s.water_ml} />, s.water_ml >= waterTarget ? t("Hedef tamamlandı") : `/ ${nf(waterTarget)} ml`, waterPct, "var(--water)", { done: waterTarget > 0 && s.water_ml >= waterTarget, bumpKey: bump.n, bumpText: `+${bump.ml}`, delay: 3 })}
+        {tile("/activity", <Footprints size={13} />, t("Adım"), <AnimNum value={s.steps} />, `/ ${nf(stepsTarget)}`, stepsTarget ? (s.steps / stepsTarget) * 100 : 0, "var(--burn)", { done: stepsTarget > 0 && s.steps >= stepsTarget, delay: 4 })}
         {tile(
           "/body",
           <Scale size={13} />,
           t("Güncel kilo"),
-          lastWeight != null ? `${nf(lastWeight, 1)} kg` : "–",
+          lastWeight != null ? (
+            <>
+              <AnimNum value={lastWeight} digits={1} /> kg
+            </>
+          ) : (
+            "–"
+          ),
           profile?.target_weight_kg != null ? `${t("Hedef")} ${nf(profile.target_weight_kg, 1)} kg` : " ",
           progress ?? 0,
           "var(--primary)",
+          { delay: 5 },
         )}
       </div>
 
       {data.activities.length > 0 && (
-        <Link href="/activity" className="block rounded-2xl border border-border bg-surface px-3 py-2 shadow-sm">
+        <Link href="/activity" className="bt-rise block rounded-2xl border border-border bg-surface px-3 py-2 shadow-sm" style={{ animationDelay: "420ms" }}>
           {data.activities.slice(0, 2).map((a) => (
             <p key={a.id} className="flex items-center justify-between gap-2 py-0.5 text-xs">
               <span className="flex min-w-0 items-center gap-1.5">
@@ -192,7 +243,7 @@ export default function DashboardPage() {
       <DietitianNoteCard />
       <BknToday date={today} summary={s} data={data} />
 
-      <Card className="p-3.5">
+      <Card {...rise(8)} className="bt-rise p-3.5">
         <div className="mb-1 flex items-center justify-between">
           <h2 className="text-[15px] font-semibold">{t("Bugünkü öğünler")}</h2>
           <Link href="/diary" className="text-sm font-medium text-primary">

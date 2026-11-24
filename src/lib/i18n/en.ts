@@ -1,4 +1,11 @@
 export const EN: Record<string, string> = {
+  "Küçük adımlar büyük fark yaratır.": "Small steps make a big difference.",
+  "Günlük hedefine çok yakınsın.": "You're very close to your daily goal.",
+  "Bir bardak su iyi gelir.": "A glass of water would do you good.",
+  "Su hedefin tamam, harika gidiyorsun!": "Water goal done, you're doing great!",
+  "Bugünlük bütçeyi aştın; yarın yeni bir gün.": "You've gone over today's budget; tomorrow is a new day.",
+  "İlk öğününü kaydederek günü başlat.": "Start your day by logging your first meal.",
+  "Güne iyi bir kahvaltıyla başla.": "Start the day with a good breakfast.",
   "Daha fazla": "More",
   "Bugünkü yapay zekâ kullanımın": "Your AI usage today",
   "Tüm özellikler tek pakette. Reklam ve izleme yok; istediğin an iptal edebilirsin.": "All features in one package. No ads and no tracking; cancel any time.",

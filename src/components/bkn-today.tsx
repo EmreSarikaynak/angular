@@ -63,7 +63,7 @@ export function BknToday({ date, summary, data }: { date: string; summary: DaySu
             <p className="font-semibold">{t("Bugün kendin için ne yaptın?")}</p>
             {streak >= 2 && (
               <Link href="/performance" className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-burn/15 px-2 py-0.5 text-xs font-semibold text-burn">
-                <Flame size={13} />
+                <Flame size={13} className="bt-flicker" />
                 {t("{n} günlük seri", { n: streak >= 60 ? "60+" : streak })}
               </Link>
             )}
