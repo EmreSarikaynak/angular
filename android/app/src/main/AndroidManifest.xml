@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
     <!-- Health Connect: yalnızca OKUMA ve yalnızca kullandığımız veri türleri (adım, mesafe, aktif kalori, uyku, kilo, egzersiz).
          Eklentinin varsayılan olarak eklediği diğer tüm okuma/yazma izinleri kaldırılır; Play Console sağlık izni beyanı bunlarla uyumlu olmalıdır. -->
+    <!-- Google Play Faturalandırma (abonelik): Play, abonelik ürünlerini bu izni içeren bir paket yüklenince açar. -->
+    <uses-permission android:name="com.android.vending.BILLING" />
     <uses-permission android:name="android.permission.health.READ_STEPS" />
     <uses-permission android:name="android.permission.health.READ_DISTANCE" />
     <uses-permission android:name="android.permission.health.READ_ACTIVE_CALORIES_BURNED" />
