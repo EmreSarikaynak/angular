@@ -2,7 +2,8 @@
 import { useMemo, useState } from "react";
 import { Globe, MoonStar } from "lucide-react";
 import { useApp } from "@/components/app-provider";
-import { Card, Field, Input, Select, Switch } from "@/components/ui";
+import { Collapsible } from "./collapsible";
+import { Field, Input, Select, Switch } from "@/components/ui";
 import { TimePicker15 } from "@/components/time-picker";
 import { allTimeZones, isValidTimeZone, utcOffsetLabel } from "@/lib/bkn/schedule";
 
@@ -23,11 +24,7 @@ export function QuietHoursCard() {
   const save = (patch: Partial<typeof profile>) => saveProfile(patch).catch(() => toast(t("Kaydedilemedi."), "error"));
 
   return (
-    <Card className="space-y-4">
-      <h2 className="flex items-center gap-2 font-semibold">
-        <Globe size={18} className="text-primary" />
-        {t("Saat dilimi ve sessiz saatler")}
-      </h2>
+    <Collapsible title={t("Saat dilimi ve sessiz saatler")} icon={<Globe size={18} />}>
 
       <div className="flex items-center justify-between gap-3">
         <div>
@@ -89,6 +86,6 @@ export function QuietHoursCard() {
           </div>
         )}
       </div>
-    </Card>
+    </Collapsible>
   );
 }

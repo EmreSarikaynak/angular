@@ -1,4 +1,11 @@
 export const EN: Record<string, string> = {
+  "Premium'a hoş geldin!": "Welcome to Premium!",
+  "Aboneliğin etkinleşti. Daha yüksek yapay zekâ limitinin keyfini çıkar.": "Your subscription is active. Enjoy the higher AI limit.",
+  "Harika!": "Awesome!",
+  "Premium üye": "Premium member",
+  "Premium üye ol": "Become a Premium member",
+  "Aktif": "Active",
+  "Çok daha yüksek yapay zekâ limiti": "A much higher AI limit",
   "Premium günlük sorgu limiti": "Premium daily query limit",
   "Premium etkinleştiriliyor…": "Activating Premium…",
   "Satın alma tamamlanamadı. Lütfen tekrar deneyin.": "The purchase couldn't be completed. Please try again.",

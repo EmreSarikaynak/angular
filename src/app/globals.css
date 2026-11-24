@@ -141,3 +141,25 @@ html.native {
   .bt-hero-in, .bt-float { animation: none; }
   .bt-reveal { opacity: 1; transform: none; transition: none; }
 }
+
+/* Kutlama (konfeti) */
+@keyframes bt-confetti-fall {
+  0% { transform: translateY(-12vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(105vh) rotate(720deg); opacity: .9; }
+}
+@keyframes bt-pop-in {
+  0% { transform: scale(.85); opacity: 0; }
+  60% { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1); }
+}
+@keyframes bt-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.bt-confetti { animation-name: bt-confetti-fall; animation-timing-function: linear; animation-fill-mode: both; }
+.bt-pop { animation: bt-pop-in .45s cubic-bezier(.2,.8,.2,1) both; }
+.bt-shimmer { background-image: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.28) 50%, transparent 70%); background-size: 200% 100%; animation: bt-shimmer 3.2s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .bt-confetti, .bt-shimmer { animation: none; }
+  .bt-pop { animation: none; }
+}
