@@ -39,6 +39,10 @@ export interface Profile {
   language: Lang;
   theme: Theme;
   timezone: string;
+  timezone_auto: boolean;
+  quiet_enabled: boolean;
+  quiet_start: string;
+  quiet_end: string;
   reminder_enabled: boolean;
   reminder_interval_min: number;
   reminder_start_hour: number;

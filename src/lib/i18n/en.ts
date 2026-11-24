@@ -1238,4 +1238,13 @@ export const EN: Record<string, string> = {
   "Bağla": "Connect",
   "Adım, uyku, halka ve antrenmanların otomatik eklensin mi?": "Add your steps, sleep, rings and workouts automatically?",
   "BKNY, saatinizin telefona yazdığı verileri yalnızca okur ve günlüğünüze ekler. Reklam için kullanılmaz. Sonraki adımda telefonun izin penceresi açılır; istediğiniz zaman Profil'den kapatabilirsiniz.": "BKNY only reads what your watch writes to the phone and adds it to your log. It is not used for advertising. Next, your phone's permission dialog opens; you can turn it off any time in Profile.",
+  "Saat dilimi ve sessiz saatler": "Time zone and quiet hours",
+  "Saat dilimini otomatik algıla": "Detect the time zone automatically",
+  "Yolculukta ya da başka bir ülkedeyken bildirimler bulunduğun yerin saatine göre gelir.": "When you travel or are in another country, notifications follow the local time where you are.",
+  "Şu anki saat dilimin: {tz}": "Your current time zone: {tz}",
+  "Saat dilimi seç": "Choose a time zone",
+  "Ülke ya da şehir ara (örn. Istanbul, Berlin, New York)": "Search a country or city (e.g. Istanbul, Berlin, New York)",
+  "Sessiz saatler": "Quiet hours",
+  "Bu saatler arasında hiçbir bildirim gönderilmez.": "No notification is sent between these times.",
+  "Ramazan modunda sahurdan önceki 90 dakika sessiz saatlerin dışında tutulur.": "In Ramadan mode, the 90 minutes before suhoor are kept outside quiet hours.",
 };

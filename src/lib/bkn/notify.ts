@@ -8,7 +8,7 @@ import { proteinGap, trendInsights, type InsightKey } from "./insights";
 import { eveningNotice, insightNotice, proteinNotice, stockNotice, summaryNotice, supplementNotice, waterNotice, type Notice } from "./messages";
 import { LOW_STOCK_DAYS, stockDaysLeft } from "./fasting";
 import { inEatingWindow } from "./ramadan";
-import { inDailyWindow, inWindowFrom, toMinutes } from "./schedule";
+import { inDailyWindow, inWindowFrom, isQuiet, parseHHMM, toMinutes } from "./schedule";
 import { fcmConfigured, sendFcm } from "./fcm";
 import { pickRecipes } from "./recipes";
 
@@ -88,6 +88,8 @@ export async function runReminders(now = new Date()) {
     counts.users++;
     const lang = p.language === "en" ? "en" : "tr";
     const t = localParts(p.timezone, now);
+    // Sessiz saatlerde hiçbir bildirim gönderilmez (kullanıcının kendi saat dilimine göre).
+    if (p.quiet_enabled !== false && isQuiet(t.minutes, parseHHMM(p.quiet_start ?? "22:00"), parseHHMM(p.quiet_end ?? "08:00"), p.ramadan_mode ? parseHHMM(p.sahur_time) : null)) continue;
     // Ramazan modunda su ve beslenme hatırlatmaları yalnızca iftar–sahur arasında gönderilir.
     const inWindow = p.ramadan_mode
       ? inEatingWindow(t.minutes, p.iftar_time, p.sahur_time)

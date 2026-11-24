@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { isNative } from "@/lib/native";
-import { inDailyWindow, toMinutes } from "@/lib/bkn/schedule";
+import { inDailyWindow, isQuiet, parseHHMM, toMinutes } from "@/lib/bkn/schedule";
 import { useApp } from "./app-provider";
 import { showLocalNotification } from "@/lib/push";
 import { fetchAll, fetchRange } from "@/lib/data/store";
@@ -25,11 +25,17 @@ export function ReminderTicker() {
   const end = toMinutes(profile?.reminder_end_hour ?? 21, profile?.reminder_end_minute ?? 0);
   const target = profile?.water_target_ml ?? 2000;
   const nag = profile?.supplement_nag_min ?? 30;
+  // Sessiz saatlerde yerel hatırlatma da gösterilmez.
+  const quietOn = profile?.quiet_enabled !== false;
+  const quietStart = parseHHMM(profile?.quiet_start ?? "22:00");
+  const quietEnd = parseHHMM(profile?.quiet_end ?? "08:00");
+  const sahur = profile?.ramadan_mode ? parseHHMM(profile.sahur_time) : null;
 
   useEffect(() => {
     if (!water && !supps) return;
     const check = async () => {
       const now = new Date();
+      if (quietOn && isQuiet(now.getHours() * 60 + now.getMinutes(), quietStart, quietEnd, sahur)) return;
       const today = toDateKey();
       if (supps) {
         const [list, logs] = await Promise.all([
@@ -66,6 +72,6 @@ export function ReminderTicker() {
     const id = window.setInterval(check, 60_000);
     void check();
     return () => window.clearInterval(id);
-  }, [water, supps, interval, start, end, target, nag, lang]);
+  }, [water, supps, interval, start, end, target, nag, lang, quietOn, quietStart, quietEnd, sahur]);
   return null;
 }
