@@ -7,7 +7,7 @@ import { SITE_URL } from "@/lib/site";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: "BKNY — Bugün kendin için ne yaptın?", template: "%s · BKNY" },
-  description: "BKNY: Bugün kendin için ne yaptın? Yapay zekâ destekli beslenme, su, takviye, spor ve sağlık takibi.",
+  description: "Bugün kendin için ne yaptın? BKNY: yapay zekâ destekli beslenme, su, takviye, spor ve sağlık takibi.",
   applicationName: "BKNY",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "BKNY", statusBarStyle: "default" },

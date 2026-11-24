@@ -1,0 +1,17 @@
+# BKNY — Bugün kendin için ne yaptın?
+
+> BKNY is a free, AI-assisted nutrition and wellbeing tracker (Turkish and English). Photograph a meal, type it, or scan a barcode or nutrition label to get an estimate of calories, protein, carbs, fat, sugar, fibre and salt; track water, supplements, sleep, steps and goals in one place. It is not a medical device and gives no medical advice.
+
+Slogan (Turkish): "Bugün kendin için ne yaptın?" — "What did you do for yourself today?"
+Publisher: Secesta Software (Secesta Bilişim ve Ticaret Ltd. Şti.)
+
+## Pages
+- [Home / tanıtım (Türkçe)](https://bkny.com.tr/): features, how it works, FAQ
+- [English overview](https://bkny.com.tr/en): features, how it works, FAQ
+- [Privacy and KVKK notice](https://bkny.com.tr/privacy): what data is processed and why
+
+## Key facts
+- Features: photo/text/barcode/label meal logging, water and drinks (incl. alcohol calories), supplement reminders, personal targets, fridge-to-meal suggestions, weekly meal plan, intermittent fasting and Ramadan mode, product ingredient notes, Apple Health / Health Connect reading (mobile, with permission), offline use, PDF/PNG summaries.
+- Nutrient values from photos and text are AI estimates and can be edited by the user.
+- Users can export their data and delete their account and all data from within the app.
+- No advertising and no tracking.
