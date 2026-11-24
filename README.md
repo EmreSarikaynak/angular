@@ -182,7 +182,7 @@ Deneme: **Android emülatöründe** (Google Play görüntülü) ve **gerçek iPh
    Uygulama varsayılan olarak `https://bkny.com.tr` adresini yükler (`CAP_SERVER_URL` ile değiştirilebilir).
 4. Play Console → uygulamayı oluşturun (ad BKNY, Türkçe, uygulama, ücretsiz) → **Test et → Dahili test → Yeni sürüm oluştur** → AAB'yi yükleyin → **Play Uygulama İmzalama**'ya katılın → sürümü yayınlayın.
 5. **Test kullanıcıları** listesi oluşturup e-postaları ekleyin; Play'in verdiği **katılım bağlantısını** test kullanıcılarına gönderin, bağlantıdan sonra Play Store'dan indirirler.
-6. Sürümü güncellerken `android/app/build.gradle` içinde `versionCode` değerini artırın (her yüklemede benzersiz ve artan olmalı).
+6. Sürümü güncellerken `android/app/build.gradle` içinde `versionCode` değerini artırın (şu an 2: 1 numaralı paket abonelik eklentisi olmadan yüklenmişti) (her yüklemede benzersiz ve artan olmalı).
 
 Notlar: Firebase (FCM) için `android/app/google-services.json` depoda hazırdır; Play'in uygulamayı yeniden imzalaması FCM bildirimlerini etkilemez. Uygulama içerik olarak canlı siteyi gösterdiği için Google Play incelemesinde "yalnızca web sitesi sarmalayıcısı" olarak değerlendirilmemesi için yerel özellikler (kamera, bildirimler) ve açıklayıcı mağaza metni önemlidir.
 
