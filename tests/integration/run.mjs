@@ -339,7 +339,7 @@ await test("hatırlatmalar: takviye ve su bildirimi gönderilir, tekrar çağrı
   const now = local();
   const keys = () => { const e = createECDH("prime256v1"); e.generateKeys(); return { p256dh: e.getPublicKey().toString("base64url"), auth: randomBytes(16).toString("base64url") }; };
   await C.db.from("push_subscriptions").insert([{ endpoint: `https://127.0.0.1:8789/push/${stamp}`, ...keys() }, { endpoint: `https://127.0.0.1:8789/gone/${stamp}`, ...keys() }]);
-  await C.db.from("profiles").update({ water_target_ml: 2000, protein_target_g: 120, kcal_target: 2000, reminder_enabled: true, reminder_start_hour: now.hour, reminder_end_hour: (now.hour + 2) % 24, notify_protein: true, protein_check_hour: now.hour, notify_insights: false, notify_summary: false, supplement_nag_min: 30 }).eq("id", C.id);
+  await C.db.from("profiles").update({ quiet_enabled: false, water_target_ml: 2000, protein_target_g: 120, kcal_target: 2000, reminder_enabled: true, reminder_start_hour: now.hour, reminder_end_hour: (now.hour + 2) % 24, notify_protein: true, protein_check_hour: now.hour, notify_insights: false, notify_summary: false, supplement_nag_min: 30 }).eq("id", C.id);
   await C.db.from("food_entries").insert(entry({ entry_date: now.date, protein_g: 5 }));
   const first = await cron();
   assert.equal(first.ok, true);
@@ -360,11 +360,11 @@ await test("hatırlatmalar: alınan takviye ve kapatılan bildirim gönderilmez;
   const now = local();
   const { data: s } = await C.db.from("supplements").select("times").eq("id", suppId).single();
   await C.db.from("supplement_logs").insert({ supplement_id: suppId, entry_date: now.date, time_slot: s.times[0] });
-  await C.db.from("profiles").update({ notify_protein: false }).eq("id", C.id);
+  await C.db.from("profiles").update({ quiet_enabled: false, notify_protein: false }).eq("id", C.id);
   const r = await cron();
   assert.deepEqual([r.supplement, r.protein], [0, 0], JSON.stringify(r));
   await C.db.from("supplement_logs").delete().eq("supplement_id", suppId);
-  await C.db.from("profiles").update({ notify_supplements: false }).eq("id", C.id);
+  await C.db.from("profiles").update({ quiet_enabled: false, notify_supplements: false }).eq("id", C.id);
   assert.equal((await cron()).supplement, 0);
 });
 
@@ -433,7 +433,7 @@ await test("akşam kapanışı ve azalan stok bildirimi bir kez gönderilir", as
   await fetch("https://127.0.0.1:8789/__reset");
   await service.from("notification_log").delete().eq("user_id", C.id);
   const now = local();
-  await C.db.from("profiles").update({ reminder_enabled: false, notify_protein: false, notify_supplements: true, notify_evening: true, evening_hour: now.hour }).eq("id", C.id);
+  await C.db.from("profiles").update({ quiet_enabled: false, reminder_enabled: false, notify_protein: false, notify_supplements: true, notify_evening: true, evening_hour: now.hour }).eq("id", C.id);
   await C.db.from("supplements").update({ active: false }).eq("id", suppId);
   await C.db.from("supplements").insert({ name: "Omega 3", times: ["23:59"], stock_count: 4, per_dose: 1 });
   const first = await cron();
@@ -448,7 +448,7 @@ await test("akşam kapanışı ve azalan stok bildirimi bir kez gönderilir", as
     await C.db.from("supplements").update({ stock_count: 2 }).eq("name", "Omega 3");
     assert.equal((await cron()).stock, 1, "yeniden azalan stok bildirilmedi");
   }
-  await C.db.from("profiles").update({ notify_evening: false }).eq("id", C.id);
+  await C.db.from("profiles").update({ quiet_enabled: false, notify_evening: false }).eq("id", C.id);
   await service.from("notification_log").delete().eq("user_id", C.id).eq("kind", "evening");
   assert.equal((await cron()).evening, 0, "kapalı akşam bildirimi gönderildi");
 });
@@ -532,7 +532,7 @@ await test("Ramazan modu: su hatırlatması yalnızca iftar–sahur arasında", 
   const now = local();
   const hh = (h) => `${String((h + 24) % 24).padStart(2, "0")}:00`;
   await service.from("water_logs").delete().eq("user_id", C.id);
-  const base = { reminder_enabled: true, notify_protein: false, notify_supplements: false, notify_evening: false, notify_insights: false, notify_summary: false, ramadan_mode: true, last_reminder_at: null };
+  const base = { quiet_enabled: false, reminder_enabled: true, notify_protein: false, notify_supplements: false, notify_evening: false, notify_insights: false, notify_summary: false, ramadan_mode: true, last_reminder_at: null };
   // Şu an oruç saatleri içinde (yeme penceresi 2 saat sonra başlıyor): bildirim yok.
   await service.from("profiles").update({ ...base, iftar_time: hh(now.hour + 2), sahur_time: hh(now.hour + 8) }).eq("id", C.id);
   assert.equal((await cron()).water, 0, "oruç saatinde su bildirimi gitti");
@@ -660,7 +660,7 @@ await test("hatırlatma FCM ile gider: JWT imzası doğrulanır, geçersiz belir
   await service.from("water_logs").delete().eq("user_id", C.id);
   const now = local();
   await service.from("push_subscriptions").delete().eq("user_id", C.id);
-  await service.from("profiles").update({ reminder_enabled: true, reminder_start_hour: now.hour, reminder_end_hour: (now.hour + 2) % 24, notify_protein: false, notify_supplements: false, notify_evening: false, notify_insights: false, notify_summary: false, ramadan_mode: false, last_reminder_at: null, water_target_ml: 2000, language: "tr" }).eq("id", C.id);
+  await service.from("profiles").update({ quiet_enabled: false, reminder_enabled: true, reminder_start_hour: now.hour, reminder_end_hour: (now.hour + 2) % 24, notify_protein: false, notify_supplements: false, notify_evening: false, notify_insights: false, notify_summary: false, ramadan_mode: false, last_reminder_at: null, water_target_ml: 2000, language: "tr" }).eq("id", C.id);
   for (const [t, p] of [[GOOD, "android"], [GOOD2, "ios"], [BAD, "android"]]) assert.equal((await call("/api/devices", C, { token: t, platform: p })).status, 200);
   const r = await cron();
   assert.equal(r.ok, true, JSON.stringify(r));
