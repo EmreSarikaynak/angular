@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Landing, COPY } from "@/components/landing";
 
 export const metadata: Metadata = {
-  title: { absolute: "BKNY: AI-assisted nutrition and wellbeing tracker" },
+  title: { absolute: "What did you do for yourself today? | BKNY: AI-assisted nutrition and wellbeing tracker" },
+  keywords: ["BKNY", "calorie tracker", "AI food photo analysis", "nutrition tracker", "water and sleep tracker"],
   description: COPY.en.jsonLd.description,
   alternates: { canonical: "/en", languages: { tr: "/", en: "/en", "x-default": "/" } },
   openGraph: { type: "website", url: "/en", siteName: "BKNY", locale: "en_US", title: "BKNY: What did you do for yourself today?", description: COPY.en.jsonLd.description, images: [{ url: "/icons/icon-512.png", width: 512, height: 512, alt: "BKNY" }] },

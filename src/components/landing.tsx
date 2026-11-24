@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Activity, Camera, CalendarDays, ChevronDown, Droplets, Pill, Refrigerator, ScanBarcode, Share2, Target, Wifi } from "lucide-react";
 import { InstallButtons } from "@/components/install-buttons";
 import { Logo } from "@/components/logo";
+import { Reveal } from "@/components/reveal";
 import { SITE_URL } from "@/lib/site";
 
 type Copy = {
@@ -28,6 +29,7 @@ type Copy = {
   faq: { q: string; a: string }[];
   finalTitle: string;
   finalText: string;
+  article: { title: string; sections: { h: string; p: string }[] };
 };
 
 export const COPY: Record<"tr" | "en", Copy> = {
@@ -76,6 +78,17 @@ export const COPY: Record<"tr" | "en", Copy> = {
     ],
     finalTitle: "Bugün kendin için ilk adımı at",
     finalText: "Hesabını bir dakikada oluştur, ilk öğününü kaydet.",
+    article: {
+      title: "Bugün kendin için ne yaptın? Küçük soru, büyük alışkanlık",
+      sections: [
+        { h: "Neden bu soru?", p: "Sağlıklı beslenme çoğu zaman büyük kararlardan değil, gün içindeki küçük seçimlerden oluşur. \"Bugün kendin için ne yaptın?\" sorusu, günün sonunda kendine kısa bir hesap sorman için bir alışkanlık çerçevesi sunar: bir öğünü bilinçli seçtin mi, su içtin mi, biraz yürüdün mü, dinlendin mi?" },
+        { h: "Kaydetmek farkındalık getirir", p: "Yediklerini ve içtiklerini yazmak ya da fotoğraflamak, tahmini bir bilinç oluşturur. BKNY'de tabağının fotoğrafını çekebilir, yazabilir, barkod ya da besin etiketi okutabilirsin; kalori, protein, karbonhidrat, yağ, şeker, lif ve tuz tahmini hesaplanır. Değerler yapay zekâ tahminidir; her kalemi düzenleyebilirsin." },
+        { h: "Sadece yemek değil: su, uyku ve hareket", p: "Beslenme tek başına bir tablo değildir. Su, takviye hatırlatmaları, adım, uyku ve ruh hali kayıtları günlük resmi tamamlar. Haftalık ve aylık özetlerde bu alışkanlıkların birbiriyle ilişkisini görebilirsin." },
+        { h: "Buzdolabını boşa harcama", p: "Buzdolabı, buzluk ve dolabının fotoğrafından ürünlerini çıkarır, son tüketim tarihi yaklaşanlara öncelik veren yemek önerileri sunar. Böylece hem israfı azaltır hem de ne pişireceğini düşünme yükünü hafifletirsin." },
+        { h: "Ürün etiketini anlamak", p: "Barkod okuttuğunda ya da içindekiler listesinin fotoğrafını çektiğinde, palm yağı, eklenmiş şeker, tatlandırıcı veya alerjen gibi içerikler ile yüksek ya da düşük besin değerleri kaynaklı ve tarafsız notlarla gösterilir. Bu notlar bir ürünü ya da markayı değerlendirmez; karar sana aittir." },
+        { h: "Sınırlar ve gizlilik", p: "BKNY bir tıbbi cihaz değildir ve tıbbi tavsiye vermez. Sağlık durumun, ilaç ya da takviye kullanımın, hamileliğin veya yeme bozukluğun varsa hekimine ya da diyetisyenine danış. Verilerini dışa aktarabilir, hesabını ve tüm verilerini istediğin an silebilirsin." },
+      ],
+    },
   },
   en: {
     lang: "en",
@@ -122,6 +135,17 @@ export const COPY: Record<"tr" | "en", Copy> = {
     ],
     finalTitle: "Take the first step for yourself today",
     finalText: "Create your account in a minute and log your first meal.",
+    article: {
+      title: "What did you do for yourself today? A small question, a big habit",
+      sections: [
+        { h: "Why this question?", p: "Healthy eating is rarely about big decisions; it is built from small daily choices. \"What did you do for yourself today?\" gives you a simple frame for a short check-in at the end of the day: did you choose a meal with intention, drink some water, take a walk, get some rest?" },
+        { h: "Logging builds awareness", p: "Writing down or photographing what you eat and drink builds awareness. In BKNY you can photograph your plate, type it, or scan a barcode or nutrition label to get an estimate of calories, protein, carbs, fat, sugar, fibre and salt. Values are AI estimates and you can edit every item." },
+        { h: "Not only food: water, sleep and movement", p: "Nutrition is never the whole picture. Water, supplement reminders, steps, sleep and mood logs complete your day. Weekly and monthly summaries help you see how these habits relate to each other." },
+        { h: "Don't waste what's in your fridge", p: "Photograph your fridge, freezer and pantry to build an inventory, then get meal ideas that prioritise items close to their use-by date. It reduces waste and takes the 'what should I cook?' load off your mind." },
+        { h: "Understanding a product label", p: "When you scan a barcode or photograph an ingredients list, ingredients such as palm oil, added sugar, sweeteners or allergens, and high or low nutrient values, are shown as neutral, sourced notes. They do not assess any product or brand; the decision is yours." },
+        { h: "Limits and privacy", p: "BKNY is not a medical device and does not give medical advice. If you have a health condition, take medication or supplements, are pregnant or have an eating disorder, talk to your doctor or dietitian. You can export your data, or delete your account and all data, at any time." },
+      ],
+    },
   },
 };
 
@@ -144,6 +168,25 @@ export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
     offers: { "@type": "Offer", price: "0", priceCurrency: "TRY" },
     publisher: { "@type": "Organization", name: "Secesta Software" },
   };
+  const articleLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: c.article.title,
+    inLanguage: c.lang,
+    mainEntityOfPage: url,
+    dateModified: "2026-11-24",
+    author: { "@type": "Organization", name: "Secesta Software" },
+    publisher: { "@type": "Organization", name: "Secesta Software" },
+    articleBody: c.article.sections.map((x) => `${x.h}. ${x.p}`).join(" "),
+  };
+  const siteLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "BKNY",
+    alternateName: lang === "tr" ? ["Bugün kendin için ne yaptın?", "BKN"] : ["What did you do for yourself today?"],
+    url: SITE_URL,
+    inLanguage: ["tr", "en"],
+  };
   const faqLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -153,6 +196,8 @@ export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
     <div lang={c.lang} className="pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:pb-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteLd) }} />
       <header className="sticky top-0 z-30 border-b border-border bg-bg/90 pt-[env(safe-area-inset-top)] backdrop-blur">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-5">
           <div className="flex items-center gap-2.5">
@@ -173,7 +218,7 @@ export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
       <main className="mx-auto max-w-5xl px-5">
         <section className="relative grid items-center gap-8 pb-8 pt-8 sm:pt-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12 lg:pb-14 lg:pt-16">
           <div aria-hidden className="pointer-events-none absolute -top-10 left-1/2 -z-10 h-72 w-[120%] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl lg:left-3/4 lg:h-96 lg:w-[60%]" />
-          <div className="text-center lg:text-left">
+          <div className="bt-hero-in text-center lg:text-left">
             <h1 className="text-balance text-[1.9rem] font-extrabold leading-[1.15] tracking-tight sm:text-5xl">{c.h1}</h1>
             <p className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-muted sm:text-lg lg:mx-0">{c.lead}</p>
             <div className="mx-auto mt-6 flex max-w-sm flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center lg:justify-start">
@@ -192,7 +237,7 @@ export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
               ))}
             </ul>
           </div>
-          <div className="mx-auto hidden w-[260px] lg:block">
+          <div className="bt-hero-in bt-float mx-auto hidden w-[260px] [animation-delay:.15s,0s] lg:block">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={`/landing/${lang}-home.webp`} width={480} height={1040} alt={c.gallery[0]} className="h-auto w-full rounded-[2rem] border border-border shadow-2xl" />
           </div>
@@ -228,7 +273,7 @@ export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
             {c.features.map((f, i) => {
               const Icon = FEATURE_ICONS[i % FEATURE_ICONS.length];
               return (
-                <li key={f.title} className="flex gap-3 rounded-2xl border border-border bg-surface p-4 transition-shadow hover:shadow-md">
+                <Reveal as="li" key={f.title} delay={(i % 3) * 80} className="flex gap-3 rounded-2xl border border-border bg-surface p-4 transition-shadow hover:shadow-md">
                   <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
                     <Icon size={20} aria-hidden />
                   </span>
@@ -236,7 +281,7 @@ export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
                     <h3 className="font-semibold leading-snug">{f.title}</h3>
                     <p className="mt-1 text-sm leading-relaxed text-muted">{f.text}</p>
                   </div>
-                </li>
+                </Reveal>
               );
             })}
           </ul>
@@ -248,13 +293,13 @@ export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
           </h2>
           <ol className="mt-5 grid gap-3 sm:grid-cols-3">
             {c.steps.map((s, i) => (
-              <li key={s.title} className="flex gap-3 rounded-2xl border border-border bg-surface p-4 sm:block">
+              <Reveal as="li" key={s.title} delay={i * 100} className="flex gap-3 rounded-2xl border border-border bg-surface p-4 sm:block">
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary">{i + 1}</span>
                 <div className="sm:mt-2">
                   <h3 className="font-semibold">{s.title}</h3>
                   <p className="mt-1 text-sm text-muted">{s.text}</p>
                 </div>
-              </li>
+              </Reveal>
             ))}
           </ol>
         </section>
@@ -266,6 +311,28 @@ export function Landing({ lang, path }: { lang: "tr" | "en"; path?: string }) {
           <p className="mt-3 text-sm leading-relaxed text-muted">{c.privacy}</p>
           <p className="mt-3 rounded-xl bg-warn/10 px-4 py-3 text-sm leading-relaxed text-warn">{c.disclaimer}</p>
         </section>
+        <section aria-labelledby="article" className="mt-12">
+          <h2 id="article" className="text-2xl font-bold tracking-tight">
+            {c.article.title}
+          </h2>
+          <div
+            tabIndex={0}
+            role="region"
+            aria-label={c.article.title}
+            className="relative mt-4 h-[250px] overflow-y-auto rounded-2xl border border-border bg-surface p-4 text-sm leading-relaxed [scrollbar-width:thin] focus-visible:outline-2 focus-visible:outline-primary"
+          >
+            {c.article.sections.map((x) => (
+              <div key={x.h} className="mb-4 last:mb-0">
+                <h3 className="font-semibold">{x.h}</h3>
+                <p className="mt-1 text-muted">{x.p}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-muted" aria-hidden>
+            {lang === "tr" ? "Okumak için kaydır ↓" : "Scroll to read ↓"}
+          </p>
+        </section>
+
         <section aria-labelledby="faq" className="mt-12">
           <h2 id="faq" className="text-2xl font-bold tracking-tight">
             {c.faqTitle}

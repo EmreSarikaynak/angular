@@ -121,3 +121,23 @@ html.native {
     background: #fff;
   }
 }
+
+/* Tanıtım sayfası animasyonları (hareket azaltma tercihine saygı duyar) */
+@keyframes bt-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes bt-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.bt-hero-in { animation: bt-fade-up .7s cubic-bezier(.2,.7,.2,1) both; }
+.bt-float { animation: bt-float 6s ease-in-out infinite; }
+@media (scripting: enabled) {
+  .bt-reveal { opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .6s cubic-bezier(.2,.7,.2,1); transition-delay: var(--d, 0ms); }
+  .bt-reveal.bt-in { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-hero-in, .bt-float { animation: none; }
+  .bt-reveal { opacity: 1; transform: none; transition: none; }
+}
