@@ -33,6 +33,8 @@ export default function DashboardPage() {
   const progress = goalProgress(profile?.start_weight_kg ?? null, lastWeight, profile?.target_weight_kg ?? null);
   const over = s.remaining_kcal < 0;
   const aiReady = online && config?.ai_available !== false;
+  const hour = new Date().getHours();
+  const greeting = hour < 5 ? t("İyi geceler") : hour < 12 ? t("Günaydın") : hour < 18 ? t("İyi günler") : t("İyi akşamlar");
 
   async function quickWater(ml: number) {
     try {
@@ -76,7 +78,7 @@ export default function DashboardPage() {
       <header className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-sm text-muted">{formatDate(today, lang)}</p>
-          <h1 className="truncate text-xl font-bold tracking-tight">{profile?.first_name ? t("Merhaba, {name}", { name: profile.first_name }) : t("Merhaba")}</h1>
+          <h1 className="truncate text-xl font-bold tracking-tight">{profile?.first_name ? `${greeting}, ${profile.first_name}` : greeting}</h1>
         </div>
         <Link href="/assistant" aria-label={t("Asistan")} className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
           <MessageCircle size={20} />
@@ -84,7 +86,7 @@ export default function DashboardPage() {
       </header>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
+        <Card className="bg-gradient-to-br from-primary-soft/70 via-surface to-surface shadow-sm">
           <div className="flex items-center gap-4">
             <Ring value={s.intake.kcal} max={s.budget_kcal} label={t("Kalori: {a} / {b} kcal", { a: Math.round(s.intake.kcal), b: s.budget_kcal })}>
               <span className={`text-2xl font-bold ${over ? "text-danger" : ""}`}>{nf(Math.abs(s.remaining_kcal))}</span>
@@ -105,21 +107,21 @@ export default function DashboardPage() {
           {profile?.add_exercise_calories && s.burned_kcal > 0 && <p className="mt-3 text-xs text-muted">{t("Yakılan {n} kcal günlük bütçenize eklendi.", { n: s.burned_kcal })}</p>}
         </Card>
 
-        <div className="grid grid-cols-4 gap-2 self-start">
+        <div className="grid grid-cols-4 gap-2.5 self-start">
           {[
-            { icon: <Camera size={22} />, label: t("Fotoğraf"), onClick: () => document.getElementById("bt-home-camera")?.click(), primary: true, disabled: !aiReady },
-            { icon: <Type size={22} />, label: t("Yazarak"), onClick: () => router.push("/add?mode=text"), disabled: !aiReady },
-            { icon: <Barcode size={22} />, label: t("Barkod"), onClick: () => router.push("/add?mode=barcode"), disabled: !online },
-            { icon: <Droplets size={22} />, label: "+250 ml", onClick: () => quickWater(250) },
+            { icon: <Camera size={22} />, label: t("Fotoğraf"), onClick: () => document.getElementById("bt-home-camera")?.click(), primary: true, disabled: !aiReady, tint: "" },
+            { icon: <Type size={22} />, label: t("Yazarak"), onClick: () => router.push("/add?mode=text"), disabled: !aiReady, tint: "bg-protein/15 text-protein" },
+            { icon: <Barcode size={22} />, label: t("Barkod"), onClick: () => router.push("/add?mode=barcode"), disabled: !online, tint: "bg-carbs/15 text-carbs" },
+            { icon: <Droplets size={22} />, label: "+250 ml", onClick: () => quickWater(250), tint: "bg-water/15 text-water" },
           ].map((a) => (
             <button
               key={a.label}
               type="button"
               onClick={a.onClick}
               disabled={a.disabled}
-              className={`flex flex-col items-center gap-1.5 rounded-2xl border px-1 py-3 text-xs font-medium disabled:opacity-45 ${a.primary ? "border-primary bg-primary text-white" : "border-border bg-surface"}`}
+              className={`flex flex-col items-center gap-2 rounded-2xl border px-1 py-3 text-xs font-medium shadow-sm transition active:scale-[.97] disabled:opacity-45 ${a.primary ? "border-primary bg-primary text-white" : "border-border bg-surface"}`}
             >
-              {a.icon}
+              <span className={`grid h-10 w-10 place-items-center rounded-full ${a.primary ? "bg-white/20" : a.tint}`}>{a.icon}</span>
               {a.label}
             </button>
           ))}
@@ -134,7 +136,7 @@ export default function DashboardPage() {
       <BknToday date={today} summary={s} data={data} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card>
+        <Card className="space-y-3">
           <Link href="/water" className="flex items-center gap-4">
             <Ring value={s.water_ml} max={waterTarget} size={84} stroke={9} color="var(--water)" overColor="var(--water)" label={t("Su: {a} / {b} ml", { a: s.water_ml, b: waterTarget })}>
               <span className="text-sm font-bold">{waterTarget ? Math.min(999, Math.round((s.water_ml / waterTarget) * 100)) : 0}%</span>
@@ -150,6 +152,13 @@ export default function DashboardPage() {
             </div>
             <ChevronRight size={18} className="text-muted" />
           </Link>
+          <div className="flex gap-2">
+            {[200, 330, 500].map((ml) => (
+              <button key={ml} type="button" onClick={() => quickWater(ml)} className="h-9 flex-1 rounded-xl bg-water/10 text-xs font-semibold text-water active:scale-[.97]">
+                +{ml} ml
+              </button>
+            ))}
+          </div>
         </Card>
 
         <Card>
