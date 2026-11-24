@@ -44,6 +44,14 @@ export default function PrivacyPage() {
       ],
     ],
     [
+      t("Abonelik ve ödemeler"),
+      [
+        t("Premium abonelik, Google Play ya da Apple App Store üzerinden satın alınır. Kart ve ödeme bilgileriniz yalnızca ilgili mağaza tarafından işlenir; bize ulaşmaz."),
+        t("Abonelik durumunuzu doğrulamak için RevenueCat hizmetini veri işleyen olarak kullanırız. Bu hizmete hesap kimliğiniz (rastgele bir kimlik, e-posta değil), satın alma ve abonelik bilgileriniz iletilir; sağlık ve beslenme kayıtlarınız iletilmez."),
+        t("Bizde yalnızca abonelik durumu, ürün adı ve dönem sonu tarihi saklanır. Aboneliğinizi mağaza hesap ayarlarınızdan istediğiniz zaman iptal edebilirsiniz."),
+      ],
+    ],
+    [
       t("Haklarınız (KVKK md. 11 ve GDPR)"),
       [
         t("Verilerinize erişme ve bir kopyasını alma: Profil › Verilerimi indir."),

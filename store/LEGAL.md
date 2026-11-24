@@ -15,3 +15,8 @@ Uygulama bir ürünü "sağlıksız" ya da "yenmemeli" diye **hükme bağlamaz**
 ## Yapılmayacaklar
 - Yeni kural eklerken ürün/marka adı, "en iyi/en kötü" gibi üstünlük ifadeleri, hastalık tedavi/önleme iddiası kullanmayın.
 - Notları reklam veya sıralama amacıyla kullanmayın.
+
+## Abonelik (BKNY Premium)
+- Kullanım koşulları ve gizlilik metni abonelik, otomatik yenileme, iptal ve RevenueCat'in veri işleyen olarak kullanıldığı bilgisini içerir. Yayından önce avukata gösterilmesi önerilir (tüketici hukuku, mesafeli sözleşmeler, cayma/iade, KVKK veri işleyen sözleşmesi).
+- Dijital aboneliklerde iade talepleri mağaza politikalarına bağlıdır; metinde bu şekilde belirtildi.
+- Fiyatlar uygulamada sabit yazılmaz; mağazanın gösterdiği fiyat kullanılır.
