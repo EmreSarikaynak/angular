@@ -2,7 +2,7 @@ import { adminClient, authenticate, isAdmin, json, serverConfigured } from "@/li
 import { getSettings } from "@/lib/settings";
 import { geminiConfigured } from "@/lib/ai/gemini";
 import { fcmConfigured } from "@/lib/bkn/fcm";
-import { isPremium } from "@/lib/billing/entitlement";
+import { isOwner, isPremium } from "@/lib/billing/entitlement";
 
 /** Oturum açmış kullanıcı için çalışma zamanı bilgileri: YZ durumu, kalan kota, duyuru. */
 export async function GET(req: Request) {
@@ -24,7 +24,7 @@ export async function GET(req: Request) {
       .eq("cached", false)
       .gte("created_at", dayStart.toISOString()),
     isAdmin(auth.user),
-    isPremium(auth.user.id),
+    isPremium(auth.user.id, auth.user.email),
   ]);
   const limit = lim?.daily_ai_limit ?? (premium ? settings.premium_daily_ai_limit : settings.default_daily_ai_limit);
   const count = used.count ?? 0;
@@ -33,6 +33,7 @@ export async function GET(req: Request) {
     blocked: !!lim?.blocked,
     quota: { limit, used: count, remaining: Math.max(0, limit - count) },
     premium,
+    owner: isOwner(auth.user.email),
     announcement: settings.announcement,
     is_admin: admin,
     // Tarayıcı / ana ekrana eklenen web uygulaması için Web Push (VAPID); mağaza uygulaması için FCM.

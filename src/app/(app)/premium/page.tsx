@@ -8,6 +8,7 @@ import { Celebration } from "@/components/celebration";
 import { AndroidIcon, AppleIcon } from "@/components/platform-icons";
 import { buy, billingAvailable, loadPlans, manageUrl, restore, type PlanOption } from "@/lib/billing";
 import { isNative } from "@/lib/native";
+import { dayOfYear, useOwnerMessages } from "@/components/owner-messages";
 
 export default function PremiumPage() {
   const { t, toast, config, refreshConfig, session } = useApp();
@@ -19,6 +20,9 @@ export default function PremiumPage() {
   const [celebrate, setCelebrate] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const premium = !!config?.premium;
+  const owner = !!config?.owner;
+  const ownerMsgs = useOwnerMessages();
+  const [msgShift, setMsgShift] = useState(0);
 
   useEffect(() => {
     setNative(isNative());
@@ -106,8 +110,14 @@ export default function PremiumPage() {
           <span className="bt-glow bt-float mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-white/20 backdrop-blur">
             <Crown size={40} />
           </span>
-          <h2 className="bt-gradient-text mt-4 text-3xl font-black tracking-tight">{premium ? t("Premium üyesin") : t("Premium'a geç")}</h2>
-          <p className="mt-1 text-sm text-white/85">{premium ? t("Teşekkürler! Tüm Premium ayrıcalıkların aktif.") : t("Daha fazla analiz, daha fazla sohbet, sıfır reklam.")}</p>
+          <h2 className="bt-gradient-text mt-4 text-3xl font-black tracking-tight">{owner ? t("Kurucu · Premium") : premium ? t("Premium üyesin") : t("Premium'a geç")}</h2>
+          {owner ? (
+            <button key={msgShift} type="button" onClick={() => setMsgShift((n) => n + 1)} className="bt-rise mx-auto mt-2 block max-w-xs text-sm font-medium text-white/95" aria-label={t("Başka bir söz")}>
+              “{ownerMsgs[(dayOfYear() + msgShift) % ownerMsgs.length]}”
+            </button>
+          ) : (
+            <p className="mt-1 text-sm text-white/85">{premium ? t("Teşekkürler! Tüm Premium ayrıcalıkların aktif.") : t("Daha fazla analiz, daha fazla sohbet, sıfır reklam.")}</p>
+          )}
           {premium && limit > 0 && (
             <div className="mx-auto mt-4 max-w-xs text-left">
               <div className="mb-1 flex justify-between text-xs text-white/85">

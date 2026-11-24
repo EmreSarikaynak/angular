@@ -51,7 +51,7 @@ export async function guardAi(req: Request, kind: string): Promise<GuardResult> 
       .gte("created_at", dayStart.toISOString()),
   ]);
 
-  const premium = await isPremium(auth.user.id);
+  const premium = await isPremium(auth.user.id, auth.user.email);
   const limit = lim?.daily_ai_limit ?? (premium ? settings.premium_daily_ai_limit : settings.default_daily_ai_limit);
   const used = day.count ?? 0;
 
