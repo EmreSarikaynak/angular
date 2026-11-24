@@ -39,3 +39,9 @@ Yönetim paneli → "Günlük sorgu limiti" (ücretsiz, varsayılan 10) ve "Prem
 2. Birkaç saniye içinde kart "Premium üyesin" olmalı (RevenueCat → Customer History'de olaylar, Supabase `subscriptions` tablosunda satır).
 3. Profil kartındaki "Bugünkü yapay zekâ kullanımın: x / 300" görünmeli.
 Çalışmazsa: RevenueCat → Webhooks → son istek durumunu, Vercel loglarını ve `error_logs` tablosundaki `billing_webhook` kayıtlarını kontrol et.
+
+## Yaşanan sorunlar ve çözümleri (sonraki geliştirmeler için)
+- **"Purchases.then() is not implemented on android"**: Capacitor eklenti nesnesi (ör. `Purchases`) bir `async` fonksiyondan ya da `Promise.resolve()` ile doğrudan döndürülmemeli; JS ona `.then` çağırır, Capacitor bunu yerel metot sanıp reddeder ve işlem hiç tamamlanmaz. Nesneyi bir kutu içinde döndür (`return { p: Purchases }`). Bkz. `src/lib/billing.ts`.
+- **Play "AIDL / faturalama kütüphanesi" uyarısı ve Abonelikler bölümünün kilitli kalması**: Play, abonelik ürünlerini yalnızca `com.android.vending.BILLING` iznini ve güncel Play Billing (≥ 8) kütüphanesini içeren bir AAB yüklenince açar. Eklenti eklendikten sonra `npm install` ile `node_modules`'i güncelle, derleme çıktısında `Found 7 Capacitor plugins` satırında `@revenuecat/purchases-capacitor` olduğunu doğrula. Aynı `versionCode` ikinci kez yüklenemez; her yüklemede artır.
+- **Vercel deploy limiti**: Hobby planda günde 100 deploy var ve ticari kullanıma uygun değildir; sınır dolunca yeni deploy'lar reddedilir ve sonradan otomatik yeniden denenmez (yeni bir commit gerekir). Pro plana geçildi. Aynı depodan iki Vercel projesi derleme yapıyorsa limit iki kat hızlı dolar; yalnızca `bkn` projesi kalmalı. Ignored Build Step (`[ "$VERCEL_GIT_COMMIT_REF" != "master" ]`) ile geliştirme dalları derlenmez.
+- **Premium ekranı tanı satırı**: Ekranın altında `build <commit> · native · platform · anahtar` ve yükleme günlüğü görünür; telefonun hangi web sürümünü çalıştırdığını ve takılan adımı gösterir.
