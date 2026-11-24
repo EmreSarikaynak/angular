@@ -162,6 +162,10 @@ function DiaryInner() {
             {t("Yağ")} <b className="text-fat">{nf(s.intake.fat_g)} g</b>
           </span>
           <span>
+            {t("Lif")} <b className="text-fiber">{nf(s.intake.fiber_g)}</b>
+            <span className="font-normal">/{profile?.fiber_target_g ?? 25} g</span>
+          </span>
+          <span>
             {t("Şeker")} <b className="text-text">{nf(s.intake.sugar_g)} g</b>
           </span>
         </div>

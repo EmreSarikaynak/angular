@@ -45,7 +45,7 @@ export async function POST(req: Request) {
   if (!parsed.success) return json({ error: "bad_request" }, 400);
   const auth = await authenticate(req);
   if (!auth) return json({ error: "unauthorized" }, 401);
-  const { data: p } = await userClient(auth.token).from("profiles").select("kcal_target, protein_target_g, carbs_target_g, fat_target_g, allergies, diet_preferences, goal, iftar_time, sahur_time").maybeSingle();
+  const { data: p } = await userClient(auth.token).from("profiles").select("kcal_target, protein_target_g, carbs_target_g, fat_target_g, fiber_target_g, allergies, diet_preferences, goal, iftar_time, sahur_time").maybeSingle();
   if (!p?.kcal_target) return json({ error: "profile_incomplete" }, 400);
   const { lang, note, ramadan } = parsed.data;
   const ramadanRules = ramadan
@@ -64,7 +64,7 @@ STRICTLY exclude every ingredient the user is allergic to and respect all diet p
 Never give medical advice and never include supplements or medication.`,
     parts: [
       {
-        text: `Daily targets: ${p.kcal_target} kcal, protein ${p.protein_target_g ?? "-"} g, carbs ${p.carbs_target_g ?? "-"} g, fat ${p.fat_target_g ?? "-"} g. Goal: ${p.goal ?? "maintain"}.
+        text: `Daily targets: ${p.kcal_target} kcal, protein ${p.protein_target_g ?? "-"} g, carbs ${p.carbs_target_g ?? "-"} g, fat ${p.fat_target_g ?? "-"} g, fibre at least ${p.fiber_target_g ?? 25} g (use legumes, vegetables, fruit and whole grains). Goal: ${p.goal ?? "maintain"}.
 Allergies: ${(p.allergies ?? []).join(", ") || "none"}. Diet preferences: ${(p.diet_preferences ?? []).join(", ") || "none"}.${note ? `\nUser request for this week: "${note}"` : ""}`,
       },
     ],

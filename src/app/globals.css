@@ -16,6 +16,7 @@
   --protein: #e0607e;
   --carbs: #e0a23b;
   --fat: #8b7fd6;
+  --fiber: #3fa96b;
   --water: #3b9ede;
   --burn: #ef7d4d;
 }
@@ -34,6 +35,7 @@
   --protein: #f0859d;
   --carbs: #ecb659;
   --fat: #a69cf0;
+  --fiber: #62c98b;
   --water: #5cb4ee;
   --burn: #f59468;
 }
@@ -52,6 +54,7 @@
   --color-protein: var(--protein);
   --color-carbs: var(--carbs);
   --color-fat: var(--fat);
+  --color-fiber: var(--fiber);
   --color-water: var(--water);
   --color-burn: var(--burn);
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;

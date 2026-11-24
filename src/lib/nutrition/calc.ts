@@ -27,6 +27,7 @@ export interface Targets {
   protein_target_g: number;
   carbs_target_g: number;
   fat_target_g: number;
+  fiber_target_g: number;
   water_target_ml: number;
 }
 
@@ -53,6 +54,15 @@ export function proteinReferenceWeight(weightKg: number, heightCm: number): numb
   const m = heightCm / 100;
   const ideal = 22 * m * m;
   return weightKg / (m * m) > 27 ? ideal + 0.25 * (weightKg - ideal) : weightKg;
+}
+
+/**
+ * Günlük lif hedefi: 1000 kcal başına 14 g (IOM önerisi), yetişkinler için 25–38 g arasına sıkıştırılır
+ * (25 g = DSÖ/EFSA genel alt sınırı). Kadınlarda üst sınır 30 g'dır.
+ */
+export function fiberTarget(kcal: number, sex: "male" | "female"): number {
+  const max = sex === "male" ? 38 : 30;
+  return Math.round(Math.min(max, Math.max(25, (kcal / 1000) * 14)));
 }
 
 export function calculateTargets(input: TargetInput): Targets {
@@ -84,6 +94,7 @@ export function calculateTargets(input: TargetInput): Targets {
     protein_target_g: protein,
     carbs_target_g: carbs,
     fat_target_g: fat,
+    fiber_target_g: fiberTarget(kcal, input.sex),
     water_target_ml: water,
   };
 }

@@ -51,7 +51,7 @@ export default function ProfilePage() {
 
   function recalc() {
     if (!computed) return toast(t("Hesaplama için doğum tarihi, cinsiyet, boy, kilo, hedef ve hareketlilik gerekli."), "error");
-    set({ kcal_target: computed.kcal_target, protein_target_g: computed.protein_target_g, carbs_target_g: computed.carbs_target_g, fat_target_g: computed.fat_target_g, water_target_ml: computed.water_target_ml, targets_custom: false });
+    set({ kcal_target: computed.kcal_target, protein_target_g: computed.protein_target_g, carbs_target_g: computed.carbs_target_g, fat_target_g: computed.fat_target_g, fiber_target_g: computed.fiber_target_g, water_target_ml: computed.water_target_ml, targets_custom: false });
   }
 
   async function save() {
@@ -79,6 +79,7 @@ export default function ProfilePage() {
         protein_target_g: Math.round(form.protein_target_g ?? 0),
         carbs_target_g: Math.round(form.carbs_target_g ?? 0),
         fat_target_g: Math.round(form.fat_target_g ?? 0),
+        fiber_target_g: Math.min(100, Math.max(5, Math.round(form.fiber_target_g ?? 25))),
         water_target_ml: Math.round(form.water_target_ml),
         targets_custom: form.targets_custom,
         add_exercise_calories: form.add_exercise_calories,
@@ -163,7 +164,7 @@ export default function ProfilePage() {
     </div>
   );
 
-  const targetField = (name: string, key: "kcal_target" | "protein_target_g" | "carbs_target_g" | "fat_target_g" | "water_target_ml", auto?: number) => (
+  const targetField = (name: string, key: "kcal_target" | "protein_target_g" | "carbs_target_g" | "fat_target_g" | "fiber_target_g" | "water_target_ml", auto?: number) => (
     <Field label={name} hint={auto != null && auto !== form[key] ? t("Önerilen: {n}", { n: auto }) : undefined}>
       <NumberInput value={form[key]} onChange={(v) => set({ [key]: v, targets_custom: true })} min={0} />
     </Field>
@@ -250,6 +251,7 @@ export default function ProfilePage() {
           {targetField(t("Protein (g)"), "protein_target_g", computed?.protein_target_g)}
           {targetField(t("Karbonhidrat (g)"), "carbs_target_g", computed?.carbs_target_g)}
           {targetField(t("Yağ (g)"), "fat_target_g", computed?.fat_target_g)}
+          {targetField(t("Lif (g)"), "fiber_target_g", computed?.fiber_target_g)}
           {targetField(t("Su (ml)"), "water_target_ml", computed?.water_target_ml)}
         </div>
         <div className="flex items-center justify-between gap-3">
