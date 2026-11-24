@@ -42,7 +42,7 @@ export const COPY: Record<"tr" | "en", Copy> = {
     featuresTitle: "BKNY ile neler yapabilirsin?",
     features: [
       { title: "Fotoğrafla yemek analizi", text: "Tabağının fotoğrafını çek; kalori, protein, karbonhidrat, yağ, şeker, lif ve tuz tahmin edilsin. Yazarak, barkodla veya besin etiketi okutarak da ekleyebilirsin; tahminleri sen düzenlersin." },
-      { title: "Su, içecek ve alkol", text: "Günlük su hedefi ve hatırlatmalar. Kahve, çay, gazlı ve alkollü içeceklerin kalorisi ile kafeini hesaba katılır." },
+      { title: "Su ve içecekler", text: "Günlük su hedefi ve hatırlatmalar. Kahve, çay ve gazlı içeceklerin kalorisi ile kafeini hesaba katılır." },
       { title: "Takviye hatırlatmaları", text: "Doz ve saatleri sen girersin; BKNY yalnızca hatırlatır, takviye veya doz önermez. Stok azalınca uyarır." },
       { title: "Kişisel hedefler", text: "Boy, kilo, hareket düzeyi ve hedefine göre günlük kalori, protein ve su hedefi; adım, uyku ve ruh hali kayıtları." },
       { title: "Buzdolabından yemeğe", text: "Buzdolabı, buzluk ve dolabının fotoğrafından ürünlerini çıkarır, son tüketim tarihi yaklaşanlara öncelik veren, alerjilerine ve tercihlerine uygun yemek önerileri sunar." },
@@ -99,7 +99,7 @@ export const COPY: Record<"tr" | "en", Copy> = {
     featuresTitle: "What can you do with BKNY?",
     features: [
       { title: "Photo meal analysis", text: "Take a photo of your plate and get an estimate of calories, protein, carbs, fat, sugar, fibre and salt. Type it, scan a barcode or a nutrition label instead; you can edit every estimate." },
-      { title: "Water, drinks and alcohol", text: "A daily water goal with reminders. Calories and caffeine from coffee, tea, soft drinks and alcoholic drinks are counted." },
+      { title: "Water and drinks", text: "A daily water goal with reminders. Calories and caffeine from coffee, tea and soft drinks are counted." },
       { title: "Supplement reminders", text: "You enter your own doses and times; BKNY only reminds you and never recommends supplements or doses. It warns you when stock runs low." },
       { title: "Personal goals", text: "Daily calorie, protein and water goals based on your height, weight, activity level and goal, plus steps, sleep and mood logs." },
       { title: "Fridge to meal", text: "Photograph your fridge, freezer and pantry to build an inventory, then get meal ideas that prioritise items close to their use-by date and respect your allergies and preferences." },
