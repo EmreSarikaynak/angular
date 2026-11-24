@@ -51,7 +51,12 @@ export function billingAvailable(): boolean {
 }
 
 /** SDK'yı kullanıcı kimliğiyle (Supabase kullanıcı kimliği) başlatır; kimlik webhook'ta aboneliği eşleştirir. */
-export async function initBilling(userId: string, onStep?: (s: string) => void): Promise<Purchases | null> {
+/**
+ * ÖNEMLİ: Capacitor eklenti nesnesi (Purchases) bir Promise'in sonucu olarak doğrudan döndürülmemelidir; JS ona `.then`
+ * çağırır, Capacitor bunu yerel bir metot çağrısı sanıp "Purchases.then() is not implemented" hatasıyla reddeder.
+ * Bu yüzden nesne bir kutu içinde döner.
+ */
+export async function initBilling(userId: string, onStep?: (s: string) => void): Promise<{ p: Purchases } | null> {
   if (!billingAvailable()) return null;
   onStep?.("import");
   const { Purchases } = await withTimeout(import("@revenuecat/purchases-capacitor"), 15_000, "import");
@@ -72,12 +77,13 @@ export async function initBilling(userId: string, onStep?: (s: string) => void):
     await withTimeout(Purchases.logIn({ appUserID: userId }), 15_000, "login");
     configuredFor = userId;
   }
-  return sdk;
+  return { p: sdk };
 }
 
 export async function loadPlans(userId: string, onStep?: (s: string) => void): Promise<PlanOption[]> {
-  const p = await initBilling(userId, onStep);
-  if (!p) throw new Error("billing_unavailable");
+  const box = await initBilling(userId, onStep);
+  if (!box) throw new Error("billing_unavailable");
+  const p = box.p;
   onStep?.("offerings");
   const offerings = await withTimeout(p.getOfferings(), 20_000, "offerings");
   if (!offerings.current) throw new Error("no_current_offering");
@@ -98,8 +104,9 @@ export async function loadPlans(userId: string, onStep?: (s: string) => void): P
 export type PurchaseResult = "ok" | "cancelled" | "failed";
 
 export async function buy(userId: string, planId: string): Promise<PurchaseResult> {
-  const p = await initBilling(userId);
-  if (!p) return "failed";
+  const box = await initBilling(userId);
+  if (!box) return "failed";
+  const p = box.p;
   const offerings = await p.getOfferings();
   const pkg = offerings.current?.availablePackages.find((k) => k.identifier === planId);
   if (!pkg) return "failed";
@@ -112,8 +119,9 @@ export async function buy(userId: string, planId: string): Promise<PurchaseResul
 }
 
 export async function restore(userId: string): Promise<boolean> {
-  const p = await initBilling(userId);
-  if (!p) return false;
+  const box = await initBilling(userId);
+  if (!box) return false;
+  const p = box.p;
   const { customerInfo } = await p.restorePurchases();
   return !!customerInfo.entitlements.active[ENTITLEMENT];
 }
