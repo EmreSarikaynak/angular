@@ -27,3 +27,8 @@ Yalnızca yöneticiler görür. Kişisel sağlık kayıtlarının içeriği (ö�
 1. `supabase/migrations/20261208100000_admin_plans.sql` dosyasını SQL Editor'da çalıştır.
 2. `ADMIN_EMAILS` değişkenini güncelle ve yeniden deploy et.
 Migration uygulanmadan da panel açılır; yeni sütunlar (özellik bazlı kullanım, kayıt sayıları, Elle Premium) migration sonrası dolar.
+
+## Varsayılan plan sayıları (tanıtım ve mağaza metinleriyle aynı)
+Ücretsiz: genel günlük **20** yapay zekâ analizi; özellik başına fotoğraf 5, yazı 10, etiket 5, asistan 5, buzdolabı 2, tarif 2, menü 2, halka 3, haftalık mektup 1; haftalık öğün planı Premium'a özel.
+Premium: genel günlük **300**; fotoğraf 100, yazı 200, etiket 100, asistan 100, buzdolabı 30, tarif 50, plan 10, menü 30, halka 20, mektup 3.
+Bunlar yalnızca varsayılandır; Planlar ve Ayarlar sekmelerinde değiştirilen değer önceliklidir. **Sayıları panelden değiştirirsen tanıtım sayfası (`src/components/landing.tsx`), mağaza metinleri (`store/listing.json`) ve `public/llms.txt` içindeki rakamları da güncelle.**

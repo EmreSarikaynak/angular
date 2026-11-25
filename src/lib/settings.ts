@@ -31,7 +31,7 @@ export function defaultSettings(): AppSettings {
     ai_enabled: true,
     gemini_model: process.env.GEMINI_MODEL || "gemini-3.8-flash",
     gemini_temperature: 0.2,
-    default_daily_ai_limit: 10,
+    default_daily_ai_limit: 20,
     premium_daily_ai_limit: 300,
     per_minute_limit: 6,
     // USD / 1M belirteç. Yönetim panelinden güncel fiyat listesine göre düzenlenir.

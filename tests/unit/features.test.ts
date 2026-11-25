@@ -10,10 +10,14 @@ describe("özellik planları", () => {
     expect(featureForKind("fridge")?.key).toBe("fridge");
     expect(featureForKind("bilinmeyen")).toBeUndefined();
   });
-  it("ayar yoksa varsayılan: herkese açık, ek limit yok", () => {
+  it("ayar yoksa varsayılanlar (tanıtım metinleriyle aynı sayılar)", () => {
     const c = resolveFeature(photo, {});
-    expect(c).toEqual({ tier: "free", free: null, premium: null });
-    expect(checkFeature(c, false, 999).ok).toBe(true);
+    expect(c).toEqual({ tier: "free", free: 5, premium: 100 });
+    expect(checkFeature(c, false, 4).ok).toBe(true);
+    expect(checkFeature(c, false, 5).ok).toBe(false);
+    expect(checkFeature(c, true, 99).ok).toBe(true);
+    const plan = resolveFeature(AI_FEATURES.find((x) => x.key === "meal_plan")!, {});
+    expect(checkFeature(plan, false, 0)).toEqual({ ok: false, reason: "premium_required", limit: 0 });
   });
   it("yönetici ayarı varsayılanı ezer, boş (null) sınırsız demektir", () => {
     const c = resolveFeature(photo, { food_photo: { tier: "free", free: 3, premium: null } });
@@ -32,6 +36,6 @@ describe("özellik planları", () => {
   it("0 limiti özelliği kapatır; geçersiz değerler varsayılana düşer", () => {
     const c = resolveFeature(photo, { food_photo: { tier: "free", free: 0, premium: -5 } });
     expect(checkFeature(c, false, 0).ok).toBe(false);
-    expect(c.premium).toBeNull();
+    expect(c.premium).toBe(100);
   });
 });
