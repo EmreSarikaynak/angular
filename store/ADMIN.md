@@ -3,9 +3,9 @@
 Yalnızca yöneticiler görür. Kişisel sağlık kayıtlarının içeriği (öğün, ölçüm, not, fotoğraf) panelde ASLA gösterilmez; yalnızca hesap bilgisi, kullanım sayaçları, kayıt SAYILARI ve plan bilgisi vardır.
 
 ## Yönetici hesapları
-`info@secesta.com` ve `secestasoftware@gmail.com` iki yoldan yönetici olur:
-1. Vercel'de `ADMIN_EMAILS` ortam değişkenine ekle (virgülle ayrılmış; e-postası **doğrulanmış** hesaplar için geçerli): `ADMIN_EMAILS=info@secesta.com,secestasoftware@gmail.com` (başka adresler varsa onları koru). Ekledikten sonra yeniden deploy et.
-2. Migration `20261208100000_admin_plans.sql` bu iki hesap kayıtlıysa `admins` tablosuna da ekler (hesap henüz yoksa panelden "Yönetici yap" ile eklenir).
+`info@secesta.com`, `secestasoftware@gmail.com` ve `kuzgunkync@gmail.com` iki yoldan yönetici olur:
+1. Vercel'de `ADMIN_EMAILS` ortam değişkenine ekle (virgülle ayrılmış; e-postası **doğrulanmış** hesaplar için geçerli): `ADMIN_EMAILS=info@secesta.com,secestasoftware@gmail.com,kuzgunkync@gmail.com` (başka adresler varsa onları koru). Ekledikten sonra yeniden deploy et.
+2. Migrationlar `20261208100000_admin_plans.sql` ve `20261208110000_admin_kuzgunkync.sql` bu hesaplar kayıtlıysa `admins` tablosuna da ekler (hesap henüz yoksa panelden "Yönetici yap" ile eklenir).
 
 ## Sekmeler
 - **Kullanıcılar:** tüm hesaplar (50'şer, "Daha fazla yükle"), arama, filtre (Tümü / Premium / Ücretsiz / Yönetici). Her kartta: Premium kaynağı (Kurucu, Abonelik, Elle Premium), abonelik ayrıntısı, özellik bazında yapay zekâ kullanımı (30 gün + bugün), kayıt sayıları, kullanıcıya özel günlük limit, **Premium ver / kaldır**, YZ erişimini engelle, yönetici yap, sil.
