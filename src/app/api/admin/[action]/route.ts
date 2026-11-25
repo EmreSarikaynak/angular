@@ -2,6 +2,12 @@ import { z } from "zod";
 import { adminClient, authenticate, isAdmin, json, logError } from "@/lib/supabase/server";
 import { getSettings, saveSettings, settingsSchema } from "@/lib/settings";
 import { generate, geminiConfigured, GeminiError } from "@/lib/ai/gemini";
+import { isOwner } from "@/lib/billing/entitlement";
+import { isActive } from "@/lib/billing/revenuecat";
+import { AI_FEATURES, APP_FEATURES, resolveFeature } from "@/lib/features";
+
+type KindRow = { user_id: string; kind: string; calls: number; calls_today: number };
+type CountRow = { user_id: string; foods: number; waters: number; activities: number; dailies: number; measurements: number; supplement_logs: number; fasting: number; plans: number; pantry: number };
 
 /**
  * Yönetim API'si. Her istekte yönetici yetkisi sunucuda doğrulanır.
@@ -34,17 +40,38 @@ export async function GET(req: Request, ctx: RouteContext<"/api/admin/[action]">
       const { data: list, error } = await db.auth.admin.listUsers({ page, perPage: 50 });
       if (error) throw new Error(error.message);
       const ids = list.users.map((u) => u.id);
-      const [{ data: profiles }, { data: limits }, { data: admins }, { data: usage }] = await Promise.all([
+      const [{ data: profiles }, { data: limits }, { data: admins }, { data: usage }, subs, overrides, kindRows, countRows] = await Promise.all([
         db.from("profiles").select("id, first_name, last_name, onboarded_at, language").in("id", ids),
         db.from("user_limits").select("user_id, daily_ai_limit, blocked").in("user_id", ids),
         db.from("admins").select("user_id").in("user_id", ids),
         db.rpc("admin_usage_by_user", { days: 30 }),
+        db.from("subscriptions").select("user_id, status, product_id, store, period_end, will_renew").in("user_id", ids),
+        // Yeni sütun/fonksiyonlar migration ile gelir; henüz uygulanmadıysa liste yine de açılır.
+        db.from("user_limits").select("user_id, premium_override, premium_note").in("user_id", ids),
+        db.rpc("admin_usage_by_user_kind", { days: 30 }),
+        db.rpc("admin_activity_counts"),
       ]);
+      const kinds = (kindRows.data as KindRow[] | null) ?? [];
+      const counts = (countRows.data as CountRow[] | null) ?? [];
       const users = list.users.map((u) => {
         const p = profiles?.find((x) => x.id === u.id);
         const l = limits?.find((x) => x.user_id === u.id);
         const us = (usage as { user_id: string; calls: number; calls_today: number; cost_usd: number }[] | null)?.find((x) => x.user_id === u.id);
+        const sub = subs.data?.find((x) => x.user_id === u.id);
+        const ov = overrides.data?.find((x) => x.user_id === u.id);
+        const owner = isOwner(u.email);
+        const subActive = isActive(sub ? { status: sub.status, period_end: sub.period_end } : null);
+        const premium = owner || !!ov?.premium_override || subActive;
+        const byKind: Record<string, { calls: number; today: number }> = {};
+        for (const k of kinds) if (k.user_id === u.id) byKind[k.kind] = { calls: Number(k.calls), today: Number(k.calls_today) };
+        const c = counts.find((x) => x.user_id === u.id);
         return {
+          premium,
+          premium_source: owner ? "owner" : ov?.premium_override ? "override" : subActive ? "subscription" : null,
+          premium_note: ov?.premium_note ?? null,
+          subscription: sub ? { status: sub.status, product_id: sub.product_id, store: sub.store, period_end: sub.period_end, will_renew: sub.will_renew } : null,
+          by_kind: byKind,
+          counts: c ? { foods: Number(c.foods), waters: Number(c.waters), activities: Number(c.activities), dailies: Number(c.dailies), measurements: Number(c.measurements), supplement_logs: Number(c.supplement_logs), fasting: Number(c.fasting), plans: Number(c.plans), pantry: Number(c.pantry) } : null,
           id: u.id,
           email: u.email,
           name: [p?.first_name, p?.last_name].filter(Boolean).join(" "),
@@ -61,6 +88,36 @@ export async function GET(req: Request, ctx: RouteContext<"/api/admin/[action]">
         };
       });
       return json({ users, page, has_more: list.users.length === 50, self_id: gate.auth.user.id });
+    }
+
+    if (action === "features") {
+      const settings = await getSettings(true);
+      const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
+      const dayStart = new Date();
+      dayStart.setUTCHours(0, 0, 0, 0);
+      const { data: rows } = await db.from("ai_usage").select("kind, created_at").eq("status", "ok").eq("cached", false).gte("created_at", since).limit(50000);
+      const [{ count: totalUsers }, { count: activeSubs }, { count: overrides }] = await Promise.all([
+        db.from("profiles").select("id", { count: "exact", head: true }),
+        db.from("subscriptions").select("user_id", { count: "exact", head: true }).in("status", ["active", "cancelled", "billing_issue"]).gt("period_end", new Date().toISOString()),
+        db.from("user_limits").select("user_id", { count: "exact", head: true }).eq("premium_override", true),
+      ]);
+      const catalog = AI_FEATURES.map((f) => {
+        const mine = (rows ?? []).filter((r) => f.kinds.includes(r.kind));
+        return {
+          key: f.key,
+          label: f.label,
+          description: f.description,
+          defaults: f.defaults,
+          config: resolveFeature(f, settings.feature_config),
+          usage: { today: mine.filter((r) => r.created_at >= dayStart.toISOString()).length, d30: mine.length },
+        };
+      });
+      return json({
+        catalog,
+        app_features: APP_FEATURES,
+        limits: { default_daily_ai_limit: settings.default_daily_ai_limit, premium_daily_ai_limit: settings.premium_daily_ai_limit },
+        counts: { total_users: totalUsers ?? 0, subscribers: activeSubs ?? 0, comped: overrides ?? 0 },
+      });
     }
 
     if (action === "settings") {
@@ -98,6 +155,8 @@ const userUpdateSchema = z.object({
   blocked: z.boolean().optional(),
   daily_ai_limit: z.number().int().min(0).max(10000).nullable().optional(),
   is_admin: z.boolean().optional(),
+  premium_override: z.boolean().optional(),
+  premium_note: z.string().max(200).nullable().optional(),
 });
 
 export async function POST(req: Request, ctx: RouteContext<"/api/admin/[action]">) {
@@ -111,7 +170,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/admin/[action]"
     if (action === "user-update") {
       const p = userUpdateSchema.safeParse(body);
       if (!p.success) return json({ error: "bad_request" }, 400);
-      const { user_id, blocked, daily_ai_limit, is_admin } = p.data;
+      const { user_id, blocked, daily_ai_limit, is_admin, premium_override, premium_note } = p.data;
       if (blocked !== undefined || daily_ai_limit !== undefined) {
         const { data: cur } = await db.from("user_limits").select("daily_ai_limit, blocked").eq("user_id", user_id).maybeSingle();
         const { error } = await db.from("user_limits").upsert({
@@ -121,6 +180,15 @@ export async function POST(req: Request, ctx: RouteContext<"/api/admin/[action]"
           updated_at: new Date().toISOString(),
         });
         if (error) throw new Error(error.message);
+      }
+      if (premium_override !== undefined || premium_note !== undefined) {
+        // Yalnızca premium alanlarını günceller; diğer limit alanları korunur.
+        const { data: cur } = await db.from("user_limits").select("user_id").eq("user_id", user_id).maybeSingle();
+        const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+        if (premium_override !== undefined) patch.premium_override = premium_override;
+        if (premium_note !== undefined) patch.premium_note = premium_note;
+        const r = cur ? await db.from("user_limits").update(patch).eq("user_id", user_id) : await db.from("user_limits").insert({ user_id, ...patch });
+        if (r.error) throw new Error(r.error.message);
       }
       if (is_admin !== undefined) {
         if (!is_admin && user_id === gate.auth.user.id) return json({ error: "cannot_demote_self" }, 400);

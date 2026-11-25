@@ -13,6 +13,15 @@ export const settingsSchema = z.object({
   price_output_per_m: z.number().min(0).max(1000),
   cache_ttl_days: z.number().int().min(0).max(365),
   announcement: z.string().max(300),
+  /** Özellik bazında plan ve limitler (bkz. src/lib/features.ts). Boş = varsayılanlar. */
+  feature_config: z.record(
+    z.string().max(40),
+    z.object({
+      tier: z.enum(["free", "premium"]),
+      free: z.number().int().min(0).max(100000).nullable(),
+      premium: z.number().int().min(0).max(100000).nullable(),
+    }),
+  ),
 });
 
 export type AppSettings = z.infer<typeof settingsSchema>;
@@ -30,6 +39,7 @@ export function defaultSettings(): AppSettings {
     price_output_per_m: 3.75,
     cache_ttl_days: 30,
     announcement: "",
+    feature_config: {},
   };
 }
 

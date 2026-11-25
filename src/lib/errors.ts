@@ -9,6 +9,10 @@ export function errorText(code: string, t: (s: string, v?: Record<string, string
       return t("Çok hızlı istek gönderdiniz. Bir dakika sonra tekrar deneyin.");
     case "daily_limit":
       return t("Günlük yapay zekâ sorgu limitinize ulaştınız. Yarın tekrar deneyin, elle kayıt ekleyin ya da Profil › Premium ile limitinizi artırın.");
+    case "premium_required":
+      return t("Bu özellik Premium üyelere özel. Profil › Premium bölümünden yükseltebilirsiniz.");
+    case "feature_limit":
+      return t("Bu özelliğin günlük kullanım limitine ulaştınız. Yarın tekrar deneyin ya da Profil › Premium ile limitinizi artırın.");
     case "blocked":
       return t("Hesabınız için yapay zekâ özellikleri kapatılmış.");
     case "ai_disabled":
