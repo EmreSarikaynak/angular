@@ -1,13 +1,16 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import { CheckCircle2, RefreshCw, ShieldAlert, Trash2, XCircle } from "lucide-react";
+import { CheckCircle2, Crown, RefreshCw, ShieldAlert, Trash2, XCircle } from "lucide-react";
 import { useApp } from "@/components/app-provider";
 import { BarSeries } from "@/components/charts";
 import { Button, Card, Empty, Field, Input, NumberInput, PageHeader, Segmented, Skeleton, Stat, Switch } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
 import { numberFmt } from "@/lib/i18n";
+import { AdminPlans, type PlansData } from "@/components/admin-plans";
+import { featureForKind } from "@/lib/features";
 
-type Tab = "overview" | "users" | "ai" | "usage" | "errors";
+type Tab = "overview" | "users" | "plans" | "ai" | "usage" | "errors";
+type UserFilter = "all" | "premium" | "free" | "admin";
 
 interface Overview {
   overview: Record<string, number>;
@@ -28,6 +31,12 @@ interface AdminUser {
   ai_calls_30d: number;
   ai_calls_today: number;
   ai_cost_30d: number;
+  premium: boolean;
+  premium_source: "owner" | "override" | "subscription" | null;
+  premium_note: string | null;
+  subscription: { status: string; product_id: string | null; store: string | null; period_end: string | null; will_renew: boolean } | null;
+  by_kind: Record<string, { calls: number; today: number }>;
+  counts: { foods: number; waters: number; activities: number; dailies: number; measurements: number; supplement_logs: number; fasting: number; plans: number; pantry: number } | null;
 }
 interface Settings {
   ai_enabled: boolean;
@@ -90,7 +99,13 @@ export default function AdminPage() {
   const dt = (s: string | null) => (s ? new Date(s).toLocaleString(lang === "en" ? "en-GB" : "tr-TR", { dateStyle: "short", timeStyle: "short" }) : "–");
 
   const overview = useAdmin<Overview>("/api/admin/overview", isAdmin && tab === "overview");
-  const users = useAdmin<{ users: AdminUser[]; self_id: string }>("/api/admin/users", isAdmin && tab === "users");
+  const users = useAdmin<{ users: AdminUser[]; self_id: string; has_more: boolean }>("/api/admin/users", isAdmin && tab === "users");
+  const plans = useAdmin<PlansData>("/api/admin/features", isAdmin && tab === "plans");
+  const [more, setMore] = useState<AdminUser[]>([]);
+  const [moreMeta, setMoreMeta] = useState<{ page: number; has_more: boolean } | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [filter, setFilter] = useState<UserFilter>("all");
+  const [savingPlans, setSavingPlans] = useState(false);
   const settings = useAdmin<{ settings: Settings; gemini_configured: boolean; base_url_overridden: boolean }>("/api/admin/settings", isAdmin && tab === "ai");
   const usage = useAdmin<Usage>("/api/admin/usage", isAdmin && tab === "usage");
   const errors = useAdmin<{ errors: ErrorRow[] }>("/api/admin/errors", isAdmin && tab === "errors");
@@ -152,7 +167,54 @@ export default function AdminPage() {
   }
 
   const o = overview.data?.overview;
-  const filtered = (users.data?.users ?? []).filter((u) => !query.trim() || `${u.email} ${u.name}`.toLowerCase().includes(query.trim().toLowerCase()));
+  const allUsers = [...(users.data?.users ?? []), ...more];
+  const hasMore = moreMeta ? moreMeta.has_more : !!users.data?.has_more;
+  const filtered = allUsers
+    .filter((u) => !query.trim() || `${u.email} ${u.name}`.toLowerCase().includes(query.trim().toLowerCase()))
+    .filter((u) => (filter === "all" ? true : filter === "premium" ? u.premium : filter === "free" ? !u.premium : u.is_admin));
+  const premiumCount = allUsers.filter((u) => u.premium).length;
+  async function loadMore() {
+    setLoadingMore(true);
+    try {
+      const page = (moreMeta?.page ?? 1) + 1;
+      const res = await api<{ users: AdminUser[]; has_more: boolean }>(`/api/admin/users?page=${page}`);
+      setMore((m) => [...m, ...res.users]);
+      setMoreMeta({ page, has_more: res.has_more });
+    } catch {
+      toast(t("Veriler yüklenemedi."), "error");
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+  async function savePlans(config: Record<string, unknown>) {
+    setSavingPlans(true);
+    try {
+      await api("/api/admin/settings", { body: { feature_config: config } });
+      toast(t("Planlar kaydedildi."));
+      plans.reload();
+    } catch {
+      toast(t("Ayarlar kaydedilemedi. Değerleri kontrol edin."), "error");
+    } finally {
+      setSavingPlans(false);
+    }
+  }
+  const reloadUsers = () => {
+    setMore([]);
+    setMoreMeta(null);
+    users.reload();
+  };
+  const kindLabel = (k: string) => t(featureForKind(k)?.label ?? k);
+  const COUNT_LABELS: [keyof NonNullable<AdminUser["counts"]>, string][] = [
+    ["foods", t("öğün")],
+    ["waters", t("su")],
+    ["activities", t("aktivite")],
+    ["dailies", t("günlük")],
+    ["measurements", t("ölçüm")],
+    ["supplement_logs", t("takviye")],
+    ["fasting", t("oruç")],
+    ["plans", t("plan")],
+    ["pantry", t("dolap")],
+  ];
   const refresh = (r: { reload: () => void; loading: boolean }) => (
     <button type="button" onClick={r.reload} aria-label={t("Yenile")} className="grid h-9 w-9 place-items-center rounded-full bg-surface-2 text-muted">
       <RefreshCw size={16} className={r.loading ? "animate-spin" : ""} />
@@ -170,6 +232,7 @@ export default function AdminPage() {
         options={[
           { value: "overview", label: t("Genel") },
           { value: "users", label: t("Kullanıcılar") },
+          { value: "plans", label: t("Planlar") },
           { value: "ai", label: t("Ayarlar") },
           { value: "usage", label: t("Kullanım") },
           { value: "errors", label: t("Hatalar") },
@@ -218,8 +281,18 @@ export default function AdminPage() {
           {failed(users.error)}
           <div className="flex gap-2">
             <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("E-posta veya ad ara")} />
-            {refresh(users)}
+            {refresh({ reload: reloadUsers, loading: users.loading })}
           </div>
+          <Segmented<UserFilter>
+            value={filter}
+            onChange={setFilter}
+            options={[
+              { value: "all", label: `${t("Tümü")} (${allUsers.length})` },
+              { value: "premium", label: `Premium (${premiumCount})` },
+              { value: "free", label: `${t("Ücretsiz")} (${allUsers.length - premiumCount})` },
+              { value: "admin", label: t("Yönetici") },
+            ]}
+          />
           {!users.data ? (
             <Skeleton className="h-48" />
           ) : filtered.length === 0 ? (
@@ -227,48 +300,108 @@ export default function AdminPage() {
               <Empty title={t("Kullanıcı bulunamadı")} />
             </Card>
           ) : (
-            filtered.map((u) => (
-              <Card key={u.id} className="space-y-3">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="truncate font-medium">
-                      {u.email}
-                      {u.is_admin && <span className="ml-2 rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-semibold text-primary">{t("Yönetici")}</span>}
-                      {u.blocked && <span className="ml-2 rounded-full bg-danger/10 px-2 py-0.5 text-[10px] font-semibold text-danger">{t("Engelli")}</span>}
-                    </p>
-                    <p className="truncate text-xs text-muted">
-                      {u.name || "–"} · {t("Kayıt")}: {dt(u.created_at)} · {t("Son giriş")}: {dt(u.last_sign_in_at)}
-                    </p>
-                    <p className="text-xs text-muted">
-                      {t("YZ")}: {t("bugün")} {u.ai_calls_today} · 30 {t("gün")} {u.ai_calls_30d} · {usd(u.ai_cost_30d)}
-                      {!u.onboarded && ` · ${t("profil tamamlanmadı")}`}
-                    </p>
+            filtered.map((u) => {
+              const kinds = Object.entries(u.by_kind).sort((a, b) => b[1].calls - a[1].calls);
+              const counts = u.counts ? COUNT_LABELS.filter(([k]) => u.counts![k] > 0) : [];
+              return (
+                <Card key={u.id} className="space-y-3">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="flex flex-wrap items-center gap-1.5 font-medium">
+                        <span className="truncate">{u.email}</span>
+                        {u.premium ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-white">
+                            <Crown size={10} />
+                            {u.premium_source === "owner" ? t("Kurucu") : u.premium_source === "override" ? t("Elle Premium") : "Premium"}
+                          </span>
+                        ) : (
+                          <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] font-semibold text-muted">{t("Ücretsiz")}</span>
+                        )}
+                        {u.is_admin && <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-semibold text-primary">{t("Yönetici")}</span>}
+                        {u.blocked && <span className="rounded-full bg-danger/10 px-2 py-0.5 text-[10px] font-semibold text-danger">{t("Engelli")}</span>}
+                      </p>
+                      <p className="truncate text-xs text-muted">
+                        {u.name || "–"} · {t("Kayıt")}: {dt(u.created_at)} · {t("Son giriş")}: {dt(u.last_sign_in_at)}
+                      </p>
+                      {u.subscription && (
+                        <p className="text-xs text-muted">
+                          {t("Abonelik")}: {u.subscription.product_id ?? "–"} · {u.subscription.status} · {t("dönem sonu")} {dt(u.subscription.period_end)}
+                          {u.subscription.will_renew ? "" : ` · ${t("yenilenmeyecek")}`}
+                        </p>
+                      )}
+                      {u.premium_note && <p className="text-xs text-muted">{t("Not")}: {u.premium_note}</p>}
+                      <p className="text-xs text-muted">
+                        {t("YZ")}: {t("bugün")} {u.ai_calls_today} · 30 {t("gün")} {u.ai_calls_30d} · {usd(u.ai_cost_30d)}
+                        {!u.onboarded && ` · ${t("profil tamamlanmadı")}`}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex flex-wrap items-end gap-2">
-                  <Field label={t("Günlük YZ limiti")} hint={t("Boş = varsayılan")} className="w-36">
-                    <LimitInput value={u.daily_ai_limit} onCommit={(v) => post("user-update", { user_id: u.id, daily_ai_limit: v }, users.reload)} />
-                  </Field>
-                  <Button size="sm" variant="secondary" onClick={() => post("user-update", { user_id: u.id, blocked: !u.blocked }, users.reload)}>
-                    {u.blocked ? t("Engeli kaldır") : t("YZ erişimini engelle")}
-                  </Button>
-                  <Button size="sm" variant="secondary" disabled={u.id === users.data!.self_id && u.is_admin} onClick={() => post("user-update", { user_id: u.id, is_admin: !u.is_admin }, users.reload)}>
-                    {u.is_admin ? t("Yöneticiliği kaldır") : t("Yönetici yap")}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-danger"
-                    disabled={u.id === users.data!.self_id}
-                    onClick={() => confirm(t("{email} hesabı ve tüm verileri kalıcı olarak silinsin mi?", { email: u.email ?? u.id })) && post("user-delete", { user_id: u.id }, users.reload)}
-                  >
-                    <Trash2 size={15} />
-                    {t("Sil")}
-                  </Button>
-                </div>
-              </Card>
-            ))
+                  {kinds.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {kinds.map(([k, v]) => (
+                        <span key={k} className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-muted">
+                          {kindLabel(k)}: <b className="text-text">{v.calls}</b>
+                          {v.today > 0 && <span className="text-primary"> (+{v.today} {t("bugün")})</span>}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {counts.length > 0 && (
+                    <p className="text-[11px] text-muted">
+                      {t("Kayıtlar")}: {counts.map(([k, label]) => `${u.counts![k]} ${label}`).join(" · ")}
+                    </p>
+                  )}
+                  <div className="flex flex-wrap items-end gap-2">
+                    <Field label={t("Günlük YZ limiti")} hint={t("Boş = plan varsayılanı")} className="w-36">
+                      <LimitInput value={u.daily_ai_limit} onCommit={(v) => post("user-update", { user_id: u.id, daily_ai_limit: v }, reloadUsers)} />
+                    </Field>
+                    {u.premium_source !== "owner" && u.premium_source !== "subscription" && (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => {
+                          if (u.premium_source === "override") return post("user-update", { user_id: u.id, premium_override: false }, reloadUsers);
+                          const note = window.prompt(t("Not (isteğe bağlı)")) ?? undefined;
+                          return post("user-update", { user_id: u.id, premium_override: true, ...(note ? { premium_note: note.slice(0, 200) } : {}) }, reloadUsers);
+                        }}
+                      >
+                        <Crown size={14} />
+                        {u.premium_source === "override" ? t("Elle Premium'u kaldır") : t("Premium ver")}
+                      </Button>
+                    )}
+                    <Button size="sm" variant="secondary" onClick={() => post("user-update", { user_id: u.id, blocked: !u.blocked }, reloadUsers)}>
+                      {u.blocked ? t("Engeli kaldır") : t("YZ erişimini engelle")}
+                    </Button>
+                    <Button size="sm" variant="secondary" disabled={u.id === users.data!.self_id && u.is_admin} onClick={() => post("user-update", { user_id: u.id, is_admin: !u.is_admin }, reloadUsers)}>
+                      {u.is_admin ? t("Yöneticiliği kaldır") : t("Yönetici yap")}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-danger"
+                      disabled={u.id === users.data!.self_id}
+                      onClick={() => confirm(t("{email} hesabı ve tüm verileri kalıcı olarak silinsin mi?", { email: u.email ?? u.id })) && post("user-delete", { user_id: u.id }, reloadUsers)}
+                    >
+                      <Trash2 size={15} />
+                      {t("Sil")}
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })
           )}
+          {hasMore && (
+            <Button variant="secondary" className="w-full" loading={loadingMore} onClick={loadMore}>
+              {t("Daha fazla yükle")}
+            </Button>
+          )}
+        </div>
+      )}
+
+      {tab === "plans" && (
+        <div className="space-y-3">
+          {failed(plans.error)}
+          <AdminPlans data={plans.data} onSave={savePlans} saving={savingPlans} />
         </div>
       )}
 

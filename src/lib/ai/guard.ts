@@ -4,6 +4,7 @@ import { adminClient, authenticate, json, type AuthContext } from "../supabase/s
 import { getSettings, type AppSettings } from "../settings";
 import { geminiConfigured } from "./gemini";
 import { isPremium } from "../billing/entitlement";
+import { checkFeature, featureForKind, resolveFeature } from "../features";
 
 export interface Quota {
   limit: number;
@@ -61,6 +62,27 @@ export async function guardAi(req: Request, kind: string): Promise<GuardResult> 
   }
   if (used >= limit) {
     return { ok: false, response: json({ error: "daily_limit", limit, used, premium }, 429) };
+  }
+
+  // Özellik bazında plan ve limit (yönetim panelinden düzenlenir).
+  const def = featureForKind(kind);
+  if (def) {
+    const cfg = resolveFeature(def, settings.feature_config);
+    const plan = premium ? cfg.premium : cfg.free;
+    let usedKind = 0;
+    if (cfg.tier === "free" && plan != null) {
+      const k = await db
+        .from("ai_usage")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", auth.user.id)
+        .in("kind", def.kinds)
+        .eq("status", "ok")
+        .eq("cached", false)
+        .gte("created_at", dayStart.toISOString());
+      usedKind = k.count ?? 0;
+    }
+    const v = checkFeature(cfg, premium, usedKind);
+    if (!v.ok) return { ok: false, response: json({ error: v.reason, feature: def.key, limit: v.limit, used: usedKind, premium }, v.reason === "premium_required" ? 403 : 429) };
   }
   return { ok: true, auth, settings, quota: { limit, used, remaining: Math.max(0, limit - used) } };
 }
