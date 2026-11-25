@@ -49,3 +49,8 @@ git pull && npm install
 ./scripts/ios-release.sh        # ya da: npm run cap:ios:release
 ```
 Betik `cap sync ios` çalıştırır, Release arşivi alır (`-allowProvisioningUpdates` ile imza/profil otomatik), App Store Connect'e yükler. Build numarası varsayılan olarak zaman damgasıdır (her yüklemede artar); elle vermek için `BUILD=7 ./scripts/ios-release.sh`. Önkoşul: Xcode → Settings → Accounts'ta Apple Developer hesabın ekli olmalı. Team ID varsayılanı `2FJ93AW33K`, değiştirmek için `TEAM_ID=... ./scripts/ios-release.sh`.
+
+### "Your team has no devices from which to generate a provisioning profile" hatası
+Apple, otomatik imzada arşiv için bir geliştirme profili ister; bunun için ekipte **en az bir kayıtlı iOS cihaz** gerekir. İki yol:
+1. iPhone'u Mac'e USB ile bağla (iPhone'da Ayarlar → Gizlilik ve Güvenlik → Geliştirici Modu açık olmalı), "Bu bilgisayara güven"e dokun ve betiği yeniden çalıştır (betik `-allowProvisioningDeviceRegistration` ile cihazı otomatik kaydeder).
+2. developer.apple.com → Certificates, Identifiers & Profiles → **Devices** → + → Platform iOS, ad ve iPhone'un **UDID**'si. UDID için: iPhone USB'de Mac'e bağlıyken Finder'da iPhone'u seç, adının altındaki model/depolama satırına tekrar tekrar tıklayınca UDID görünür; sağ tıkla "Kopyala". Sonra betiği çalıştır.

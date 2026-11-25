@@ -2,7 +2,10 @@
 # BKNY iOS: arşivle ve App Store Connect'e (TestFlight) yükle. Mac + Xcode gerekir.
 # Kullanım (proje kökünde):   ./scripts/ios-release.sh            → build numarası otomatik (zaman damgası)
 #                             BUILD=7 ./scripts/ios-release.sh     → build numarasını elle ver
-# Önkoşul: Xcode → Settings → Accounts'ta Apple Developer hesabın ekli olmalı (imza için).
+# Önkoşul: Xcode → Settings → Accounts'ta Apple Developer hesabın ekli olmalı (imza için) VE Apple ekibinde en az bir
+#          kayıtlı iOS cihaz olmalı (Apple, otomatik imzada arşiv için bir geliştirme profili ister; cihaz yoksa
+#          "Your team has no devices" hatası çıkar). Çözüm: iPhone'u USB ile bağlayıp betiği çalıştır ya da
+#          developer.apple.com → Certificates, Identifiers & Profiles → Devices bölümüne iPhone'un UDID'sini ekle.
 set -euo pipefail
 
 TEAM_ID="${TEAM_ID:-2FJ93AW33K}"
@@ -28,6 +31,7 @@ xcodebuild archive \
   -destination "generic/platform=iOS" \
   -archivePath "$ARCHIVE" \
   -allowProvisioningUpdates \
+  -allowProvisioningDeviceRegistration \
   DEVELOPMENT_TEAM="$TEAM_ID" \
   CODE_SIGN_STYLE=Automatic \
   CURRENT_PROJECT_VERSION="$BUILD"
