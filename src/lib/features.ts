@@ -22,19 +22,17 @@ export interface FeatureDef {
   defaults: FeatureConfig;
 }
 
-const open: FeatureConfig = { tier: "free", free: null, premium: null };
-
 export const AI_FEATURES: FeatureDef[] = [
-  { key: "food_photo", label: "Fotoğrafla yemek analizi", description: "Tabak fotoğrafından kalori ve besin değerleri", kinds: ["analyze_photo"], defaults: open },
-  { key: "food_text", label: "Yazı / sesle yemek analizi", description: "Yazılan ya da söylenen öğünün analizi", kinds: ["analyze_text"], defaults: open },
-  { key: "food_label", label: "Besin etiketi okuma", description: "Etiket fotoğrafından değerler ve içindekiler", kinds: ["analyze_label"], defaults: open },
-  { key: "fridge", label: "Buzdolabından yemeğe", description: "Buzdolabı taraması ve yemek önerileri", kinds: ["fridge_scan", "fridge"], defaults: open },
-  { key: "recipes", label: "Kişisel tarif önerileri", description: "Hedeflere göre tarifler", kinds: ["recipes"], defaults: open },
-  { key: "meal_plan", label: "Haftalık öğün planı", description: "Plan ve alışveriş listesi", kinds: ["meal_plan"], defaults: open },
-  { key: "menu", label: "Dışarıda yemek (menü)", description: "Menü fotoğrafından öneri", kinds: ["menu"], defaults: open },
-  { key: "rings", label: "Sağlık halkası okuma", description: "Aktivite halkası ekran görüntüsü", kinds: ["rings"], defaults: open },
-  { key: "assistant", label: "Beslenme asistanı", description: "Sohbet", kinds: ["assistant"], defaults: open },
-  { key: "weekly_letter", label: "Haftalık mektup", description: "Haftalık özet mektubu", kinds: ["weekly_letter"], defaults: open },
+  { key: "food_photo", label: "Fotoğrafla yemek analizi", description: "Tabak fotoğrafından kalori ve besin değerleri", kinds: ["analyze_photo"], defaults: { tier: "free", free: 5, premium: 100 } },
+  { key: "food_text", label: "Yazı / sesle yemek analizi", description: "Yazılan ya da söylenen öğünün analizi", kinds: ["analyze_text"], defaults: { tier: "free", free: 10, premium: 200 } },
+  { key: "food_label", label: "Besin etiketi okuma", description: "Etiket fotoğrafından değerler ve içindekiler", kinds: ["analyze_label"], defaults: { tier: "free", free: 5, premium: 100 } },
+  { key: "fridge", label: "Buzdolabından yemeğe", description: "Buzdolabı taraması ve yemek önerileri", kinds: ["fridge_scan", "fridge"], defaults: { tier: "free", free: 2, premium: 30 } },
+  { key: "recipes", label: "Kişisel tarif önerileri", description: "Hedeflere göre tarifler", kinds: ["recipes"], defaults: { tier: "free", free: 2, premium: 50 } },
+  { key: "meal_plan", label: "Haftalık öğün planı", description: "Plan ve alışveriş listesi", kinds: ["meal_plan"], defaults: { tier: "premium", free: null, premium: 10 } },
+  { key: "menu", label: "Dışarıda yemek (menü)", description: "Menü fotoğrafından öneri", kinds: ["menu"], defaults: { tier: "free", free: 2, premium: 30 } },
+  { key: "rings", label: "Sağlık halkası okuma", description: "Aktivite halkası ekran görüntüsü", kinds: ["rings"], defaults: { tier: "free", free: 3, premium: 20 } },
+  { key: "assistant", label: "Beslenme asistanı", description: "Sohbet", kinds: ["assistant"], defaults: { tier: "free", free: 5, premium: 100 } },
+  { key: "weekly_letter", label: "Haftalık mektup", description: "Haftalık özet mektubu", kinds: ["weekly_letter"], defaults: { tier: "free", free: 1, premium: 3 } },
 ];
 
 /** Yapay zekâ kullanmayan özellikler: herkese açık, sınırsız. (Plana göre kısıtlama uygulanmaz; bilgi amaçlıdır.) */

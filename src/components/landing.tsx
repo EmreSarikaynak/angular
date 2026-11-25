@@ -72,7 +72,7 @@ export const COPY: Record<"tr" | "en", Copy> = {
     badges: ["Ücretsiz başla", "Reklamsız", "Türkçe ve İngilizce", "Çevrimdışı çalışır"],
     faqTitle: "Sık sorulan sorular",
     faq: [
-      { q: "BKNY ücretsiz mi?", a: "Ücretsiz başlayabilirsin: hesap oluşturup temel özellikleri ve günlük sınırlı yapay zekâ analizlerini kullanırsın. Daha yüksek yapay zekâ limiti için isteğe bağlı BKNY Premium aboneliği vardır." },
+      { q: "BKNY ücretsiz mi?", a: "Ücretsiz başlayabilirsin: hesap oluşturup temel özellikleri ve günde 20 yapay zekâ analizini kullanırsın. Günde 300'e kadar analiz ve haftalık öğün planı için isteğe bağlı BKNY Premium aboneliği vardır." },
       { q: "Premium aboneliği nasıl iptal edilir?", a: "Abonelik, mobil uygulamada Google Play ya da App Store üzerinden alınır; iptali de aynı mağazanın abonelik ayarlarından yapılır. İptal, mevcut dönemin sonunda geçerli olur." },
       { q: "Besin değerleri ne kadar doğru?", a: "Fotoğraf ve metinden yapılan değerler yapay zekâ tahminidir; her kalemi düzenleyebilirsin. Barkod ve etiket okuma, ambalajdaki değerlere dayanır." },
       { q: "Verilerimi silebilir miyim?", a: "Evet. Verilerini istediğin an dışa aktarabilir, hesabını ve tüm verilerini uygulama içinden silebilirsin." },
@@ -81,8 +81,8 @@ export const COPY: Record<"tr" | "en", Copy> = {
     ],
     plans: {
       title: "Ücretsiz başla, ihtiyacın olursa yüksel",
-      free: { name: "Ücretsiz", items: ["Fotoğraf, yazı, barkod ve etiketle kayıt", "Günlük sınırlı yapay zekâ analizi", "Su, takviye, uyku, hareket ve hedef takibi", "Özetler ve ürün notları"] },
-      premium: { name: "BKNY Premium", items: ["Çok daha yüksek günlük yapay zekâ limiti", "Daha fazla asistan sohbeti ve analiz", "Aylık ya da yıllık abonelik, istediğin zaman iptal", "Mobil uygulamadan satın alınır"] },
+      free: { name: "Ücretsiz", items: ["Fotoğraf, yazı, barkod ve etiketle kayıt", "Günde 20 yapay zekâ analizi (fotoğraf 5, yazı 10, etiket 5, asistan 5)", "Su, takviye, uyku, hareket ve hedef takibi", "Özetler ve ürün notları"] },
+      premium: { name: "BKNY Premium", items: ["Günde 300'e kadar yapay zekâ analizi (fotoğraf 100, yazı 200, asistan 100)", "Haftalık öğün planı; buzdolabı ve tarif önerilerinde çok daha yüksek limit", "Aylık ya da yıllık abonelik, istediğin zaman iptal", "Mobil uygulamadan satın alınır"] },
       note: "Fiyatlar mağazada gösterilir. Abonelik otomatik yenilenir; mağaza hesap ayarlarından iptal edebilirsin.",
     },
     termsLink: "Kullanım koşulları",
@@ -137,7 +137,7 @@ export const COPY: Record<"tr" | "en", Copy> = {
     badges: ["Free to start", "No ads", "Turkish and English", "Works offline"],
     faqTitle: "Frequently asked questions",
     faq: [
-      { q: "Is BKNY free?", a: "You can start for free: create an account and use the core features and a limited number of AI analyses per day. An optional BKNY Premium subscription raises the AI limit." },
+      { q: "Is BKNY free?", a: "You can start for free: create an account and use the core features and 20 AI analyses a day. An optional BKNY Premium subscription gives you up to 300 analyses a day and the weekly meal plan." },
       { q: "How do I cancel Premium?", a: "The subscription is bought in the mobile app through Google Play or the App Store, and cancelled in that store's subscription settings. Cancellation takes effect at the end of the current period." },
       { q: "How accurate are the nutrient values?", a: "Values from photos and text are AI estimates, and you can edit every item. Barcode and label scans rely on the values printed on the package." },
       { q: "Can I delete my data?", a: "Yes. Export your data any time, or delete your account and all data from within the app." },
@@ -146,8 +146,8 @@ export const COPY: Record<"tr" | "en", Copy> = {
     ],
     plans: {
       title: "Start free, upgrade if you need more",
-      free: { name: "Free", items: ["Log with photo, text, barcode and label", "A limited number of AI analyses per day", "Water, supplement, sleep, activity and goal tracking", "Summaries and product notes"] },
-      premium: { name: "BKNY Premium", items: ["A much higher daily AI limit", "More assistant chats and analyses", "Monthly or yearly, cancel any time", "Bought in the mobile app"] },
+      free: { name: "Free", items: ["Log with photo, text, barcode and label", "20 AI analyses a day (photo 5, text 10, label 5, assistant 5)", "Water, supplement, sleep, activity and goal tracking", "Summaries and product notes"] },
+      premium: { name: "BKNY Premium", items: ["Up to 300 AI analyses a day (photo 100, text 200, assistant 100)", "Weekly meal plan; far higher limits for fridge and recipe ideas", "Monthly or yearly, cancel any time", "Bought in the mobile app"] },
       note: "Prices are shown in the store. The subscription renews automatically; you can cancel in your store account settings.",
     },
     termsLink: "Terms of use",

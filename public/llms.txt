@@ -13,7 +13,7 @@ Publisher: Secesta Software (Secesta Bilişim ve Ticaret Ltd. Şti.)
 
 ## Key facts
 - Features: photo/text/barcode/label meal logging, water and drinks, supplement reminders, personal targets, fridge-to-meal suggestions, weekly meal plan, intermittent fasting and Ramadan mode, product ingredient notes, Apple Health / Health Connect reading (mobile, with permission), offline use, PDF/PNG summaries.
-- Pricing: free to start with a limited number of AI analyses per day; optional BKNY Premium subscription (bought in the mobile app via Google Play / App Store) raises the limit.
+- Pricing: free to start with 20 AI analyses a day (photo 5, text 10, label 5, assistant 5); optional BKNY Premium subscription (bought in the mobile app via Google Play / App Store) gives up to 300 analyses a day and the weekly meal plan.
 - Nutrient values from photos and text are AI estimates and can be edited by the user.
 - Users can export their data and delete their account and all data from within the app.
 - No advertising and no tracking.
