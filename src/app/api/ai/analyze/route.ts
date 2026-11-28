@@ -76,6 +76,7 @@ export async function POST(req: Request) {
     await logError("ai.analyze", err.message ?? "unknown", { kind: input.kind, code: err.code, status: err.status }, auth.user.id);
     if (err.code === "timeout") return json({ error: "ai_timeout" }, 504);
     if (err.code === "quota") return json({ error: "ai_busy" }, 503);
+    if (err.code === "billing") return json({ error: "ai_unavailable" }, 503);
     if (err.code === "blocked") return json({ error: "ai_blocked" }, 422);
     return json({ error: "ai_error" }, 502);
   }

@@ -17,6 +17,7 @@ export function errorText(code: string, t: (s: string, v?: Record<string, string
       return t("Hesabınız için yapay zekâ özellikleri kapatılmış.");
     case "ai_disabled":
     case "ai_not_configured":
+    case "ai_unavailable":
     case "server_not_configured":
       return t("Yapay zekâ servisi şu anda kullanılamıyor. Elle kayıt ekleyebilirsiniz.");
     case "timeout":

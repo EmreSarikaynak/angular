@@ -25,7 +25,7 @@ export interface GeminiResult {
 
 export class GeminiError extends Error {
   constructor(
-    public code: "not_configured" | "timeout" | "upstream" | "blocked" | "empty" | "quota",
+    public code: "not_configured" | "timeout" | "upstream" | "blocked" | "empty" | "quota" | "billing",
     message: string,
     public status?: number,
   ) {
@@ -72,7 +72,8 @@ async function once(call: GeminiCall): Promise<GeminiResult> {
 
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    const code = res.status === 429 ? "quota" : "upstream";
+    // 402: ön ödemeli kredi bitti (yeniden denemek işe yaramaz; kullanıcıya "servis kullanılamıyor" gösterilir).
+    const code = res.status === 402 ? "billing" : res.status === 429 ? "quota" : "upstream";
     throw new GeminiError(code, `Gemini HTTP ${res.status}: ${body.slice(0, 500)}`, res.status);
   }
 
